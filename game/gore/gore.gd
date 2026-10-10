@@ -201,10 +201,10 @@ static func sever(body: Node3D, skel: Skeleton3D, hider: LimbHider, bone: String
 	if bi < 0 or hider == null or hider.is_hidden(bi):
 		return null
 	var limb_xf := skel.global_transform * skel.get_bone_global_pose(bi)
-	hider.hide_bone(bi)
 	if not full():
 		gibs(body, limb_xf.origin, 2, "ichor", 3.0, kind)
 		return null
+	hider.hide_bone(bi)
 	var rb := RigidBody3D.new()
 	rb.name = "Severed_" + bone
 	rb.collision_layer = Kit.LAYER_GIBS
