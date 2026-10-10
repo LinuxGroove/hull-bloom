@@ -1,0 +1,106 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Hull Bloom"
+config/description="The alien isn't aboard the station. It's growing through it. A first person horror shooter: burn the Bloom back deck by deck before it takes all of Marigold Station."
+config/version="0.1.0"
+run/main_scene="res://game/main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+boot_splash/bg_color=Color(0.03, 0.02, 0.03, 1)
+boot_splash/show_image=false
+config/icon="res://icon.svg"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="hull-bloom"
+
+[autoload]
+
+LGSettings="*res://addons/linuxgroove/core/settings.gd"
+LGAudio="*res://addons/linuxgroove/core/audio_director.gd"
+LGInput="*res://addons/linuxgroove/input/input_router.gd"
+LGScenes="*res://addons/linuxgroove/core/scene_switcher.gd"
+Nakama="*res://addons/com.heroiclabs.nakama/Nakama.gd"
+LGOnline="*res://addons/linuxgroove/online/online_service.gd"
+Audio="*res://addons/quick_audio/Audio.gd"
+InputHelper="*res://addons/input_helper/input_helper.gd"
+CogitoGlobals="*res://addons/cogito/cogito_globals.gd"
+CogitoSceneManager="*res://addons/cogito/SceneManagement/cogito_scene_manager.gd"
+CogitoQuestManager="*res://addons/cogito/QuestSystem/cogito_quest_manager.gd"
+MenuTemplateManager="*res://addons/cogito/EasyMenus/Nodes/menu_template_manager.tscn"
+Progress="*res://game/progress.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=800
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=0
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/input_helper/plugin.cfg", "res://addons/quick_audio/plugin.cfg")
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+
+[layer_names]
+
+3d_physics/layer_1="Station"
+3d_physics/layer_2="Interactables"
+3d_physics/layer_3="Creatures"
+3d_physics/layer_4="Player"
+3d_physics/layer_5="Doors"
+3d_physics/layer_6="Gibs"
+3d_physics/layer_7="Glass"
+3d_physics/layer_8="Hitboxes"
+
+[navigation]
+
+3d/default_cell_size=0.25
+3d/default_cell_height=0.1
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.02, 0.015, 0.02, 1)
+anti_aliasing/quality/msaa_3d=1
+lights_and_shadows/positional_shadow/atlas_size=4096
+
+[shader_globals]
+
+viewmodel_fov={
+"type": "float",
+"value": 75.0
+}
+calm_walls={
+"type": "float",
+"value": 1.0
+}
+bloom_map={
+"type": "sampler2D",
+"value": ""
+}
+bloom_rect={
+"type": "vec4",
+"value": Vector4(0, 0, 1, 1)
+}
