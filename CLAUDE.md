@@ -19,7 +19,12 @@ VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --resolution 1920x1080 tools/function_shots.tscn -- --out=/tmp/shots [--scale3d=0.5] [--settle=10]   # the title, ring map, HUD, pause menu and deck map at a window size
 python3 tools/sfx/make_sfx.py assets/audio/sfx                      # the synthesized sounds
 godot --headless --path . -s tools/story_script.gd -- --out=/tmp/story.md   # every player-facing line, in the order a player meets it
+godot --headless --path . tools/autopilot.tscn -- --deck=hydroponics --skill=average --seed=1 --runs=3 --minutes=20 --out=/tmp/ap.json   # the autopilot plays a deck
+godot --headless --path . tools/autopilot.tscn -- --campaign --skill=expert --seed=1 --out=/tmp/campaign.json   # Hydroponics, the ring, then the Core
+xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --rendering-driver opengl3 --resolution 1280x800 tools/autopilot.tscn -- --deck=labs --shots=/tmp/ap_shots --every=5   # what it sees, as JPEGs
 ```
+
+The autopilot plays through the Tech's own controls at `novice`, `average` or `expert` (`tools/autopilot/skill.gd`), in fixed 1/60 s steps as fast as the machine runs them (up to a hundred times real time; about eight on four CPUs), and writes each run's deaths, damage, kills, ammo, the Bloom and Godot's monitors as JSON. A seed sets up a run but doesn't replay it exactly (runs drift apart after the first fight), so judge a deck by several seeds. `AUTOPILOT_DEBUG=1` prints what it's thinking. Keep it fair: on a deck it plays only through input actions and the view (turned as the mouse turns it), never by touching creatures, Hearts or the Tech's health; between campaign decks it makes the ring's and the workbench's choices through `Progress`. For `--shots`, OpenGL is far faster than software Vulkan, which spends a fraction of a second on every step even with drawing off.
 
 Run the script check and the tests before every commit. A new `class_name` needs an `--import` before the script check finds it. Headless runs reimport assets and rewrite `*.import` files and `icon.png.import`; revert those (`git checkout -- '*.import'`, `rm icon.png.import`) unless you meant to change them. `docs/screenshots/` holds a picture of every deck and menu (software Vulkan from `mesa-vulkan-drivers`, so they look like the game's Forward+ renderer); shoot them again after changing how something looks.
 
@@ -46,6 +51,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 | `addons/linuxgroove/`, `addons/com.heroiclabs.nakama/` | Shared LinuxGroove add-on and the vendored Nakama client |
 | `assets/` | The crew models and animation libraries, Blender-made models (`models/`), gore decals, sounds (`audio/`) |
 | `tests/run_tests.gd` | Headless test runner; add checks with `check(ok, "what")` |
+| `tools/autopilot/` | The autopilot (`tools/autopilot.tscn` runs it): `pilot.gd` plays a deck through the Tech's controls, `skill.gd` its presets, `nav_grid.gd` where the Tech can walk, `telemetry.gd` what each run records |
 | `tools/` | Script checker, screenshots, the story script (`story_script.gd`), Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
 
 ## How the game is built
