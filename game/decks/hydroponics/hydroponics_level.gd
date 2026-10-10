@@ -11,7 +11,7 @@ extends DeckLevel
 ##   z   1..3   break room (-3..-1)    nutrient pumps (1..3)
 ##   z   5..6   lift lobby (-1..1), lift at (0, 6)
 
-const SAMPLE_LOG := """Day 1. SV-3 came back from the survey moon in a sealed case: grey spores, inert at station temperature. Logged, vaulted.
+const SAMPLE_LOG := """Day 1. SV-3 came back from the survey moon in a sealed case: grey spores, inert at station temperature. Logged. A few spores kept back in the seed vault for study.
 
 Day 9. One spore germinated in the nutrient mist overnight. It grew a root system in four hours. It is not a plant. It is not like anything.
 

@@ -17,7 +17,7 @@ static func make() -> DeckDef:
 	d.gives = "power"
 	d.gives_text = "Engineering's plant: one more cell on every deck, and three spare cells to send to decks on the ring."
 	d.music = "engineering"
-	d.arrive = "Engineering. Reactor output is stable. Core temperature is above normal. My sensors report an organic obstruction in coolant loop B and in both crawlways. Sound carries on this deck. Please walk."
+	d.arrive = "Engineering. Reactor output is stable. Reactor temperature is above normal. My sensors report an organic obstruction in coolant loop B and in both crawlways. Sound carries on this deck. Please walk."
 	d.held = "Organic obstruction cleared. Engineering is holding, and the plant is back on every deck. Three spare cells are charged. I can send them to any deck that is still answering."
 	d.hatches = {"skitter": 0.5, "stalker": 0.5}
 	d.max_alive = 10

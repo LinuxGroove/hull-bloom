@@ -155,7 +155,11 @@ func _fill(r: RandomNumberGenerator) -> void:
 		if logs < 3 and r.randf() < 0.5:
 			var l: Array = LOGS[logs % LOGS.size()]
 			var where: String = rooms[id]["name"].to_lower()
-			log_entry("shift_%d_%d" % [deck.seed if deck else 0, logs], l[0], l[1].replace("%s", "the " + where), cells[0], Vector3(1.2, 0, 1.2), 0.0, _name_from(r))
+			# Always draw the name, so the rest of the station comes out the same.
+			var by := _name_from(r)
+			if l[0] == "Maintenance ticket":
+				by = "MARI"
+			log_entry("shift_%d_%d" % [deck.seed if deck else 0, logs], l[0], l[1].replace("%s", "the " + where), cells[0], Vector3(1.2, 0, 1.2), 0.0, by)
 			logs += 1
 		if survivors < 2 and r.randf() < 0.3:
 			var who := _name_from(r)
