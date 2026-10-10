@@ -172,12 +172,7 @@ func _physics_process(delta):
 	if is_dead:
 		velocity = Vector3.ZERO
 		return
-	if grabbed_by != null:
-		_held(delta)
-		return
-	super(delta)
-	if not _tilt:
-		eyes.rotation.z = 0.0
+	# These count down while a Feeder holds you too, so shoves and medkits work.
 	_shove_t -= delta
 	if immune > 0.0:
 		immune -= delta
@@ -185,6 +180,12 @@ func _physics_process(delta):
 		var h := minf(_heal_left, MEDKIT_HEAL * delta / 1.5)
 		_heal_left -= h
 		health = minf(max_health, health + h)
+	if grabbed_by != null:
+		_held(delta)
+		return
+	super(delta)
+	if not _tilt:
+		eyes.rotation.z = 0.0
 	_growth_underfoot(delta)
 
 

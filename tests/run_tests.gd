@@ -15,6 +15,8 @@ const MAX_COVERAGE_5MIN := 0.85
 
 var failures := 0
 var checks := 0
+## Blows that landed on the Tech, for _test_combat.
+var _hurts := 0
 
 
 func _ready() -> void:
@@ -607,6 +609,44 @@ func _test_combat() -> void:
 	s.player.items["medkit"] = 1
 	s.player.take_hit(Hit.make(Hit.Kind.BULLET, s.player.health - s.player.max_health * 0.3, s.player.global_position, forward))
 	check(Array(s.hud.toast_lines()).any(_is_medkit_reminder), "a low suit reminds you of your medkit")
+	# A skitter's leap lands one blow, however long it stays in reach.
+	s.player.health = s.player.max_health
+	var flat := Vector3(forward.x, 0, forward.z).normalized()
+	var leaper := s.director.spawn("skitter", s.player.global_position + flat * 3.0, false) as Skitter
+	await physics(2)
+	leaper.target = s.player
+	leaper._leaping = true
+	leaper._leap_hit = false
+	_hurts = 0
+	s.player.hurt.connect(_on_hurt)
+	# Held in the air at the Tech's chest for a quarter of a second.
+	for i in 15:
+		leaper.global_position = s.player.global_position + flat * 0.8 + Vector3(0, 0.4, 0)
+		leaper.velocity = Vector3(0, 2.0, 0)
+		leaper.face(s.player.global_position, 1.0)
+		await physics(1)
+	s.player.hurt.disconnect(_on_hurt)
+	check(_hurts == 1, "a skitter's leap lands one blow (%d)" % _hurts)
+	leaper.take_hit(Hit.make(Hit.Kind.BULLET, 1000.0, leaper.global_position, forward, s.player))
+	await physics(2)
+	# A Feeder lets go after three shoves, and a medkit heals while it holds you.
+	s.player.health = s.player.max_health * 0.5
+	var feeder := s.director.spawn("feeder", s.player.global_position, false) as Feeder
+	await physics(2)
+	feeder.target = s.player
+	feeder._grab()
+	check(s.player.grabbed_by == feeder, "a Feeder takes hold")
+	s.player.items["medkit"] = 1
+	s.player.use_medkit()
+	var held := s.player.health
+	await physics(90)
+	check(s.player.health > held + 20.0, "a medkit heals while a Feeder holds you (%d to %d)" % [held, s.player.health])
+	for i in 3:
+		s.player.shove()
+		await physics(roundi(Tech.SHOVE_TIME * 60.0) + 4)
+	check(s.player.grabbed_by == null, "three shoves free you from a Feeder")
+	feeder.take_hit(Hit.make(Hit.Kind.BULLET, 100000.0, feeder.global_position, forward, s.player))
+	await physics(2)
 	var sk2 := s.director.spawn("skitter", at, false)
 	await physics(2)
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward, sk2))
@@ -618,6 +658,10 @@ func _test_combat() -> void:
 
 func _is_medkit_reminder(line: String) -> bool:
 	return line.begins_with("Suit low:")
+
+
+func _on_hurt(_amount: float, _dir: Vector3) -> void:
+	_hurts += 1
 
 #endregion
 
