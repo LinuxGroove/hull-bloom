@@ -301,6 +301,13 @@ func _process(delta: float) -> void:
 func freeze() -> void:
 	set_process(false)
 	director.process_mode = Node.PROCESS_MODE_DISABLED
+	# Strike each creature's idle pose first, so nothing is left standing in
+	# its rest pose.
+	for c in get_tree().get_nodes_in_group("creatures"):
+		if c is Creature and not c.dead and not c.get("rising"):
+			c.idle_anim()
+			if c.anim:
+				c.anim.advance(randf_range(0.3, 1.2))
 	for t in get_tree().get_nodes_in_group("turrets") + get_tree().get_nodes_in_group("creatures"):
 		t.process_mode = Node.PROCESS_MODE_DISABLED
 	hud.hush()

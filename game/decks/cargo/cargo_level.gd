@@ -25,11 +25,11 @@ const PILOT := """Corran: fuelled, preflight done, flight plan to the colony rel
 
 MARI won't give it. She says there's an obstruction in the dock. There isn't, I've walked it twice. Dunmore is staying with the ship. I'm going up to find the dockmaster and get the clearance signed by hand.
 
-If I'm not back: she doesn't need a pilot to reach the relay. Get everyone aboard, close the hatch, and press the green one. L. Marsh"""
+If I'm not back: she doesn't need a pilot to reach the relay. Get everyone aboard, close the hatch, and press the green one. N. Haddad"""
 
 const CREW := """Supply run 14: shuttle Corran to the colony relay and back.
 
-Pilot: Capt. L. Marsh
+Pilot: Capt. N. Haddad
 Loaders: R. Dunmore, J. Ferro, A. Quist
 Customs: T. Hollis
 Passengers: none listed
@@ -206,7 +206,7 @@ func _dock() -> void:
 	thing("survivor", Vector2i(1, -8), Vector3(0.4, 0, -1.4), 180.0, {"id": "cargo_dunmore", "name": "Rafe Dunmore", "job": "cargo", "pose": "torch",
 		"line": "You're not the pilot. She went up for the clearance and never came back. The Corran's fuelled. She said it would fly without her. I'll come up to the lift with you, if you'll have me."})
 	thing("log", Vector2i(0, -8), Vector3(0.8, 0, -1.45), 180.0, {"id": "cargo_pilot", "style": "terminal", "title": "Pilot's note",
-		"by": "Capt. Lena Marsh, pilot", "text": PILOT})
+		"by": "Capt. Noor Haddad, pilot", "text": PILOT})
 	thing("light", Vector2i(0, -9), Vector3(2.0, 4.1, 0.6), 0.0, {"color": Color(0.75, 0.85, 1.0), "energy": 0.9, "range": 10.0})
 	prop("Prop_Cable3", Vector2i(-1, -9), Vector3(0.2, 0.01, 0.6), 80.0, {"solid": false})
 	prop("ess:Prop_Crate", Vector2i(-1, -10), Vector3(-1.0, 0, -1.0), 10.0)

@@ -258,7 +258,7 @@ func _security() -> void:
 	prop("ess:Prop_Desk_Medium", Vector2i(-4, -4), Vector3(0, 0, -1.25))
 	prop("ess:Prop_Chair", Vector2i(-4, -4), Vector3(0.3, 0, -0.3), 160.0)
 	thing("log", Vector2i(-4, -4), Vector3(0.5, 0.94, -1.4), 0.0, {"id": "core_watch", "style": "screen", "title": "Core watch, night duty",
-		"by": "Officer Jonah Pell, core watch",
+		"by": "Officer Silas Pell, core watch",
 		"text": "22:40. Dr Okafor came down with her badge and asked me to let her into the chamber. I told her MARI had it sealed. MARI opened it for her.\n\nThe drones won't stand down. They've been guarding the chamber door like it's theirs. One of them put a round past my ear when I tried to follow her.\n\nI'm staying in the post with the door shut. Something keeps walking the ring. It walks like Okafor."})
 	thing("pickup", Vector2i(-4, -4), Vector3(-0.6, 0.95, -1.25), 0.0, {"item": "weapon:rifle", "count": 1})
 	pickup("ammo:rifle", Vector2i(-5, -4), Vector3(0.9, 0, -0.3), 2)

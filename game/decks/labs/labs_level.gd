@@ -55,7 +55,7 @@ func build() -> void:
 	room("clean", "Clean room", Rect2i(-3, -4, 3, 3), "medical")
 	door(Vector2i(-1, -3), Vector2i(0, -3))
 	door(Vector2i(-2, -2), Vector2i(-2, -1))
-	room("store", "Sample store", Rect2i(1, -4, 3, 3), "cargo", {"warm": 0.7})
+	room("store", "Sample store", Rect2i(1, -4, 3, 3), "cargo", {"cold": true})
 	door(Vector2i(0, -3), Vector2i(1, -3))
 	door(Vector2i(2, -2), Vector2i(2, -1))
 	room("xeno", "Xenobiology lab", Rect2i(-4, -8, 4, 4), "lab", {"warm": 1.2, "vent": true})

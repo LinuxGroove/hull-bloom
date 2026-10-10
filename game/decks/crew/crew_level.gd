@@ -41,7 +41,7 @@ const FISCHER_LOG := """Day 20. A rash across my shoulders where the coveralls s
 
 Day 21. It doesn't itch. That's what bothers me. It's warm, like skin that's been in the sun.
 
-I keep waking up standing in the showers. Marta says I walk there every night now and stand over the drain, and when she says my name I don't answer.
+I keep waking up standing in the showers. Bea says I walk there every night now and stand over the drain, and when she says my name I don't answer.
 
 I've asked her to lock our door. She says it doesn't lock from the inside."""
 
