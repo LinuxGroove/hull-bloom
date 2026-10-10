@@ -141,6 +141,7 @@ func _lobby() -> void:
 	prop("ess:Prop_Shelves_WideShort", Vector2i(1, 5), Vector3(1.6, 0, 0.5), -90.0)
 	pickup("flare", Vector2i(-1, 5), Vector3(0.5, 0, 0.6), 2)
 	pickup("medkit", Vector2i(1, 5), Vector3(1.55, 1.22, 0.5), 1)
+	pickup("stim", Vector2i(1, 5), Vector3(1.55, 1.22, -0.2), 1)
 	pickup("ammo", Vector2i(1, 5), Vector3(0.7, 0, -0.6), 2)
 	thing("decal", Vector2i(0, 4), Vector3(0, 0, -0.6), 90.0, {"name": "Decal_Arrows"})
 	thing("decal", Vector2i(1, 4), Vector3(-0.4, 0, 1.2), 0.0, {"name": "Decal_Numbers_Eight"})
@@ -158,7 +159,6 @@ func _rings() -> void:
 	thing("decal", Vector2i(2, 3), Vector3(0, 0, 0), 90.0, {"name": "Decal_Line_Straight"})
 	thing("decal", Vector2i(-2, 3), Vector3(0, 0, 0), 90.0, {"name": "Decal_Line_Straight"})
 	# West.
-	spawn("taken", Vector2i(-3, -1), Vector3(0.3, 0, 0.2), 1, {"job": "medic"})
 	pickup("ammo", Vector2i(-3, -2), Vector3(-1.3, 0, -0.6), 2)
 	pickup("health", Vector2i(-3, 2), Vector3(-1.3, 0, -0.3), 1)
 	prop("ess:Prop_Crate_Tarp", Vector2i(-3, -2), Vector3(0.9, 0, 0.3), 10.0)
@@ -171,7 +171,6 @@ func _rings() -> void:
 	prop("Prop_Crate4", Vector2i(-1, -3), Vector3(-0.2, 0.56, -1.3), -20.0)
 	thing("vent_panel", Vector2i(1, -3), Vector3(0.7, 0, -1.68), -90.0, {"room": "observation"})
 	# East: the way through the conduits.
-	spawn("taken", Vector2i(3, 1), Vector3(-0.2, 0, 0.3), 1, {"job": "engineer"})
 	spawn("skitter", Vector2i(3, 2), Vector3(0.6, 0, 0.8), 1, {"asleep": true})
 	spawn("pod", Vector2i(3, 0), Vector3(1.3, 0, 0.9), 1)
 	pickup("ammo:rifle", Vector2i(3, -2), Vector3(1.3, 0, -0.9), 1)
@@ -295,7 +294,6 @@ func _stores() -> void:
 		"by": "Cargo, bay 2",
 		"text": "Day 2. Item: sample SV-3, survey moon, one sealed case.\nFrom: Hydroponics, Dr I. Okafor. To: Core sample chamber, by the Core service lift.\nMoved by: cargo bay 2.\n\nNotes: case warm to the touch. Scanned clean twice. Logged as normal."})
 	body(Vector2i(5, 4), Vector3(-0.4, 0, -0.6), 250.0, "cargo")
-	spawn("taken", Vector2i(5, 3), Vector3(-0.8, 0, 0.8), 1, {"job": "cargo"})
 	spawn("skitter", Vector2i(4, 4), Vector3(0.4, 0, -0.6), 1, {"asleep": true})
 	pickup("salvage", Vector2i(5, 4), Vector3(-1.3, 0, 1.3), 3)
 	pickup("grenade", Vector2i(4, 3), Vector3(-0.8, 0, 1.2), 1)

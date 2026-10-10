@@ -6,7 +6,7 @@ extends Node
 ## --skill is novice, average or expert (tools/autopilot/skill.gd). --kit=start
 ## starts every deck with the first kit (the cutter and sidearm); the default
 ## for decks after Hydroponics adds the scattergun Hydroponics gives you, and
-## --kit=late adds the rifle and SMG that held decks give, for the Core.
+## --kit=late adds the rifle and SMG from Security's armoury, for the Core.
 ## --campaign plays Hydroponics, the middle decks in an order from the seed,
 ## then the Core, carrying Progress (hours, gifts, salvage, the kit) between
 ## them. With a display (xvfb-run, software Vulkan),
@@ -34,8 +34,8 @@ const MUST_TRIES := 8
 ## there and some of its rounds.
 const AFTER_HYDROPONICS := {"weapons": ["cutter", "sidearm", "scattergun"],
 	"items": {"flare": 3, "grenade": 0, "mine": 0, "medkit": 1, "stim": 0}, "ammo": {"scattergun": 18}}
-## What a Tech might carry onto the Core or a deck late in the ring: the guns
-## two held decks give and a few things to throw.
+## What a Tech might carry onto the Core or a deck late in the ring: the rifle
+## and SMG from Security's armoury, and a few things to throw.
 const LATE := {"weapons": ["cutter", "sidearm", "scattergun", "rifle", "smg"],
 	"items": {"flare": 3, "grenade": 1, "mine": 0, "medkit": 2, "stim": 0}, "ammo": {"scattergun": 24, "rifle": 120, "smg": 128}}
 ## Upgrades the campaign buys at a held deck's workbench, in order.
