@@ -12,7 +12,7 @@ static func make() -> DeckDef:
 	d.news = ["Big open bays", "Raptors", "The shuttle out"]
 	d.cells = 5
 	d.hours = 5
-	d.spread = 1.2
+	d.spread = 1.0
 	d.seed = 707
 	d.gives = "shuttle"
 	d.gives_text = "The shuttle is fuelled and waiting at Cargo's dock."
