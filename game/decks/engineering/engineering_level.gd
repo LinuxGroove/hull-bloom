@@ -225,7 +225,7 @@ func _pumps_and_workshop() -> void:
 	prop("ess:Prop_Shelves_WideTall", Vector2i(-3, -1), Vector3(1.45, 0, 0.2), -90.0)
 	prop("ess:Prop_Chest", Vector2i(-5, -1), Vector3(-1.1, 0, 1.2))
 	prop("ess:Prop_Crate", Vector2i(-3, -2), Vector3(1.0, 0, -1.0), 10.0)
-	spawn("taken", Vector2i(-3, -2), Vector3(-0.4, 0, 0.4), 1, {"job": "tech",
+	spawn("taken", Vector2i(-5, -1), Vector3(0.4, 0, -0.4), 1, {"job": "tech",
 		"routine": [Vector2i(-5, -2), Vector2i(-3, -1), Vector2i(-4, -3), Vector2i(-2, -3)]})
 	pickup("mine", Vector2i(-5, -1), Vector3(-0.2, 0, 0.6), 2)
 	pickup("ammo:scattergun", Vector2i(-3, -1), Vector3(0.4, 0, 1.2), 3)
@@ -272,7 +272,7 @@ func _views() -> void:
 	view("control", Vector3(-17.3, 1.65, -14.8), -62.0, -4.0)
 	view("office", Vector3(-11.0, 1.65, -23.0), 55.0, -8.0)
 	view("generators", Vector3(11.5, 1.65, -17.0), -62.0, -6.0)
-	view("crawl_east", Vector3(24.0, 1.65, -10.6), 0.0, -6.0)
+	view("crawl_east", Vector3(22.9, 1.65, -10.4), -4.0, -6.0)
 	view("crawl_west", Vector3(-28.0, 1.65, -19.0), 0.0, -4.0)
 	view("pumps", Vector3(-23.0, 1.65, -14.0), 125.0, -8.0)
 	view("workshop", Vector3(-11.0, 1.65, -9.0), 110.0, -8.0)

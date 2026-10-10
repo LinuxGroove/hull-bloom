@@ -127,6 +127,11 @@ static func conveyor(parent: Node3D, a: Vector3, b: Vector3, width := 1.1, crate
 	for side in [-1.0, 1.0]:
 		_box(root, Vector3(0, 0.84, side * (width * 0.5 - 0.03)), Vector3(length, 0.16, 0.06), DARK, 0.5, 0.5)
 		_box(root, Vector3(0, 0.5, side * (width * 0.5 + 0.005)), Vector3(length, 0.1, 0.01), STRIPE, 0.6)
+		# Running lamps along the rails, still lit on the belt's own supply.
+		var lamps := maxi(1, int(length / 1.6))
+		for i in lamps:
+			var lamp := _box(root, Vector3(-length * 0.5 + (i + 0.5) * length / lamps, 0.86, side * (width * 0.5 + 0.01)), Vector3(0.14, 0.05, 0.02), STRIPE, 0.4)
+			lamp.material_override = Kit.flat(STRIPE * 0.3, 0.4, STRIPE, 2.2)
 	for end in [-1.0, 1.0]:
 		var roller := _cyl(root, Vector3(end * (length * 0.5 - 0.1), 0.62, 0), 0.14, 0.14, width - 0.05, DARK, 0.5, 0.5)
 		roller.rotation.x = PI * 0.5
