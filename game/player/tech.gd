@@ -30,6 +30,10 @@ const STIM_CURE := 60.0
 const STIM_TIME := 45.0
 ## Infection rises slowly while you stand in thick growth.
 const GROWTH_INFECT := 0.6
+## Under this share of the suit, or over this much infection, a medkit or a
+## stim you carry gets a reminder.
+const LOW_SUIT := 0.4
+const HIGH_INFECTION := 60.0
 const SHOVE_RANGE := 2.3
 const SHOVE_TIME := 0.7
 const CARRY := {"medkit": 3, "stim": 3, "flare": 6, "grenade": 4, "mine": 3}
@@ -220,6 +224,7 @@ func take_hit(hit: Hit) -> void:
 		amount *= DeckScene.current.creature_damage()
 	if health >= max_health * 0.25 and health - amount < max_health * 0.25 and health - amount > 0.0:
 		LGPlaytest.event("low_health", {"health": roundi(health - amount), "hit_by": Hit.Kind.keys()[hit.kind].to_lower()})
+	_remind_medkit(health, health - amount)
 	health -= amount
 	Sfx.ui(self, "hit_player", -2.0)
 	if hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
@@ -238,6 +243,7 @@ func take_hit(hit: Hit) -> void:
 func drain(hp: float, inf: float) -> void:
 	if is_dead:
 		return
+	_remind_medkit(health, health - hp)
 	health -= hp
 	if inf > 0.0:
 		add_infection(inf)
@@ -250,9 +256,19 @@ func drain(hp: float, inf: float) -> void:
 func add_infection(amount: float) -> void:
 	if immune > 0.0 or is_dead:
 		return
+	var before := infection
 	infection = minf(100.0, infection + amount)
 	if infection >= 100.0:
 		die("taken")
+	elif before < HIGH_INFECTION and infection >= HIGH_INFECTION and items["stim"] > 0:
+		_toast("The Bloom's in your blood: %s for a stim" % LGInput.label_for_action("stim"))
+
+
+## When the suit drops low with a medkit in your pocket, says how to use it.
+func _remind_medkit(before: float, after: float) -> void:
+	var low := max_health * LOW_SUIT
+	if after > 0.0 and before >= low and after < low and items["medkit"] > 0 and _heal_left <= 0.0:
+		_toast("Suit low: %s for a medkit" % LGInput.label_for_action("heal"))
 
 
 func die(reason: String) -> void:
@@ -311,9 +327,15 @@ func take_pickup(item: String, count: int, auto := false) -> bool:
 	match base:
 		"ammo":
 			var scale := DeckScene.current.ammo_scale() if DeckScene.current else 1.0
-			return arsenal.add_ammo(detail, maxi(1, roundi(count * scale)))
+			if arsenal.add_ammo(detail, maxi(1, roundi(count * scale))):
+				return true
+			if not auto:
+				_toast("Can't carry more")
+			return false
 		"health":
 			if health >= max_health:
+				if not auto:
+					_toast("Suit's whole. Leave it for later")
 				return false
 			heal(HEALTH_TUBE * count)
 			_toast("Health +%d" % int(HEALTH_TUBE * count))
@@ -425,6 +447,7 @@ func shove() -> void:
 
 ## Spores from a burst pod: a moment's blur.
 func spores(amount: float) -> void:
+	LGPlaytest.event("spores", {"amount": snappedf(amount, 0.01), "infection": roundi(infection)})
 	add_infection(4.0 * amount)
 	if DeckScene.current:
 		DeckScene.current.spore_blur(amount)

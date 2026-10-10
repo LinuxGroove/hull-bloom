@@ -575,15 +575,26 @@ func _test_combat() -> void:
 	var hot := ars.heat
 	await frames(60)
 	check(ars.heat < hot, "and cools")
+	# A health tube with the suit whole stays put, and says why.
+	check(not s.player.take_pickup("health", 1), "a whole suit leaves a health tube")
+	check("Suit's whole. Leave it for later" in s.hud.toast_lines(), "and says why")
 	# Getting hurt, and the Bloom getting in.
 	var suit := s.player.health
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 10.0, s.player.global_position, forward))
 	check(s.player.health < suit, "the suit takes damage")
 	check(s.player.infection > 0.0, "claws carry the Bloom in")
+	# Dropping low with a medkit in your pocket says how to use it.
+	s.player.items["medkit"] = 1
+	s.player.take_hit(Hit.make(Hit.Kind.BULLET, s.player.health - s.player.max_health * 0.3, s.player.global_position, forward))
+	check(Array(s.hud.toast_lines()).any(_is_medkit_reminder), "a low suit reminds you of your medkit")
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward))
 	check(s.player.is_dead, "too much and you're down")
 	await frames(2)
 	await close_deck(s)
+
+
+func _is_medkit_reminder(line: String) -> bool:
+	return line.begins_with("Suit low:")
 
 #endregion
 

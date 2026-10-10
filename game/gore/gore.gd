@@ -186,9 +186,10 @@ static func _track_gib(body: Node3D) -> void:
 			old.queue_free()
 
 
-static func _expire(body: Node3D) -> void:
+## Untyped: the gib may have gone with its deck before its timer runs out.
+static func _expire(body) -> void:
+	_gibs.erase(body)
 	if is_instance_valid(body):
-		_gibs.erase(body)
 		body.queue_free()
 
 

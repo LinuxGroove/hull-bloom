@@ -397,6 +397,7 @@ func toast(text: String, color := StationTheme.AMBER) -> void:
 		return
 	_last_toast = text
 	_last_toast_at = now
+	LGPlaytest.event("toast", {"text": text})
 	var p := StationTheme.hud_panel(Color(color, 0.55))
 	p.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	var l := StationTheme.hud_label("▲ " + text.to_upper(), 14, color)
@@ -431,6 +432,7 @@ func say(person: String, line: String, seconds := -1.0) -> void:
 		return
 	if not LGSettings.get_value("play", "subtitles", true) and person != "MARI":
 		return
+	LGPlaytest.event("said", {"who": person, "text": line})
 	var col := StationTheme.TEAL if person == "MARI" else StationTheme.AMBER
 	_subtitle_label.text = "[b][color=#%s]%s[/color][/b]  %s" % [col.to_html(false), person.to_upper(), line]
 	_subtitle.visible = true
