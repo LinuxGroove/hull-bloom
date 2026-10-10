@@ -142,7 +142,7 @@ func _lobby() -> void:
 	pickup("flare", Vector2i(-1, 5), Vector3(0.5, 0, 0.6), 2)
 	pickup("medkit", Vector2i(1, 5), Vector3(1.55, 1.22, 0.5), 1)
 	pickup("ammo", Vector2i(1, 5), Vector3(0.7, 0, -0.6), 2)
-	thing("decal", Vector2i(0, 4), Vector3(0, 0, -0.6), 0.0, {"name": "Decal_Arrows"})
+	thing("decal", Vector2i(0, 4), Vector3(0, 0, -0.6), 90.0, {"name": "Decal_Arrows"})
 	thing("decal", Vector2i(1, 4), Vector3(-0.4, 0, 1.2), 0.0, {"name": "Decal_Numbers_Eight"})
 
 
@@ -266,7 +266,7 @@ func _security() -> void:
 	pickup("grenade", Vector2i(-5, -3), Vector3(0.6, 0, 0.3), 2)
 	pickup("mine", Vector2i(-4, -3), Vector3(-0.4, 0, 1.3), 2)
 	spawn("gundrone", Vector2i(-5, -4), Vector3(0.6, 0, 0.6), 1, {"asleep": true})
-	spawn("taken", Vector2i(-4, -3), Vector3(-0.6, 0, -0.4), 1, {"job": "security"})
+	spawn("taken", Vector2i(-5, -3), Vector3(0.4, 0, -0.6), 1, {"job": "security"})
 
 
 func _crew_rest() -> void:
@@ -317,7 +317,7 @@ func _views() -> void:
 	view("observation", Vector3(0, 1.65, -15.0), 0.0, 4.0)
 	view("nutrient_junction", Vector3(-15.0, 1.65, 5.0), 29.0, -5.0)
 	view("security_post", Vector3(-14.6, 1.65, -12.6), 80.0, -6.0)
-	view("crew_rest", Vector3(-14.6, 1.65, 11.4), 110.0, -6.0)
+	view("crew_rest", Vector3(-14.6, 1.65, 11.0), 135.0, -6.0)
 	view("core_stores", Vector3(14.6, 1.65, 11.4), -110.0, -6.0)
 
 
