@@ -12,7 +12,7 @@ version, update the version above and re-apply the changes below.
 ## Local changes
 
 - Removed `DemoScenes/`, `DynamicFootstepSystem/DynamicFootstepDemoScene.tscn`
-  and `EasyMenus/Scenes/main_menu.tscn` (Tiptoe has its own menus and levels).
+  and `EasyMenus/Scenes/main_menu.tscn` (Hull Bloom has its own menus and levels).
 - Removed audio that isn't CC0 or MIT (and some unused): alarm siren (CC BY),
   running water (CC BY), fire burn (CC BY-NC), underwater loop (CC BY), the
   Pixabay spray, energy drink and soda sounds, and the sliding door sounds.
@@ -30,16 +30,18 @@ version, update the version above and re-apply the changes below.
 - `LICENSE` copied in from the upstream repository root.
 - The `*.import` files are Godot 4.7's.
 
-## How Tiptoe uses it
+## How Hull Bloom uses it
 
-- The player (`game/player/moth.gd`) extends `CogitoPlayer` and frees the
-  parts Tiptoe doesn't use (health, stamina, sanity, currency, Cogito's pause
-  menu and inventory screen). Settings come from LGSettings, not Cogito's
-  options file.
-- Interactables are Tiptoe's own `UsableBody` with `UseAction` components,
-  which Cogito's interaction raycast and prompts drive as they are.
-- Footsteps use Cogito's `FootstepSurface` on every floor;
-  `game/stealth/step_noise.gd` makes each step a noise people can hear.
+- The player (`game/player/tech.gd`, `Tech`) extends `CogitoPlayer` and frees
+  the parts Hull Bloom doesn't use (stamina, sanity, currency, Cogito's pause
+  menu and inventory screen). Health, the weapons and the kit are Hull
+  Bloom's own (`game/arsenal/`). Settings come from LGSettings, not Cogito's
+  options file; head bob and view roll start off.
+- Doors, panels and pick-ups are Hull Bloom's own, driven by Cogito's
+  interaction raycast and prompts as they are.
+- Footsteps use Cogito's `FootstepSurface`; `game/player/step_noise.gd`
+  makes each step a noise creatures can hear.
 - The Cogito editor plugin is left disabled: its autoloads are listed in
   `project.godot`, and enabling it breaks headless imports.
 - Cogito's NPCs, light meter, quests, save slots and translations aren't used.
+- The menus use Cogito's Montserrat fonts (SIL Open Font License).

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <radialGradient id="space" cx="0.55" cy="0.4" r="0.7">
+      <stop offset="0" stop-color="#1d2a44"/>
+      <stop offset="1" stop-color="#05070d"/>
+    </radialGradient>
+    <radialGradient id="flesh" cx="0.35" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#d4574f"/>
+      <stop offset="0.55" stop-color="#7a1621"/>
+      <stop offset="1" stop-color="#2a0509"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd0a0"/>
+      <stop offset="0.4" stop-color="#ff5a3c"/>
+      <stop offset="1" stop-color="#ff5a3c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9aa6b2"/>
+      <stop offset="1" stop-color="#3b4450"/>
+    </linearGradient>
+    <clipPath id="port"><circle cx="128" cy="124" r="78"/></clipPath>
+    <clipPath id="tile"><rect x="8" y="8" width="240" height="240" rx="44"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="44" fill="#0b0f16"/>
+  <circle cx="128" cy="124" r="78" fill="url(#space)"/>
+  <g fill="#e8eef8" clip-path="url(#port)">
+    <circle cx="160" cy="80" r="1.8"/><circle cx="104" cy="70" r="1.2"/><circle cx="182" cy="122" r="1.4"/>
+    <circle cx="140" cy="104" r="1"/><circle cx="92" cy="98" r="1.1"/><circle cx="170" cy="160" r="1.2"/>
+  </g>
+  <circle cx="128" cy="124" r="86" fill="none" stroke="url(#metal)" stroke-width="18"/>
+  <circle cx="128" cy="124" r="77" fill="none" stroke="#141a22" stroke-width="3"/>
+  <g fill="#c4ccd6">
+    <circle cx="128" cy="38" r="4"/><circle cx="214" cy="124" r="4"/><circle cx="128" cy="210" r="4"/><circle cx="42" cy="124" r="4"/>
+    <circle cx="189" cy="63" r="4"/><circle cx="67" cy="63" r="4"/><circle cx="189" cy="185" r="4"/><circle cx="67" cy="185" r="4"/>
+  </g>
+  <g clip-path="url(#tile)">
+  <g fill="url(#flesh)">
+    <path d="M18 238 C 24 196 40 176 66 168 C 82 162 84 140 104 136 C 120 133 126 150 118 164 C 140 156 160 166 156 184 C 176 182 192 196 186 214 C 204 214 222 224 238 238 Z"/>
+    <path d="M66 168 C 54 150 44 128 52 104 C 56 94 66 96 64 108 C 62 124 70 140 82 152 Z"/>
+    <path d="M118 164 C 128 142 150 126 170 128 C 178 129 178 138 170 140 C 152 144 138 156 130 172 Z"/>
+    <ellipse cx="96" cy="186" rx="26" ry="20"/>
+    <ellipse cx="150" cy="206" rx="30" ry="18"/>
+  </g>
+  <g fill="none" stroke="#3d070d" stroke-width="2.5" stroke-linecap="round" opacity="0.8">
+    <path d="M30 230 C 52 206 74 196 96 186"/>
+    <path d="M96 186 C 112 176 124 172 140 176"/>
+    <path d="M150 206 C 170 204 192 214 214 230"/>
+  </g>
+  <g fill="#f2c4b4" opacity="0.55">
+    <ellipse cx="88" cy="178" rx="8" ry="4"/><ellipse cx="142" cy="198" rx="9" ry="4"/><ellipse cx="108" cy="142" rx="5" ry="3"/>
+  </g>
+  </g>
+  <circle cx="98" cy="190" r="16" fill="url(#glow)"/>
+  <circle cx="168" cy="134" r="10" fill="url(#glow)"/>
+  <circle cx="56" cy="108" r="9" fill="url(#glow)"/>
+  <circle cx="98" cy="190" r="4.5" fill="#ffe2b8"/>
+  <circle cx="168" cy="134" r="3" fill="#ffe2b8"/>
+  <circle cx="56" cy="108" r="2.6" fill="#ffe2b8"/>
+</svg>

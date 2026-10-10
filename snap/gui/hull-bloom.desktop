@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Hull Bloom
+Comment=A first person horror shooter against an alien growth on a space station.
+Exec=hull-bloom
+Icon=${SNAP}/meta/gui/hull-bloom.svg
+Categories=Game;ActionGame;
+Keywords=horror;shooter;first person;space;alien;sci-fi;
+StartupWMClass=Hull Bloom

@@ -43,6 +43,8 @@ func _ready() -> void:
 			group = a.trim_prefix("group=")
 	LGSettings.register_defaults(GameConfig.SETTING_DEFAULTS)
 	LGSettings.set_value("video", "fullscreen", false, false)
+	# Staged scores must never reach the online boards.
+	LGSettings.set_value("online", "enabled", false, false)
 	LGInput.register_actions(GameConfig.ACTIONS)
 	StationTheme.apply(get_tree().root, 22)
 	RenderingServer.global_shader_parameter_set("calm_walls", 1.0)
@@ -64,6 +66,7 @@ func _all(dir: String, group: String) -> void:
 		if group == "" or group == id:
 			DirAccess.make_dir_recursive_absolute("%s/%s" % [dir, id])
 			await _deck_views(id, "%s/%s" % [dir, id], "", id == "hydroponics", false, 0)
+			await _overgrown_shot(id, "%s/%s" % [dir, id])
 	if group == "" or group == "menus":
 		DirAccess.make_dir_recursive_absolute(dir + "/menus")
 		var menus := ScreenshotMenus.new()
@@ -84,6 +87,30 @@ func _deck_views(id: String, out: String, only: String, hud: bool, overgrown: bo
 		save("%s/%s.png" % [out, v])
 		shots.append(v)
 	_index[id] = [Decks.get_deck(id).name, shots]
+	_scene.queue_free()
+	_scene = null
+	await _frames(2)
+
+
+## The deck once the Bloom has had it for a while, as a lost deck looks
+## when you go back to take it: the view standing in the thickest growth
+## that isn't the Heart's own room.
+func _overgrown_shot(id: String, out: String) -> void:
+	await _open(id, true, 160)
+	_scene.hud.visible = false
+	var best := ""
+	var most := -1.0
+	for v in _scene.level.views:
+		var cell := DeckLevel.cell_at(_scene.level.views[v][0])
+		var g := _scene.level.bloom.level_at(cell)
+		if g > most and g < Bloom.MAX - 0.5:
+			best = v
+			most = g
+	if best == "":
+		best = _scene.level.views.keys()[0]
+	await _stand(_scene.level.views[best])
+	save("%s/%s_overgrown.png" % [out, best])
+	_index[id][1].append(best + "_overgrown")
 	_scene.queue_free()
 	_scene = null
 	await _frames(2)
