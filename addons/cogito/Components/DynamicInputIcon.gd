@@ -129,15 +129,16 @@ func update_icon_kbm(): # Sets the bound action to keyboard and mouse icon
 		return
 
 
+## Whether this is a Steam Deck, worked out once for every icon: -1 not yet.
+static var _steam_deck := -1
+
 func _is_steam_deck() -> bool:
-	if RenderingServer.get_rendering_device() == null:
-		print("DynamicInputIcon: ISSUE: No rendering device detected.")
-		return false
-	if RenderingServer.get_rendering_device().get_device_name().contains("RADV VANGOGH") \
-	or OS.get_processor_name().contains("AMD CUSTOM APU 0405"):
-		return true
-	else:
-		return false
+	if _steam_deck < 0:
+		var rd := RenderingServer.get_rendering_device()
+		var deck := OS.get_processor_name().contains("AMD CUSTOM APU 0405") \
+			or (rd != null and rd.get_device_name().contains("RADV VANGOGH"))
+		_steam_deck = 1 if deck else 0
+	return _steam_deck == 1
 
 
 func gamepad_motion_to_frame_index(joypad_input_motion: InputEventJoypadMotion):

@@ -104,6 +104,15 @@ def main(src: str, dst: str) -> None:
                 text = open(p).read().replace("gltf/embedded_image_handling=1", "gltf/embedded_image_handling=0")
                 open(p, "w").write(text)
     _drop_stray_bins(out)
+    # Visual shaders saved by an older Godot carry an editor-only setting
+    # that Godot 4.7 warns about on every load.
+    mdir = os.path.join(out, "materials")
+    for f in os.listdir(mdir):
+        if f.endswith(".tres"):
+            p = os.path.join(mdir, f)
+            text = open(p).read()
+            if "graph_offset" in text:
+                open(p, "w").write(re.sub(r"^graph_offset = .*\n", "", text, flags=re.M))
     for lic in ["Modular SciFi MegaKit[Source]/License_Source.txt", "Sci-Fi Essentials Kit[Source]/License_Source.txt"]:
         shutil.copy2(os.path.join(src, lic), os.path.join(out, lic.split("/")[0].split("[")[0].replace(" ", "_") + "_License.txt"))
     shutil.copy2(os.path.join(src, "Universal Base Characters[Standard]/License_Standard.txt"), os.path.join(crew, "Universal_Base_Characters_License.txt"))

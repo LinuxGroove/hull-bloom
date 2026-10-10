@@ -57,6 +57,9 @@ var down_reason := ""
 ## Who landed the last blow (a creature's kind, "robot", "turret" or "you"),
 ## for the screen when you go down.
 var last_hit_by := ""
+## The last blow that landed (null for a Feeder's drain), for play tests and
+## the autopilot to tell what hurt you.
+var last_hit: Hit
 
 var _shove_t := 0.0
 var _heal_left := 0.0
@@ -169,12 +172,7 @@ func _physics_process(delta):
 	if is_dead:
 		velocity = Vector3.ZERO
 		return
-	if grabbed_by != null:
-		_held(delta)
-		return
-	super(delta)
-	if not _tilt:
-		eyes.rotation.z = 0.0
+	# These count down while a Feeder holds you too, so shoves and medkits work.
 	_shove_t -= delta
 	if immune > 0.0:
 		immune -= delta
@@ -182,6 +180,12 @@ func _physics_process(delta):
 		var h := minf(_heal_left, MEDKIT_HEAL * delta / 1.5)
 		_heal_left -= h
 		health = minf(max_health, health + h)
+	if grabbed_by != null:
+		_held(delta)
+		return
+	super(delta)
+	if not _tilt:
+		eyes.rotation.z = 0.0
 	_growth_underfoot(delta)
 
 
@@ -224,6 +228,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func take_hit(hit: Hit) -> void:
 	if is_dead:
 		return
+	last_hit = hit
 	var amount := hit.amount
 	if DeckScene.current:
 		amount *= DeckScene.current.creature_damage()
@@ -250,6 +255,8 @@ func drain(hp: float, inf: float) -> void:
 	if is_dead:
 		return
 	_remind_medkit(health, health - hp)
+	if hp > 0.0:
+		last_hit = null
 	health -= hp
 	if inf > 0.0:
 		add_infection(inf)

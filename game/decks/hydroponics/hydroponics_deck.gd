@@ -18,6 +18,6 @@ static func make() -> DeckDef:
 	d.arrive = "Wake up, night shift. It is 03:10. Hydroponics stopped answering at 21:40. My sensors report an organic obstruction in the seed lab. Please investigate. The lift needs a power cell before it will take you anywhere."
 	d.held = "Organic obstruction cleared. Hydroponics is holding. The ring's lifts are open again, but every other deck is reporting the same obstruction. It is following the feed lines down, towards the Core."
 	d.hatches = {"skitter": 1.0}
-	d.max_alive = 8
+	d.max_alive = 6
 	d.color = Color(0.55, 0.95, 0.6)
 	return d

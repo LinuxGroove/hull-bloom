@@ -206,6 +206,7 @@ func _build_weapon() -> void:
 	_hints.add_theme_constant_override("separation", 18)
 	_hints.alignment = BoxContainer.ALIGNMENT_END
 	_hints.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hints.theme = _hint_theme()
 	col.add_child(_hints)
 	for h in [["action_primary", "FIRE"], ["swap", "SWAP"], ["throw", "THROW"], ["power_lights", "LIGHTS"], ["power_map", "POWER"], ["heal", "MEDKIT"]]:
 		var a := ActionPrompt.make(h[0], h[1], 22)
@@ -230,6 +231,14 @@ func _build_weapon() -> void:
 	v.add_child(_weapon_bar)
 	_items = StationTheme.hud_label("", 13, StationTheme.DIM)
 	v.add_child(_items)
+
+
+## Dark edges on the hints' text, so they read over the gun and lit growth.
+static func _hint_theme() -> Theme:
+	var t := Theme.new()
+	t.set_color("font_outline_color", "Label", Color(0.0, 0.0, 0.0, 0.9))
+	t.set_constant("outline_size", "Label", 6)
+	return t
 
 
 func _build_middle() -> void:

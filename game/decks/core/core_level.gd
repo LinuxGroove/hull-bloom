@@ -293,7 +293,7 @@ func _stores() -> void:
 	prop("Prop_Crate1", Vector2i(4, 3), Vector3(0.9, 0.5, -1.1), 25.0)
 	thing("log", Vector2i(5, 3), Vector3(-0.6, 1.5, -0.8), 30.0, {"id": "core_slip", "title": "Transfer slip 0442",
 		"by": "Cargo, bay 2",
-		"text": "Item: sample SV-3, survey moon, one sealed case.\nFrom: cargo bay 2. To: Core sample chamber, by the Core service lift.\nReceived by: Dr I. Okafor.\n\nNotes: case warm to the touch. Scanned clean twice. Logged as normal."})
+		"text": "Day 2. Item: sample SV-3, survey moon, one sealed case.\nFrom: Hydroponics, Dr I. Okafor. To: Core sample chamber, by the Core service lift.\nMoved by: cargo bay 2.\n\nNotes: case warm to the touch. Scanned clean twice. Logged as normal."})
 	body(Vector2i(5, 4), Vector3(-0.4, 0, -0.6), 250.0, "cargo")
 	spawn("taken", Vector2i(5, 3), Vector3(-0.8, 0, 0.8), 1, {"job": "cargo"})
 	spawn("skitter", Vector2i(4, 4), Vector3(0.4, 0, -0.6), 1, {"asleep": true})

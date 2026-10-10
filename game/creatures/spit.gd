@@ -29,7 +29,8 @@ func _physics_process(delta: float) -> void:
 	if hit:
 		var n: Node = hit.collider
 		if n and n.is_in_group("tech"):
-			var h := Hit.make(Hit.Kind.SPIT, damage, hit.position, velocity, from)
+			# What spat it may have died while it flew.
+			var h := Hit.make(Hit.Kind.SPIT, damage, hit.position, velocity, from if is_instance_valid(from) else null)
 			n.take_hit(h)
 			if n.has_method("drain"):
 				n.drain(0.0, infect)

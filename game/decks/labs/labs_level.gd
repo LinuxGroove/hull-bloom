@@ -15,11 +15,11 @@ extends DeckLevel
 
 const ROOT := Vector2i(2, -7)
 
-const VOS_NOTES := """Week 1. Imani's culture came up from hydroponics in a sealed flask. We keep it at four degrees in C-1. At four degrees it does nothing at all, which is why everyone has been calling it dormant.
+const VOS_NOTES := """Day 10. Imani's culture came up from hydroponics in a sealed flask. We keep it at four degrees in C-1. At four degrees it does nothing at all, which is why everyone has been calling it dormant.
 
-Week 2. It is not dormant. Under the scope every cell is moving, very slowly, towards the warm side of the flask. When Hugo stood at the glass it leaned towards him. When he walked away, it followed.
+Day 14. It is not dormant. Under the scope every cell is moving, very slowly, towards the warm side of the flask. When Hugo stood at the glass it leaned towards him. When he walked away, it followed.
 
-Week 3. It grows towards warmth and towards people, and it can tell the difference: it ignores the heater when one of us is in the room. I have asked MARI to lock out C-1's vent. This is the only living sample of anything we have ever found. Nobody vents it without me."""
+Day 19. It grows towards warmth and towards people, and it can tell the difference: it ignores the heater when one of us is in the room. I have asked MARI to lock out C-1's vent. This is the only living sample of anything we have ever found. Nobody vents it without me."""
 
 const BREACH := """21:09. Containment C-1 cooling: power drawn by an unknown load. Temperature rising.
 

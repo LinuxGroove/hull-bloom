@@ -8,6 +8,8 @@ const LEAP_TIME := 2.4
 
 var _leap_t := 0.0
 var _leaping := false
+## Whether this leap has landed its blow (a leap hits once).
+var _leap_hit := false
 
 
 func configure() -> void:
@@ -47,6 +49,7 @@ func think(delta: float) -> void:
 		if d < LEAP_FROM and d > 2.0 and time - last_seen < 0.3:
 			_leap_t = time + LEAP_TIME + randf()
 			_leaping = true
+			_leap_hit = false
 			var flat := Vector3(to.x, 0, to.z).normalized()
 			velocity = flat * 7.5 + Vector3(0, 4.2, 0)
 			face(target.global_position, 1.0)
@@ -59,10 +62,9 @@ func think(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	super(delta)
 	if _leaping and is_instance_valid(target) and not dead:
-		if global_position.distance_to(target.global_position + Vector3(0, 0.8, 0)) < 1.2 and _striking < 0.0:
-			_striking = time
+		if not _leap_hit and global_position.distance_to(target.global_position + Vector3(0, 0.8, 0)) < 1.2 and in_reach():
+			_leap_hit = true
 			strike()
-			_striking = -1.0
 	if model and not dead:
 		# A scuttling bob as it runs.
 		var sp := Vector2(velocity.x, velocity.z).length()

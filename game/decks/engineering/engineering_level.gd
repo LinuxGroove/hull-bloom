@@ -28,7 +28,7 @@ Then it came down the duct towards me, faster than anyone can crawl. I never saw
 
 It hunts by sound. Shut the hatch behind you, walk, don't run, and don't fire in the long gangway unless you want everything on the deck to come and look."""
 
-const REACTOR := """Reactor status, 02:51. Core temperature 431 K (normal 380 K). Coolant flow 58%. Cause: organic obstruction in coolant loop B.
+const REACTOR := """Reactor status, 02:51. Reactor temperature 431 K (normal 380 K). Coolant flow 58%. Cause: organic obstruction in coolant loop B.
 
 Output shed to decks 1 to 5 by order of the chief engineer. Decks 6 and 7 on full power. Spare cells charged: 3.
 
