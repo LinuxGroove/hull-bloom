@@ -127,8 +127,8 @@ func select(id: String) -> void:
 		for n in d.news:
 			news.append(n[0].to_lower() + n.substr(1) if not n.begins_with("MARI") else n)
 		_line("New here: " + ", ".join(news) + ".", StationTheme.DIM)
-	if d.gives != "" and Progress.deck_state(id) in ["open", "locked"]:
-		_line("Save it: " + d.gives_text, StationTheme.DIM)
+	if d.gives != "" and Progress.deck_state(id) in ["open", "locked", "lost"]:
+		_line(("Take it back: " if Progress.deck_state(id) == "lost" else "Save it: ") + d.gives_text, StationTheme.DIM)
 	if Progress.survivors_saved(id) > 0:
 		_line("Survivors brought out: %d" % Progress.survivors_saved(id), StationTheme.GREEN)
 	var row := HBoxContainer.new()

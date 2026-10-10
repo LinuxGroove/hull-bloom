@@ -26,7 +26,7 @@ func _init() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	visible = false
 	var dim := ColorRect.new()
-	dim.color = Color(0.0, 0.01, 0.02, 0.82)
+	dim.color = Color(0.0, 0.01, 0.02, 0.94)
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 	var margin := MarginContainer.new()

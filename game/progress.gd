@@ -155,7 +155,7 @@ func core_open() -> bool:
 ## What a deck being saved gives: whether it's been given yet.
 func has_gift(gift: String) -> bool:
 	for id in Decks.ids():
-		if deck_state(id) == "saved" and Decks.get_deck(id).gives == gift:
+		if deck_state(id) in ["saved", "reclaimed"] and Decks.get_deck(id).gives == gift:
 			return true
 	return false
 

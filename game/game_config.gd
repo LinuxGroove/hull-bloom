@@ -90,7 +90,8 @@ const ACTIONS := {
 	# Fire (the cutter: burn) and aim (the cutter: a focused beam for limbs).
 	"action_primary": ["mouse:left", "axis:rt+"],
 	"action_secondary": ["mouse:right", "axis:lt+"],
-	"reload": ["key:R"],
+	# On a pad, X reloads when there's nothing in view to use.
+	"reload": ["key:R", "joy:x"],
 	# Swap weapon; hold for the wheel. The wheel and the number keys pick one.
 	"swap": ["key:Q", "mouse:wheel_down", "joy:rb"],
 	"swap_back": ["mouse:wheel_up"],
