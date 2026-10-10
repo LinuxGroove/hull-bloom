@@ -464,17 +464,24 @@ func _test_playtest() -> void:
 	check(info.has("settings") and not info["settings"].get("online", {}).has("server_key"), "the server key never goes in a recording")
 	var types := []
 	var mark := {}
+	var died := {}
 	for line in r.read_file("events.jsonl").get_string_from_utf8().split("\n", false):
 		var e: Dictionary = JSON.parse_string(line)
 		types.append(e["type"])
 		if e["type"] == "mark":
 			mark = e
+		elif e["type"] == "died":
+			died = e
 	for t in ["start", "test", "mark", "deck_start", "died", "perf", "survey", "end"]:
 		check(t in types, "the events hold " + t)
 	check(mark.get("tag") == "fun" and mark.get("note") == "the vent hissed", "a note keeps its tag and words")
 	var answers: Dictionary = JSON.parse_string(r.read_file("survey.json").get_string_from_utf8())
 	check(answers.get("fun") == 4.0 and answers.get("best") == "Burning the first Heart" and answers.get("genre") == "often" and not answers.has("story"),
 		"the survey keeps only what was answered")
+	check(died.get("moment") == true, "a moment is marked as one in the events")
+	var asked: Dictionary = answers.get("questions", {})
+	check(asked.get("fun") == LGPlaytestSurvey.RATINGS[0][1] and asked.has("story") and asked.has("tense"),
+		"the survey keeps the wording of every question asked")
 	r.close()
 	# A session the game never ended: packed the next time it starts.
 	var cut := dir.path_join("2026-01-01-000000")
