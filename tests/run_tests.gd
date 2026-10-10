@@ -385,6 +385,11 @@ func _test_settings_panel() -> void:
 	var lifted := DeckScene.make_environment(false)
 	LGSettings.set_value("play", "brightness", 1.0, false)
 	check(lifted.ambient_light_energy > dim.ambient_light_energy and lifted.tonemap_exposure > dim.tonemap_exposure, "brightness lifts the dark")
+	# 3D resolution: Auto stays between half and all of the screen.
+	check(LGSettings.resolution_scale() >= 0.5 and LGSettings.resolution_scale() <= 1.0, "auto 3D resolution is half to all of the screen")
+	LGSettings.set_value("video", "resolution", 0.67, false)
+	check(is_equal_approx(LGSettings.resolution_scale(), 0.67), "a chosen 3D resolution is kept")
+	LGSettings.set_value("video", "resolution", 0.0, false)
 	ps.queue_free()
 	await frames(1)
 
