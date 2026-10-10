@@ -20,6 +20,7 @@ var _spawn_t := 6.0
 var _spit_t := 4.0
 var _flash := 0.0
 var _scale := 1.0
+var _beat: AudioStreamPlayer3D
 
 
 static func make(lvl: DeckLevel, at_cell: Vector2i, core := false) -> Heart:
@@ -99,6 +100,10 @@ func _build() -> void:
 	glow.omni_range = 8.0 * (2.0 if big else 1.0)
 	glow.position = Vector3(0, 1.5 * _scale, 0)
 	add_child(glow)
+	_beat = Sfx.on(self, "heart_beat_loop", 2.0 if big else -2.0)
+	_beat.position = glow.position
+	_beat.max_distance = 40.0 if big else 26.0
+	_beat.pitch_scale = 0.8 if big else 1.0
 
 
 func _process(delta: float) -> void:
@@ -151,6 +156,7 @@ func die() -> void:
 		return
 	dead = true
 	remove_from_group("hearts")
+	_beat.stop()
 	Sfx.at(self, "heart_die", global_position + Vector3(0, 2, 0), 6.0)
 	Gore.gibs(self, global_position + Vector3(0, 1.5 * _scale, 0), 12, "heart", 6.0, "bloom")
 	Gore.pool(self, global_position + Vector3(0, 0.02, 0), 4.0 * _scale, "bloom")

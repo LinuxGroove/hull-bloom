@@ -3,7 +3,7 @@ extends RefCounted
 ## Plays sounds in the station: one-shots at a place, and loops on a node.
 ##
 ## Sounds go by id ("door_open", "cutter_loop"). An id plays
-## assets/audio/sfx/<id>.ogg when there is one (made by tools/sfx/make_sfx.py
+## assets/audio/sfx/<id>.ogg (or one of its takes, <id>_1.ogg ...) when there is one (made by tools/sfx/make_sfx.py
 ## or on Ken's Lemonade machine, see tools/lemonade/), else one of the Kenney
 ## sounds [constant KENNEY] lists for it, picked at random. Ids ending in
 ## "_loop" loop.
@@ -62,31 +62,51 @@ const KENNEY := {
 
 static var _streams := {}
 static var _missing := {}
+static var _own := {}
 
 
 ## A sound by id, by path (res://...), or null if there's none.
 static func stream(id: String) -> AudioStream:
 	if id.begins_with("res://"):
 		return _load(id)
-	var own := DIR + id + ".ogg"
-	if ResourceLoader.exists(own):
-		return _load(own)
+	var takes := _takes(id)
+	if not takes.is_empty():
+		return _load(takes[randi() % takes.size()], id.ends_with("_loop"))
 	var picks: Array = KENNEY.get(id, [])
 	if picks.is_empty():
 		if not _missing.has(id):
 			_missing[id] = true
 			push_warning("Sfx: no sound for %s" % id)
 		return null
-	return _load(KENNEY_DIR + String(picks[randi() % picks.size()]) + ".ogg")
+	return _load(KENNEY_DIR + String(picks[randi() % picks.size()]) + ".ogg", id.ends_with("_loop"))
 
 
-static func _load(path: String) -> AudioStream:
+## Our own files for an id: <id>.ogg, or takes <id>_1.ogg, <id>_2.ogg ...
+static func _takes(id: String) -> Array:
+	if not _own.has(id):
+		var out := []
+		if ResourceLoader.exists(DIR + id + ".ogg"):
+			out.append(DIR + id + ".ogg")
+		else:
+			var i := 1
+			while ResourceLoader.exists("%s%s_%d.ogg" % [DIR, id, i]):
+				out.append("%s%s_%d.ogg" % [DIR, id, i])
+				i += 1
+		_own[id] = out
+	return _own[id]
+
+
+static func _load(path: String, loop := false) -> AudioStream:
+	if loop:
+		path += "#loop"
 	if not _streams.has(path):
-		if not ResourceLoader.exists(path):
+		var file := path.trim_suffix("#loop")
+		if not ResourceLoader.exists(file):
 			_streams[path] = null
 		else:
-			var s: AudioStream = load(path)
-			if s is AudioStreamOggVorbis and path.get_basename().ends_with("_loop"):
+			var s: AudioStream = load(file)
+			if loop and s is AudioStreamOggVorbis:
+				s = s.duplicate()
 				s.loop = true
 			_streams[path] = s
 	return _streams[path]

@@ -79,6 +79,9 @@ var _vent_exit := Vector3.ZERO
 var _door_wait := 0.0
 var _capsule: CollisionShape3D
 var _grav := 14.0
+var _voice_t := randf_range(3.0, 9.0)
+var _alerted_at := -100.0
+var _hurt_said := -100.0
 
 
 func _init() -> void:
@@ -154,6 +157,9 @@ func _physics_process(delta: float) -> void:
 		sense()
 	think(delta)
 	_move(delta)
+	_voice_t -= delta
+	if _voice_t <= 0.0:
+		_lurk_sound()
 
 
 ## Looks for the player. Asleep creatures only wake to noise or being hurt.
@@ -262,6 +268,7 @@ func _start_attack() -> void:
 		velocity.z = 0
 		return
 	state = State.ATTACK
+	say("attack", -2.0)
 	_attack_t = time + attack_time
 	_striking = time + strike_at
 	attack_anim()
@@ -493,11 +500,38 @@ func hear(pos: Vector3, loudness: float, from: Node) -> void:
 func alert(pos: Vector3) -> void:
 	if dead:
 		return
+	if state != State.HUNT and state != State.ATTACK and time - _alerted_at > 5.0:
+		_alerted_at = time
+		say("alert")
 	target_pos = pos
 	if state == State.ASLEEP:
 		wake()
 	state = State.HUNT
 	_replan = 0.0
+
+
+## Plays one of this kind's voice sounds ("alert", "idle", "attack",
+## "hurt"): `<kind>_<what>`, or `robot_<what>` for machines.
+func say(what: String, volume_db := 0.0) -> void:
+	if not dead and is_inside_tree():
+		Sfx.at(self, ("robot" if robot else kind) + "_" + what, global_position + Vector3(0, height * 0.8, 0), volume_db)
+
+
+## The sounds a creature makes while it waits or hunts: rare and quiet
+## asleep, now and then on its rounds, more often on your trail.
+func _lurk_sound() -> void:
+	match state:
+		State.ASLEEP:
+			_voice_t = randf_range(14.0, 30.0)
+			say("idle", -12.0)
+		State.HUNT:
+			_voice_t = randf_range(2.5, 5.0)
+			say("idle", -3.0)
+		State.ATTACK, State.HURT:
+			_voice_t = randf_range(1.0, 2.0)
+		_:
+			_voice_t = randf_range(6.0, 12.0)
+			say("idle", -7.0)
 
 
 func wake() -> void:
@@ -531,6 +565,9 @@ func take_hit(hit: Hit) -> void:
 	if health <= 0.0:
 		die(hit)
 		return
+	if time - _hurt_said > 0.7 and hit.kind != Hit.Kind.BURN:
+		_hurt_said = time
+		say("hurt", -3.0)
 	if amount >= max_health * 0.3 and state != State.ATTACK:
 		stunned = 0.35
 		state = State.HURT

@@ -52,6 +52,8 @@ var _tick := 0.0
 var _leave_confirm := 0.0
 var _down_t := -1.0
 var _fade: ColorRect
+var _hum: AudioStreamPlayer
+var _wet: AudioStreamPlayer
 var _hunted_t := 0.0
 var _music := ""
 
@@ -103,6 +105,8 @@ func _ready() -> void:
 	if not quiet:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		_play_music("calm")
+		_hum = _ambience("hum_loop", -22.0)
+		_wet = _ambience("bloom_loop", -60.0)
 
 
 func _exit_tree() -> void:
@@ -289,6 +293,7 @@ func _process(delta: float) -> void:
 			_tick -= Bloom.TICK
 			tick_bloom()
 	_update_music(delta)
+	_update_ambience(delta)
 
 
 ## Stops the deck where it is, for screenshots: no Bloom ticks, no clock,
@@ -328,6 +333,30 @@ func _unhandled_input(event: InputEvent) -> void:
 			toggle_lights(id)
 	elif hud.log_open() and (event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel")):
 		hud.close_log()
+
+
+## A sound with no place that loops under the deck: the station's hum, the
+## wet sound of the growth round you.
+func _ambience(id: String, volume_db: float) -> AudioStreamPlayer:
+	var s := Sfx.stream(id)
+	if s == null or DisplayServer.get_name() == "headless":
+		return null
+	var p := AudioStreamPlayer.new()
+	p.stream = s
+	p.volume_db = volume_db
+	p.bus = &"SFX"
+	add_child(p)
+	p.play()
+	return p
+
+
+## The growth sounds louder the thicker it is where you stand.
+func _update_ambience(delta: float) -> void:
+	if _wet == null or player == null:
+		return
+	var g := level.bloom.level_at(DeckLevel.cell_at(player.global_position))
+	var want := -60.0 if g < 0.2 else lerpf(-26.0, -8.0, clampf(g / Bloom.MAX, 0.0, 1.0))
+	_wet.volume_db = move_toward(_wet.volume_db, want, delta * 20.0)
 
 
 func _update_music(delta: float) -> void:
