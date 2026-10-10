@@ -321,12 +321,13 @@ func _test_progress_hours() -> void:
 	var h := Progress.hour()
 	Progress.finish_deck(first, {"held": true})
 	check(Progress.hour() == h, "visiting a saved deck takes no hour")
-	# Run the clock out: every other deck is lost, and the Core opens.
-	for i in 12:
-		for m in middle:
-			if Progress.deck_state(m) == "open":
-				Progress.finish_deck(m, {"held": false})
-				break
+	# Run the clock out: every other deck is lost, and the Core opens. The
+	# deck you're on never loses hours, so the last one open is held.
+	for i in 24:
+		var open: Array = middle.filter(func(m): return Progress.deck_state(m) == "open")
+		if open.is_empty():
+			break
+		Progress.finish_deck(open[0], {"held": open.size() == 1})
 	for m in middle:
 		check(Progress.deck_state(m) in ["saved", "lost"], "%s is decided in the end" % m)
 	if Decks.has("core"):
@@ -516,8 +517,12 @@ func test_deck(id: String) -> void:
 	_test_deck_balance(id)
 	await _test_deck_visit(id)
 	var path := DECK_TESTS % [id, id]
+	check(ResourceLoader.exists(path), "%s has its own tests" % id)
 	if ResourceLoader.exists(path):
-		await (load(path).new()).run(self)
+		var script: GDScript = load(path)
+		check(script != null and script.can_instantiate(), "%s's tests compile" % id)
+		if script and script.can_instantiate():
+			await script.new().run(self)
 
 
 func _test_deck_data(id: String) -> void:

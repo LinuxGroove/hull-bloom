@@ -36,7 +36,7 @@ Everyone admitted from hydroponics is confined to the quarantine ward until furt
 
 Staff entering this corridor wear full suits. Burn the suits after.
 
-Dr Helena Varga, chief medical officer. Countersigned: Deck Officer Hale."""
+Dr Helena Sorensen, chief medical officer. Countersigned: Deck Officer Hale."""
 
 const BOARD := """Admitted tonight: 14. Discharged: 0. Beds free: 0.
 
@@ -168,7 +168,7 @@ func _surgery() -> void:
 func _pharmacy() -> void:
 	prop("ess:Prop_Desk_Medium", Vector2i(5, -1), Vector3(0.3, 0, 1.2), 180.0)
 	thing("survivor", Vector2i(5, -2), Vector3(-1.6, 0, 0.2), 10.0, {"id": "medical_kaya", "name": "Elif Kaya", "job": "medic", "pose": "crouch", "female": true,
-		"line": "That's Dr Varga's card. She went to the morgue to count them again and didn't come back. I'll come with you. Take the stims. Take all of them."})
+		"line": "That's Dr Sorensen's card. She went to the morgue to count them again and didn't come back. I'll come with you. Take the stims. Take all of them."})
 	pickup("stim", Vector2i(4, -2), Vector3(-0.6, 0, -0.9), 2)
 	pickup("stim", Vector2i(5, -2), Vector3(0.6, 0, -0.9), 1)
 	pickup("medkit", Vector2i(5, -1), Vector3(-0.6, 0.94, 1.2), 1)
@@ -181,7 +181,7 @@ func _office() -> void:
 	prop("ess:Prop_Desk_Medium", Vector2i(7, -2), Vector3(0, 0, -1.3), 0.0)
 	prop("ess:Prop_Chair", Vector2i(7, -2), Vector3(0.3, 0, -0.2), 180.0)
 	thing("log", Vector2i(7, -2), Vector3(0.6, 0.94, -1.5), 0.0, {"id": "medical_cmo", "style": "screen", "title": "Patient notes: the first admissions",
-		"by": "Dr Helena Varga, chief medical officer", "text": CMO_NOTES})
+		"by": "Dr Helena Sorensen, chief medical officer", "text": CMO_NOTES})
 	prop("ess:Prop_Shelves_WideTall", Vector2i(6, -2), Vector3(-1.6, 0, 0.0), 90.0)
 	prop("ess:Prop_Locker", Vector2i(6, -1), Vector3(-1.6, 0, 0.6), 90.0)
 	prop("ess:Prop_Mug", Vector2i(7, -2), Vector3(-0.8, 0.94, -1.2), 0.0, {"solid": false})
@@ -193,7 +193,7 @@ func _isolation() -> void:
 	# The second feeder hangs in the dark, where the corridor turns.
 	spawn("feeder", Vector2i(8, -2), Vector3(0, 0, 0), 1)
 	thing("log", Vector2i(10, -3), Vector3(0, 0, -1.45), 0.0, {"id": "medical_quarantine", "style": "terminal", "title": "Quarantine order",
-		"by": "Dr Helena Varga, chief medical officer", "text": ORDER})
+		"by": "Dr Helena Sorensen, chief medical officer", "text": ORDER})
 	body(Vector2i(9, -3), Vector3(0.4, 0, 0.9), 260.0, "medic")
 	spawn("skitter", Vector2i(6, -3), Vector3(0.3, 0, 0.4), 1, {"asleep": true})
 	pickup("flare", Vector2i(5, -3), Vector3(-1.2, 0, 1.0), 2)
@@ -210,7 +210,7 @@ func _isolation() -> void:
 func _morgue() -> void:
 	# The dead from the ward, on growth that will have them up again.
 	body(Vector2i(11, -2), Vector3(-1.0, 0, 0.4), 90.0, "medic")
-	# One still on the slab, where Dr Varga left it.
+	# One still on the slab, where Dr Sorensen left it.
 	body(Vector2i(10, -2), Vector3(1.6, 0.88, 1.8), 0.0, "botanist")
 	body(Vector2i(11, -1), Vector3(-1.0, 0, 0.6), 270.0, "tech")
 	body(Vector2i(9, -2), Vector3(1.0, 0, 0.8), 180.0, "botanist")
