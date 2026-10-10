@@ -54,8 +54,8 @@ var torch: SpotLight3D
 var bloom_pause: Node
 var level: DeckLevel
 var down_reason := ""
-## Who landed the last blow (a creature's kind, "robot", "turret" or "you"),
-## for the screen when you go down.
+## Who landed the last blow (a creature's kind, "robot", "turret", "heart",
+## "spit" or "you"), for the screen when you go down.
 var last_hit_by := ""
 ## The last blow that landed (null for a Feeder's drain), for play tests and
 ## the autopilot to tell what hurt you.
@@ -238,8 +238,6 @@ func take_hit(hit: Hit) -> void:
 	last_hit_by = _blamed(hit)
 	health -= amount
 	Sfx.ui(self, "hit_player", -2.0)
-	if hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
-		add_infection(amount * 0.12)
 	if hit.knock > 0.0 and grabbed_by == null:
 		var k := hit.dir
 		k.y = 0
@@ -248,6 +246,9 @@ func take_hit(hit: Hit) -> void:
 	hurt.emit(amount, hit.dir)
 	if health <= 0.0:
 		die("killed")
+	# After the blow, so one that kills you is named for what struck it.
+	elif hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
+		add_infection(amount * 0.12)
 
 
 ## A Feeder's tendril: health out, the Bloom in.
@@ -284,8 +285,12 @@ func _blamed(hit: Hit) -> String:
 		return (hit.from as Creature).kind
 	if hit.from is Turret:
 		return "turret"
+	if hit.from is Heart:
+		return "heart"
 	if hit.by_player():
 		return "you"
+	if hit.kind == Hit.Kind.SPIT:
+		return "spit"
 	return ""
 
 

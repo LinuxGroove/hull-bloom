@@ -21,6 +21,7 @@ const DOWNED_BY := {
 	"skitter": "A skitter got you. ", "taken": "One of the Taken got you. ", "stalker": "A stalker got you. ",
 	"watcher": "A watcher got you. ", "feeder": "A Feeder got you. ", "robot": "A security robot shot you down. ",
 	"turret": "A turret caught you. ", "you": "Your own blast caught you. ",
+	"heart": "The Heart's spit got you. ", "spit": "Spit from the Bloom got you. ",
 }
 
 static var current: DeckScene
@@ -714,11 +715,15 @@ func _show_down() -> void:
 	if mode == "shift" and night:
 		night.deck_down(self)
 		return
+	var lines := _summary_lines()
+	var where := level.room_name(_room_at(player.global_position))
+	if where != "":
+		lines.push_front(["Where", where])
 	var buttons := [["Try the deck again", _retry]]
 	if mode == "campaign":
 		buttons.append(["Back to the ring", _down_to_ring])
 	buttons.append(["Back to the title", _on_quit])
-	results.show_panel("YOU'RE DOWN", why, _summary_lines(), buttons, StationTheme.RED)
+	results.show_panel("YOU'RE DOWN", why, lines, buttons, StationTheme.RED)
 
 
 func _finish() -> void:
