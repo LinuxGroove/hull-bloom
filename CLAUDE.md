@@ -16,6 +16,7 @@ godot --path . -- --shift[=seed]                                    # straight i
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --all=docs/screenshots [group=labs|menus]
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=labs [--view=name] [--hud] [--overgrown]
 python3 tools/sfx/make_sfx.py assets/audio/sfx                      # the synthesized sounds
+godot --headless --path . -s tools/story_script.gd -- --out=/tmp/story.md   # every player-facing line, in the order a player meets it
 ```
 
 Run the script check and the tests before every commit. A new `class_name` needs an `--import` before the script check finds it. Headless runs reimport assets and rewrite `*.import` files and `icon.png.import`; revert those (`git checkout -- '*.import'`, `rm icon.png.import`) unless you meant to change them. `docs/screenshots/` holds a picture of every deck and menu (software Vulkan from `mesa-vulkan-drivers`, so they look like the game's Forward+ renderer); shoot them again after changing how something looks.
@@ -43,7 +44,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 | `addons/linuxgroove/`, `addons/com.heroiclabs.nakama/` | Shared LinuxGroove add-on and the vendored Nakama client |
 | `assets/` | The crew models and animation libraries, Blender-made models (`models/`), gore decals, sounds (`audio/`) |
 | `tests/run_tests.gd` | Headless test runner; add checks with `check(ok, "what")` |
-| `tools/` | Script checker, screenshots, Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
+| `tools/` | Script checker, screenshots, the story script (`story_script.gd`), Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
 
 ## How the game is built
 
