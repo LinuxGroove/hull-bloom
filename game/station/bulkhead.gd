@@ -88,6 +88,10 @@ func _build() -> void:
 		var m := Kit.model(leaf, LEAF, Vector3.ZERO)
 		if i == 1:
 			m.rotation.y = PI
+		# The kit's leaf has only a front, so from behind it was see-through:
+		# a mirrored copy is its back.
+		var back := Kit.model(leaf, LEAF, Vector3.ZERO, m.rotation.y)
+		back.scale = Vector3(1, 1, -1)
 		leaf.add_box(Vector3(-1.05 if i == 0 else 1.05, 2.02, 0), Vector3(2.1, 4.05, 0.2))
 		leaf.add_action("interact", "Open", _use_leaf)
 		_leaves.append(leaf)
