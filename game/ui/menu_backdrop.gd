@@ -32,6 +32,8 @@ func _build(deck_id: String, grow: int) -> void:
 	camera = Camera3D.new()
 	camera.fov = 62.0
 	camera.current = true
+	# It drifts every frame, not on the physics tick.
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	add_child(camera)
 	# A suit lamp: enough light on the growth to see it's wet.
 	var lamp := SpotLight3D.new()
