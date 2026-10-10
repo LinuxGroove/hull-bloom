@@ -19,6 +19,7 @@ const ROWS := {
 	"Head bob": ["play", "bob"],
 	"View roll": ["play", "tilt"],
 	"Field of view": ["play", "fov"],
+	"Brightness": ["play", "brightness"],
 	"Calm walls": ["play", "calm_walls"],
 	"Spore blur": ["play", "spore_blur"],
 	"Rumble": ["play", "rumble"],
@@ -29,6 +30,7 @@ const ROWS := {
 	"Ammunition": ["difficulty", "ammo"],
 	"Fullscreen": ["video", "fullscreen"],
 	"Text size": ["video", "ui_scale"],
+	"3D resolution": ["video", "resolution"],
 	"Volume": ["audio", "master"],
 	"Music": ["audio", "music"],
 	"Sounds": ["audio", "sfx"],
@@ -390,7 +392,8 @@ func _s_input() -> void:
 	var clashes := []
 	for key in users:
 		var game_actions := (users[key] as Array).filter(func(x): return not String(x).begins_with("ui_"))
-		if game_actions.size() > 1:
+		# X on a pad uses what's in view, and reloads when there's nothing.
+		if game_actions.size() > 1 and game_actions != ["interact", "reload"]:
 			clashes.append("%s: %s" % [key, game_actions])
 		elif users[key].size() > 1:
 			note("%s is both %s (menus take it only while one is open)" % [key, users[key]])
@@ -688,6 +691,12 @@ func _s_pause() -> void:
 		ok(false, "the pause menu has a way to read How to play")
 	if not b.any(func(x): return x.begins_with("Quit")):
 		ok(false, "the pause menu has a way to quit the game")
+	var how := find_btn(s.pause, "How to play")
+	if how:
+		await click(how)
+		ok(s.pause._how.visible and "Next" in texts(s.pause._how), "How to play shows its pages in the pause menu")
+		await tap("ui_cancel")
+		ok(s.pause.visible and not s.pause._how.visible, "and going back returns to the pause menu")
 	var note_btn := find_btn(s.pause, "Note this moment")
 	ok(note_btn == null, "Note this moment is hidden while no play test records")
 	await tap("menu")
@@ -1038,7 +1047,7 @@ func _s_saves() -> void:
 	await leave_deck(s)
 	ring = await to_ring(s)
 	ok(Progress.deck_state("crew") == "reclaimed", "Crew is taken back")
-	ok(Progress.has_gift("survivors") == false, "a taken back deck gives no gift (survivors %s)" % Progress.has_gift("survivors"))
+	ok(Progress.has_gift("survivors"), "a taken back deck gives its gift (survivors %s)" % Progress.has_gift("survivors"))
 	note("Progress.has_gift counts only 'saved' decks, so a reclaimed deck's gift (Crew: survivors on the map) is never given")
 	# Workbench, salvage and upgrades are kept.
 	Progress._cfg.set_value("shift", "salvage", 20)
@@ -1144,9 +1153,9 @@ func _s_screens() -> void:
 	var again := find_btn(s.workbench, "Suit plating")
 	ok(again != null and again.disabled and again.text.contains("fitted"), "a fitted upgrade is greyed and says fitted")
 	var st0: Dictionary = s.player.arsenal.stat("sidearm")
-	await click(find_btn(s.workbench, "Sidearm, red"))
+	await click(find_btn(s.workbench, "Heavy sidearm"))
 	var st1: Dictionary = s.player.arsenal.stat("sidearm")
-	ok(float(st1["damage"]) > float(st0["damage"]), "Sidearm, red hits harder (%s to %s)" % [st0["damage"], st1["damage"]])
+	ok(float(st1["damage"]) > float(st0["damage"]), "Heavy sidearm hits harder (%s to %s)" % [st0["damage"], st1["damage"]])
 	var cool0: Dictionary = s.player.arsenal.stat("cutter")
 	await click(find_btn(s.workbench, "Cutter heat sink"))
 	ok(float(s.player.arsenal.stat("cutter")["heat"]) < float(cool0["heat"]), "Cutter heat sink cools the cutter")

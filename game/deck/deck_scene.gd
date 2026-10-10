@@ -224,6 +224,7 @@ func _build_ui() -> void:
 	pause.set_leave_text("Leave the deck" if mode != "shift" else "End the night")
 	pause.leave_deck.connect(_on_leave_from_menu)
 	pause.quit_to_title.connect(_on_quit)
+	pause.quit_game.connect(_on_quit_game)
 	ui.add_child(pause)
 	results = ResultsPanel.new()
 	ui.add_child(results)
@@ -679,12 +680,16 @@ func _on_leave_from_menu() -> void:
 func leave() -> void:
 	if run.over:
 		return
+	_board_survivors()
+	run.left = true
+	_finish()
+
+
+func _board_survivors() -> void:
 	for s in get_tree().get_nodes_in_group("survivors"):
 		var sv := s as Survivor
 		if sv.is_found and (sv.at_lift or sv.global_position.distance_to(DeckLevel.center(level.lift_cell)) < 7.0):
 			run.saved(sv.survivor_id)
-	run.left = true
-	_finish()
 
 
 func _on_player_died() -> void:
@@ -790,9 +795,26 @@ func _to_ending() -> void:
 
 
 func _on_quit() -> void:
+	_keep_held()
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	LGScenes.change_scene(TITLE)
+
+
+func _on_quit_game() -> void:
+	_keep_held()
+	LGScenes.quit()
+
+
+## A held deck stays held when you go straight to the title or quit; any
+## other visit is left as if it never happened.
+func _keep_held() -> void:
+	if mode == "campaign" and run.held and not run.over and not hub:
+		_board_survivors()
+		run.left = true
+		run.over = true
+		Progress.finish_deck(deck.id, run.result(player.kit()))
+		LGPlaytest.event("deck_done", {"deck": deck.id, "held": true, "time": roundi(run.time), "by": "menu"})
 
 
 ## The name of the room at a spot, for play test events.
