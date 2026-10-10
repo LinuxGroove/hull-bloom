@@ -16,6 +16,12 @@ const TITLE := "res://game/ui/title.tscn"
 const TICKS_PER_HOUR := 10
 ## Seconds of the Bloom's growth during a visit before it's quiet.
 const LEAVE_CONFIRM := 4.0
+## What got you, for the screen when you go down (see [member Tech.last_hit_by]).
+const DOWNED_BY := {
+	"skitter": "A skitter got you. ", "taken": "One of the Taken got you. ", "stalker": "A stalker got you. ",
+	"watcher": "A watcher got you. ", "feeder": "A Feeder got you. ", "robot": "A security robot shot you down. ",
+	"turret": "A turret caught you. ", "you": "Your own blast caught you. ",
+}
 
 static var current: DeckScene
 
@@ -652,7 +658,7 @@ func leave() -> void:
 func _on_player_died() -> void:
 	if run.over:
 		return
-	LGPlaytest.moment("died", {"how": player.down_reason, "room": _room_at(player.global_position),
+	LGPlaytest.moment("died", {"how": player.down_reason, "by": player.last_hit_by, "room": _room_at(player.global_position),
 		"time": roundi(run.time), "health_packs": player.items.get("medkit", 0)})
 	run.downs += 1
 	run.over = true
@@ -667,7 +673,7 @@ func _show_down() -> void:
 		"drained":
 			why = "A Feeder drained you dry."
 		"killed":
-			why = "Your suit gave out."
+			why = String(DOWNED_BY.get(player.last_hit_by, "")) + "Your suit gave out."
 	if mode == "shift" and night:
 		night.deck_down(self)
 		return

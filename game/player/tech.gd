@@ -54,6 +54,9 @@ var torch: SpotLight3D
 var bloom_pause: Node
 var level: DeckLevel
 var down_reason := ""
+## Who landed the last blow (a creature's kind, "robot", "turret" or "you"),
+## for the screen when you go down.
+var last_hit_by := ""
 
 var _shove_t := 0.0
 var _heal_left := 0.0
@@ -225,6 +228,7 @@ func take_hit(hit: Hit) -> void:
 	if health >= max_health * 0.25 and health - amount < max_health * 0.25 and health - amount > 0.0:
 		LGPlaytest.event("low_health", {"health": roundi(health - amount), "hit_by": Hit.Kind.keys()[hit.kind].to_lower()})
 	_remind_medkit(health, health - amount)
+	last_hit_by = _blamed(hit)
 	health -= amount
 	Sfx.ui(self, "hit_player", -2.0)
 	if hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
@@ -262,6 +266,18 @@ func add_infection(amount: float) -> void:
 		die("taken")
 	elif before < HIGH_INFECTION and infection >= HIGH_INFECTION and items["stim"] > 0:
 		_toast("The Bloom's in your blood: %s for a stim" % LGInput.label_for_action("stim"))
+
+
+func _blamed(hit: Hit) -> String:
+	if hit.from is Robot:
+		return "robot"
+	if hit.from is Creature:
+		return (hit.from as Creature).kind
+	if hit.from is Turret:
+		return "turret"
+	if hit.by_player():
+		return "you"
+	return ""
 
 
 ## When the suit drops low with a medkit in your pocket, says how to use it.

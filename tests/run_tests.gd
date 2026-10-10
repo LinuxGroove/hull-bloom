@@ -587,8 +587,11 @@ func _test_combat() -> void:
 	s.player.items["medkit"] = 1
 	s.player.take_hit(Hit.make(Hit.Kind.BULLET, s.player.health - s.player.max_health * 0.3, s.player.global_position, forward))
 	check(Array(s.hud.toast_lines()).any(_is_medkit_reminder), "a low suit reminds you of your medkit")
-	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward))
+	var sk2 := s.director.spawn("skitter", at, false)
+	await physics(2)
+	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward, sk2))
 	check(s.player.is_dead, "too much and you're down")
+	check(s.player.last_hit_by == "skitter" and DeckScene.DOWNED_BY.has("skitter"), "and you're told what got you")
 	await frames(2)
 	await close_deck(s)
 
