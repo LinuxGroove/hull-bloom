@@ -11,11 +11,14 @@ godot --headless --path . tests/run_tests.tscn                      # everything
 godot --headless --path . tests/run_tests.tscn -- --core            # the Bloom, power, weapons, creatures, menus, Shift mode
 godot --headless --path . tests/run_tests.tscn -- --deck=labs       # one deck's tests (CI runs each deck side by side)
 godot --headless --path . tests/run_tests.tscn -- --only=_test_combat   # one test of run_tests.gd
+godot --headless --path . tools/function_sweep.tscn [-- --only=pause,saves]   # clicks and keys through the title, settings, pause menu, saves, ring map, workbench, Shift and offline play (set XDG_DATA_HOME to a scratch folder: it writes real settings and progress)
 godot --path . -- --deck=hydroponics [--campaign]                   # straight onto a deck
 godot --path . -- --shift[=seed]                                    # straight into a Shift night
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --all=docs/screenshots [group=labs|menus]
-VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=labs [--view=name] [--hud] [--overgrown]
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=labs [--view=name] [--hud] [--overgrown] [--burnt]
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --resolution 1920x1080 tools/function_shots.tscn -- --out=/tmp/shots [--scale3d=0.5] [--settle=10]   # the title, ring map, HUD, pause menu and deck map at a window size
 python3 tools/sfx/make_sfx.py assets/audio/sfx                      # the synthesized sounds
+godot --headless --path . -s tools/story_script.gd -- --out=/tmp/story.md   # every player-facing line, in the order a player meets it
 ```
 
 Run the script check and the tests before every commit. A new `class_name` needs an `--import` before the script check finds it. Headless runs reimport assets and rewrite `*.import` files and `icon.png.import`; revert those (`git checkout -- '*.import'`, `rm icon.png.import`) unless you meant to change them. `docs/screenshots/` holds a picture of every deck and menu (software Vulkan from `mesa-vulkan-drivers`, so they look like the game's Forward+ renderer); shoot them again after changing how something looks.
@@ -43,7 +46,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 | `addons/linuxgroove/`, `addons/com.heroiclabs.nakama/` | Shared LinuxGroove add-on and the vendored Nakama client |
 | `assets/` | The crew models and animation libraries, Blender-made models (`models/`), gore decals, sounds (`audio/`) |
 | `tests/run_tests.gd` | Headless test runner; add checks with `check(ok, "what")` |
-| `tools/` | Script checker, screenshots, Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
+| `tools/` | Script checker, screenshots, the story script (`story_script.gd`), Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
 
 ## How the game is built
 
@@ -54,6 +57,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 - **Gore** respects the Gore setting (`Full`, `Less`, `Off`) everywhere through `Gore.shown()` and `Gore.full()`; the setting can be locked with a code. With gore off there's no blood, no gibs and no dismemberment.
 - **Comfort.** Head bob and view roll are off by default, with physics interpolation; Calm walls slows or stops the growth's breathing and Spore blur can be turned off. Never add camera shake that can't be turned off.
 - **Shift mode** opens after the first ending. A night is three decks built by `ShiftLevel` from a seed; tonight's station (the date as its seed) submits its score to the `shift_daily` and `shift_best` boards with `core.score_submit`, which the game server declares in `modules/src/games/hull-bloom.ts`.
+- **Play tests.** The shared add-on's `LGPlaytest` records a play test when the Play test recording setting is on (or with `-- --playtest`): a picture every few seconds, game events, frame times and controls, the player's notes (F8, or Note this moment in the pause menu) and a survey when they quit, all in one zip in `user://playtest/`. Game events go through `LGPlaytest.event()` and `moment()`; the round's own survey questions are `GameConfig.PLAYTEST`. Quit through `LGScenes.quit()` so the survey comes first.
 - **Everything works offline.** No server or network is needed; the boards are only tried when online play is on.
 - **Launch ping.** `game/main.gd` calls `LGLaunchPing.send(GameConfig.GAME_ID)` at startup: one anonymous request to the game server's `/launch` (game, random install id, version, OS, CPU) so the server counts every player. It's skipped headless, from source and with `DO_NOT_TRACK` set, and never blocks or retries.
 

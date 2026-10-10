@@ -16,6 +16,12 @@ const TITLE := "res://game/ui/title.tscn"
 const TICKS_PER_HOUR := 10
 ## Seconds of the Bloom's growth during a visit before it's quiet.
 const LEAVE_CONFIRM := 4.0
+## What got you, for the screen when you go down (see [member Tech.last_hit_by]).
+const DOWNED_BY := {
+	"skitter": "A skitter got you. ", "taken": "One of the Taken got you. ", "stalker": "A stalker got you. ",
+	"watcher": "A watcher got you. ", "feeder": "A Feeder got you. ", "robot": "A security robot shot you down. ",
+	"turret": "A turret caught you. ", "you": "Your own blast caught you. ",
+}
 
 static var current: DeckScene
 
@@ -56,6 +62,8 @@ var _hum: AudioStreamPlayer
 var _wet: AudioStreamPlayer
 var _hunted_t := 0.0
 var _music := ""
+var _lights_taught := false
+var _room_check := 0.0
 
 
 ## Starts a deck: Progress decides whether it's a hub or overgrown.
@@ -99,14 +107,17 @@ func _ready() -> void:
 			if not level.rooms[id]["dark"]:
 				_set_lights(id, true)
 		lift.set_powered(true)
-		hud.say("MARI", "Deck %d is safe. The workbench and the bunk are working." % deck.number)
+		hud.say("MARI", "%s is safe. The workbench and the bunk are working." % deck.name)
 	elif deck.arrive != "":
-		hud.say("MARI", deck.arrive if not overgrown else "Deck %d is overgrown. Organic obstruction everywhere. I'm sorry." % deck.number)
+		hud.say("MARI", deck.arrive if not overgrown else "%s is overgrown. Organic obstruction everywhere. I'm sorry." % deck.name)
 	if not quiet:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		_play_music("calm")
 		_hum = _ambience("hum_loop", -22.0)
 		_wet = _ambience("bloom_loop", -60.0)
+	LGPlaytest.follow(player)
+	LGPlaytest.event("deck_start", {"deck": deck.id, "mode": mode, "hub": hub, "overgrown": overgrown,
+		"roots": run.roots, "difficulty": LGSettings.get_value("difficulty", "spread", 1.0)})
 
 
 func _exit_tree() -> void:
@@ -141,9 +152,8 @@ static func make_environment(bright := false) -> Environment:
 	env.sky = space_sky()
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.32, 0.36, 0.44)
-	env.ambient_light_energy = 0.45 if bright else 0.12
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 0.95
+	light(env, bright)
 	env.glow_enabled = true
 	env.glow_intensity = 0.55
 	env.glow_bloom = 0.04
@@ -154,6 +164,14 @@ static func make_environment(bright := false) -> Environment:
 	env.fog_light_color = Color(0.05, 0.035, 0.04)
 	env.fog_density = 0.018
 	return env
+
+
+## Sets how bright the station's dark is, from the Brightness setting: the
+## light that's everywhere, and the exposure.
+static func light(env: Environment, bright := false) -> void:
+	var b := float(LGSettings.get_value("play", "brightness", 1.0))
+	env.ambient_light_energy = (0.45 if bright else 0.12) * b * b
+	env.tonemap_exposure = 0.95 * b
 
 
 func _build_level() -> void:
@@ -206,6 +224,7 @@ func _build_ui() -> void:
 	pause.set_leave_text("Leave the deck" if mode != "shift" else "End the night")
 	pause.leave_deck.connect(_on_leave_from_menu)
 	pause.quit_to_title.connect(_on_quit)
+	pause.quit_game.connect(_on_quit_game)
 	ui.add_child(pause)
 	results = ResultsPanel.new()
 	ui.add_child(results)
@@ -294,6 +313,26 @@ func _process(delta: float) -> void:
 			tick_bloom()
 	_update_music(delta)
 	_update_ambience(delta)
+	_room_check -= delta
+	if _room_check <= 0.0:
+		_room_check = 0.5
+		teach_lights()
+
+
+## Until you've switched a room's lights on once, MARI tells you how in the
+## first dark room you walk into with a cell to spare (one for the lift).
+## Returns whether she did.
+func teach_lights() -> bool:
+	if _lights_taught or hub or bool(LGSettings.get_value("tutorial", "lights", false)):
+		return false
+	var id := _room_at(player.global_position)
+	if id == "" or level.rooms[id]["dark"] or power.has("lights:" + id) or hud.subtitle_text() != "":
+		return false
+	if power.free_cells() < (1 if power.has("lift") else 2):
+		return false
+	_lights_taught = true
+	hud.say("MARI", "This room is unlit. Lit rooms report slower obstruction. %s lights it for one power cell, and %s shows every room." % [LGInput.label_for_action("power_lights"), LGInput.label_for_action("power_map")])
+	return true
 
 
 ## Stops the deck where it is, for screenshots: no Bloom ticks, no clock,
@@ -446,12 +485,16 @@ func toggle_lights(id: String) -> bool:
 	if power.has(key):
 		power.give(key)
 		_set_lights(id, false)
+		LGPlaytest.event("lights", {"room": id, "on": false})
 		return false
 	if not power.take(key):
 		hud.toast("No free power cell", StationTheme.RED)
 		Sfx.ui(self, "door_denied", -6.0)
+		LGPlaytest.event("no_power", {"for": key})
 		return false
 	_set_lights(id, true)
+	LGSettings.set_value("tutorial", "lights", true, not quiet)
+	LGPlaytest.event("lights", {"room": id, "on": true})
 	return true
 
 
@@ -475,6 +518,7 @@ func add_cell() -> void:
 #region Things that happen
 
 func _on_held() -> void:
+	LGPlaytest.moment("deck_held", {"deck": deck.id, "time": roundi(run.time)})
 	hud.banner("DECK HELD", StationTheme.TEAL, 4.0)
 	hud.say("MARI", deck.held if deck.held != "" else "Organic obstruction cleared. Deck %d is holding." % deck.number)
 	if not quiet:
@@ -484,13 +528,17 @@ func _on_held() -> void:
 
 func _on_heart_killed(_h: Heart) -> void:
 	run.cut_root()
-	hud.banner("ROOT CUT", StationTheme.AMBER, 3.0)
+	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
+	hud.banner(deck.cut_banner if deck.cut_banner != "" else "ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
-		hud.say("MARI", "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
+		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
 
 
-func _on_creature_died(_c: Creature) -> void:
+func _on_creature_died(c: Creature) -> void:
 	run.kills += 1
+	if c is Taken and (c as Taken).badge != "":
+		hud.say("MARI", "%s's badge has stopped reading." % (c as Taken).badge)
+	LGPlaytest.event("killed", {"kind": c.kind, "room": _room_at(c.global_position)})
 
 
 ## The cutter burnt a tile: pods there may wither.
@@ -504,7 +552,7 @@ func on_burn(cell: Vector2i, amount: float) -> void:
 
 
 func on_scream(_w: Node) -> void:
-	hud.toast("A Watcher screamed. The pods are waking", StationTheme.RED)
+	hud.toast("A watcher screamed. The pods are waking", StationTheme.RED)
 
 
 func add_salvage(n: int) -> void:
@@ -525,6 +573,7 @@ func say(person: String, line: String, voice := "") -> void:
 
 
 func _on_log_read(log: LogTerminal) -> void:
+	LGPlaytest.event("log_read", {"log": log.log_id, "again": log.log_id in run.logs})
 	run.read(log.log_id)
 	Progress.read_log(log.log_id)
 	log.set_read(true)
@@ -532,6 +581,7 @@ func _on_log_read(log: LogTerminal) -> void:
 
 
 func _on_survivor_found(s: Survivor) -> void:
+	LGPlaytest.event("survivor_found", {"survivor": s.survivor_id})
 	run.found(s.survivor_id)
 	hud.toast("%s is heading for the lift" % s.person, StationTheme.TEAL)
 
@@ -547,6 +597,7 @@ func _on_vent_asked(panel: VentPanel) -> void:
 ## Opens a room to space: its growth, its pods and everything in it are
 ## gone, and its doors stay shut for good.
 func vent_room(id: String) -> void:
+	LGPlaytest.event("vented", {"room": id})
 	level.bloom.vent_room(id)
 	if power.has("lights:" + id):
 		power.give("lights:" + id)
@@ -594,6 +645,7 @@ func _on_hub_opened(st: HubStation) -> void:
 
 
 func _on_upgrade(u: String) -> void:
+	LGPlaytest.event("upgrade", {"what": u})
 	if u == "suit":
 		player.max_health = Tech.MAX_HEALTH + Tech.SUIT_BONUS
 		player.heal(Tech.SUIT_BONUS)
@@ -628,17 +680,23 @@ func _on_leave_from_menu() -> void:
 func leave() -> void:
 	if run.over:
 		return
+	_board_survivors()
+	run.left = true
+	_finish()
+
+
+func _board_survivors() -> void:
 	for s in get_tree().get_nodes_in_group("survivors"):
 		var sv := s as Survivor
 		if sv.is_found and (sv.at_lift or sv.global_position.distance_to(DeckLevel.center(level.lift_cell)) < 7.0):
 			run.saved(sv.survivor_id)
-	run.left = true
-	_finish()
 
 
 func _on_player_died() -> void:
 	if run.over:
 		return
+	LGPlaytest.moment("died", {"how": player.down_reason, "by": player.last_hit_by, "room": _room_at(player.global_position),
+		"time": roundi(run.time), "health_packs": player.items.get("medkit", 0)})
 	run.downs += 1
 	run.over = true
 	var t := create_tween()
@@ -650,9 +708,9 @@ func _show_down() -> void:
 	var why := "The Bloom took you."
 	match player.down_reason:
 		"drained":
-			why = "A Feeder drained you dry."
+			why = "A feeder drained you dry."
 		"killed":
-			why = "Your suit gave out."
+			why = String(DOWNED_BY.get(player.last_hit_by, "")) + "Your suit gave out."
 	if mode == "shift" and night:
 		night.deck_down(self)
 		return
@@ -666,6 +724,9 @@ func _show_down() -> void:
 func _finish() -> void:
 	run.over = true
 	player.is_movement_paused = true
+	LGPlaytest.event("deck_done", {"deck": deck.id, "held": run.held, "time": roundi(run.time),
+		"roots_cut": run.roots_cut, "survivors": run.survivors_saved.size(), "kills": run.kills,
+		"salvage": run.salvage, "logs": run.logs.size(), "ammo": _ammo_left()})
 	if mode == "shift" and night:
 		night.deck_done(self)
 		return
@@ -673,6 +734,7 @@ func _finish() -> void:
 	var out := {}
 	if mode == "campaign":
 		out = Progress.finish_deck(deck.id, run.result(player.kit()))
+		LGPlaytest.event("ring", {"lost": out.get("lost", []), "opened": out.get("opened", []), "decks": _deck_states()})
 		for id in out.get("lost", []):
 			lines.append(["Lost to the Bloom", Decks.get_deck(id).name])
 		for id in out.get("opened", []):
@@ -708,6 +770,7 @@ func _summary_lines() -> Array:
 
 
 func _retry() -> void:
+	LGPlaytest.event("retry", {"deck": deck.id})
 	get_tree().paused = false
 	if mode == "test" or mode == "campaign":
 		DeckScene.play(deck.id, {"mode": mode})
@@ -732,8 +795,48 @@ func _to_ending() -> void:
 
 
 func _on_quit() -> void:
+	_keep_held()
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	LGScenes.change_scene(TITLE)
+
+
+func _on_quit_game() -> void:
+	_keep_held()
+	LGScenes.quit()
+
+
+## A held deck stays held when you go straight to the title or quit; any
+## other visit is left as if it never happened.
+func _keep_held() -> void:
+	if mode == "campaign" and run.held and not run.over and not hub:
+		_board_survivors()
+		run.left = true
+		run.over = true
+		Progress.finish_deck(deck.id, run.result(player.kit()))
+		LGPlaytest.event("deck_done", {"deck": deck.id, "held": true, "time": roundi(run.time), "by": "menu"})
+
+
+## The name of the room at a spot, for play test events.
+func _room_at(at: Vector3) -> String:
+	return str(level.tiles.get(DeckLevel.cell_at(at), ""))
+
+
+## Rounds left for each gun, for play test events.
+func _ammo_left() -> Dictionary:
+	var a: Arsenal = player.arsenal
+	var out := {}
+	for w in a.owned:
+		if w != "cutter":
+			out[w] = int(a.mag.get(w, 0)) + int(a.reserve.get(w, 0))
+	return out
+
+
+## Each deck's state and hours left, for play test events.
+static func _deck_states() -> Dictionary:
+	var out := {}
+	for id in Decks.ORDER:
+		out[id] = [Progress.deck_state(id), Progress.hours_left(id)]
+	return out
 
 #endregion

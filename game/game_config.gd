@@ -4,6 +4,17 @@ extends RefCounted
 
 const GAME_ID := "hull-bloom"
 
+## This round's own questions at the end of a play test (LGPlaytest), on top
+## of the standard ones. Change them for each round of play testing.
+const PLAYTEST := {
+	"questions": [
+		{"id": "first_minutes", "text": "How did your first few minutes on Hydroponics feel?", "kind": "text"},
+		{"id": "tense", "text": "How tense or scary was it?", "kind": "rating"},
+		{"id": "bloom_clear", "text": "How easy was it to tell where the Bloom was spreading and what slowed it?", "kind": "rating"},
+		{"id": "lost_deck", "text": "If you lost a deck to the Bloom, did you want to go back for it? Why?", "kind": "text"},
+	],
+}
+
 const SETTING_DEFAULTS := {
 	"online": {
 		"enabled": true,
@@ -14,6 +25,9 @@ const SETTING_DEFAULTS := {
 	},
 	"tutorial": {
 		"welcomed": false,
+		# Set once you've switched a room's lights on; until then MARI tells
+		# you how in the first dark room you walk into.
+		"lights": false,
 	},
 	"player": {
 		# The name on the online boards ("" for "Night tech").
@@ -29,6 +43,9 @@ const SETTING_DEFAULTS := {
 		"bob": 0.0,
 		"tilt": false,
 		"fov": 75.0,
+		# How bright the dark is: 1 as the station was built, more to see
+		# further on a dim screen.
+		"brightness": 1.0,
 		# How much the walls breathe: 1 normal, 0.4 slow, 0 still.
 		"calm_walls": 1.0,
 		# Spore bursts blur the view for a moment.
@@ -73,7 +90,8 @@ const ACTIONS := {
 	# Fire (the cutter: burn) and aim (the cutter: a focused beam for limbs).
 	"action_primary": ["mouse:left", "axis:rt+"],
 	"action_secondary": ["mouse:right", "axis:lt+"],
-	"reload": ["key:R"],
+	# On a pad, X reloads when there's nothing in view to use.
+	"reload": ["key:R", "joy:x"],
 	# Swap weapon; hold for the wheel. The wheel and the number keys pick one.
 	"swap": ["key:Q", "mouse:wheel_down", "joy:rb"],
 	"swap_back": ["mouse:wheel_up"],

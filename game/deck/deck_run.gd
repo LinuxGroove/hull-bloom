@@ -66,7 +66,8 @@ func check_held(bloom: Bloom) -> bool:
 func objectives(bloom: Bloom) -> Array:
 	var out := []
 	if roots > 0:
-		out.append([("Cut out the root" if roots == 1 else "Cut out the roots (%d of %d)" % [roots_cut, roots]), roots_cut >= roots])
+		var root := deck.root_name if deck and deck.root_name != "" else "the root"
+		out.append([("Cut out " + root if roots == 1 else "Cut out the roots (%d of %d)" % [roots_cut, roots]), roots_cut >= roots])
 	if roots_cut >= roots and not held and bloom:
 		var left_tiles := 0
 		for g in bloom.growth:

@@ -16,7 +16,7 @@ const Plant := preload("res://game/decks/engineering/engineering_plant.gd")
 
 const SHEDDING := """Order 1, 22:05. The growth in Hydroponics follows the nutrient heaters. Cutting Hydroponics to emergency power. If it lives on our heat, it starves.
 
-Order 2, 23:40. Hydroponics is dark and it grew faster. Okafor says it doesn't want heat, it wants the dark. Restoring Hydroponics. MARI says she can't: organic obstruction in the junctions.
+Order 2, 23:40. Hydroponics is dark and it grew faster. Okafor told me before she went down to the Core: it doesn't want heat, it wants the dark. Restoring Hydroponics. MARI says she can't: organic obstruction in the junctions.
 
 Order 3, 01:15. It's in the ducts over the reactor now. Shedding Crew quarters, Medical and Labs to keep the core cool. I know what dark does to them now. The plant comes first, or there's no station to come back to.
 

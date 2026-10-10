@@ -127,6 +127,8 @@ void fragment() {
 	// A few swollen nodules glow from inside, slowly.
 	float pulse = 0.75 + 0.25 * sin(TIME * 1.1 + hb_noise(wpos * 0.5) * 6.0) * calm_walls;
 	float node = smoothstep(0.9, 0.97, hb_noise(wpos * 3.2 + 11.0)) * smoothstep(0.5, 0.95, t);
+	// Embers in thin cracks through the char, drifting slowly as it cools.
+	float crack = smoothstep(0.9, 0.98, hb_ridge(wpos * 5.0)) * smoothstep(0.4, 0.8, hb_noise(wpos * 2.0 + vec3(0.0, TIME * 0.4, 0.0)));
 	EMISSION = glow_color * node * 0.6 * glow * pulse * (1.0 - char_amt)
-		+ vec3(1.0, 0.35, 0.05) * char_amt * scorch * 0.6 * smoothstep(0.6, 0.9, hb_noise(wpos * 9.0 + TIME));
+		+ vec3(1.0, 0.32, 0.05) * char_amt * scorch * 0.35 * crack;
 }

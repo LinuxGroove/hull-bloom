@@ -15,6 +15,8 @@ var job := "tech"
 ## The crew member's looks (a body getting up keeps its own).
 var female := randf() < 0.45
 var look_seed := randi()
+## Whose badge it still wears, when MARI knows them ("Dr Okafor").
+var badge := ""
 var crew: Crew
 ## Tiles it walks between when nothing's happening, from its old job.
 var routine: Array = []

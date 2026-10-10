@@ -45,7 +45,8 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat"]:
+				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat",
+				"_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -378,6 +379,17 @@ func _test_settings_panel() -> void:
 		check(h in labels, "the settings have a %s group" % h.to_lower())
 	check(float(LGSettings.get_value("play", "bob")) == 0.0, "head bob is off by default")
 	check(not bool(LGSettings.get_value("play", "tilt")), "view roll is off by default")
+	# Brightness lifts the dark.
+	var dim := DeckScene.make_environment(false)
+	LGSettings.set_value("play", "brightness", 1.5, false)
+	var lifted := DeckScene.make_environment(false)
+	LGSettings.set_value("play", "brightness", 1.0, false)
+	check(lifted.ambient_light_energy > dim.ambient_light_energy and lifted.tonemap_exposure > dim.tonemap_exposure, "brightness lifts the dark")
+	# 3D resolution: Auto stays between half and all of the screen.
+	check(LGSettings.resolution_scale() >= 0.5 and LGSettings.resolution_scale() <= 1.0, "auto 3D resolution is half to all of the screen")
+	LGSettings.set_value("video", "resolution", 0.67, false)
+	check(is_equal_approx(LGSettings.resolution_scale(), 0.67), "a chosen 3D resolution is kept")
+	LGSettings.set_value("video", "resolution", 0.0, false)
 	ps.queue_free()
 	await frames(1)
 
@@ -387,6 +399,115 @@ func _test_launch_ping() -> void:
 	check(main.source_code.contains("LGLaunchPing.send(GameConfig.GAME_ID)"), "main sends the launch ping")
 	check(GameConfig.GAME_ID == "hull-bloom", "the game id is hull-bloom")
 	check(OnlineServer.SERVER_KEY == "defaultkey", "the server key in git is the default")
+
+#endregion
+
+#region Play testing
+
+## The play test recorder: game events, a note, a death on a deck, the
+## survey, the zip, and a session a crash cut short.
+func _test_playtest() -> void:
+	var dir := "user://test_playtest"
+	LGPlaytestPack._remove(dir)
+	var main := load("res://game/main.gd") as GDScript
+	check(main.source_code.contains("LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)"), "main sets up play test recording")
+	check((load("res://game/ui/title.gd") as GDScript).source_code.contains("LGScenes.quit()"), "quitting from the title ends a play test first")
+	var p := LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)
+	p.dir = dir
+	await frames(2)
+	check(p.is_inside_tree() and LGPlaytest.current() == p, "the recorder joins the tree")
+	check(not LGPlaytest.recording(), "nothing is recorded until asked")
+	var button := LGPlaytestButton.make()
+	add_child(button)
+	check(not button.visible, "Note this moment is hidden with no play test")
+	p.begin()
+	check(LGPlaytest.recording() and button.visible, "a play test records, and pause menus can note moments")
+	button.queue_free()
+	var panel := SettingsPanel.new()
+	add_child(panel)
+	await frames(1)
+	var row := false
+	for c in panel.get_children():
+		row = row or (c is LGCycler and (c as LGCycler).label_text == "Play test recording")
+	check(row, "the settings have a Play test recording row")
+	panel.queue_free()
+	LGPlaytest.event("test", {"at": Vector3(1, 2, 3)})
+	p.open_note()
+	await frames(1)
+	var note: LGPlaytestNote = p.find_children("*", "LGPlaytestNote", true, false).front()
+	check(note != null and get_tree().paused, "F8 asks what's happening, and pauses a game nobody else is in")
+	note.note.text = "  the vent hissed  "
+	note.pick("fun")
+	await frames(1)
+	check(not get_tree().paused, "the game carries on after the note")
+	var s := await open_deck("hydroponics")
+	s.player.die("killed")
+	await frames(3)
+	await close_deck(s)
+	p._next_perf = 0.0
+	await frames(2)
+	p.finish("quit")
+	await frames(1)
+	var survey: LGPlaytestSurvey = p.find_children("*", "LGPlaytestSurvey", true, false).front()
+	check(survey != null, "finishing asks the survey")
+	for q in ["fun", "story", "tense", "first_minutes", "best", "name"]:
+		check(q in survey.questions(), "the survey asks " + q)
+	survey.set_answer("fun", 4)
+	survey.set_answer("best", "Burning the first Heart")
+	survey.set_answer("genre", "often")
+	survey.submit()
+	await frames(2)
+	var card: LGPlaytestCard = p.find_children("*", "LGPlaytestCard", true, false).front()
+	check(card != null and "Quit" in card.button_texts(), "then says where the play test went")
+	check(not LGPlaytest.recording(), "and stops recording")
+	card.close("done")
+	await frames(2)
+	check(not get_tree().paused, "the game isn't left paused")
+	var zips := Array(DirAccess.get_files_at(dir)).filter(func(f): return f.ends_with(".zip"))
+	check(zips.size() == 1 and zips[0].begins_with("hull-bloom-playtest-"), "one zip, named for the game")
+	var r := ZIPReader.new()
+	r.open(dir.path_join(zips[0]))
+	var files := r.get_files()
+	for f in ["session.json", "events.jsonl", "survey.json"]:
+		check(f in files, "the zip holds " + f)
+	var info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
+	check(info.get("game") == "hull-bloom" and info.get("ended_how") == "quit" and int(info.get("marks", 0)) == 1, "session.json says what was played and how it ended")
+	check(info.has("settings") and not info["settings"].get("online", {}).has("server_key"), "the server key never goes in a recording")
+	var types := []
+	var mark := {}
+	var died := {}
+	for line in r.read_file("events.jsonl").get_string_from_utf8().split("\n", false):
+		var e: Dictionary = JSON.parse_string(line)
+		types.append(e["type"])
+		if e["type"] == "mark":
+			mark = e
+		elif e["type"] == "died":
+			died = e
+	for t in ["start", "test", "mark", "deck_start", "died", "perf", "survey", "end"]:
+		check(t in types, "the events hold " + t)
+	check(mark.get("tag") == "fun" and mark.get("note") == "the vent hissed", "a note keeps its tag and words")
+	var answers: Dictionary = JSON.parse_string(r.read_file("survey.json").get_string_from_utf8())
+	check(answers.get("fun") == 4.0 and answers.get("best") == "Burning the first Heart" and answers.get("genre") == "often" and not answers.has("story"),
+		"the survey keeps only what was answered")
+	check(died.get("moment") == true, "a moment is marked as one in the events")
+	var asked: Dictionary = answers.get("questions", {})
+	check(asked.get("fun") == LGPlaytestSurvey.RATINGS[0][1] and asked.has("story") and asked.has("tense"),
+		"the survey keeps the wording of every question asked")
+	r.close()
+	# A session the game never ended: packed the next time it starts.
+	var cut := dir.path_join("2026-01-01-000000")
+	DirAccess.make_dir_recursive_absolute(cut)
+	LGPlaytestPack.write_json(cut.path_join("session.json"), {"game": "hull-bloom"})
+	FileAccess.open(cut.path_join("events.jsonl"), FileAccess.WRITE).store_line("{}")
+	var recovered := LGPlaytestPack.recover(dir)
+	check(recovered.size() == 1 and not DirAccess.dir_exists_absolute(cut), "a session a crash cut short is packed")
+	r.open(recovered[0])
+	var cut_info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
+	check(cut_info.get("ended_how") == "suddenly", "and marked as ended suddenly")
+	r.close()
+	p.queue_free()
+	await frames(1)
+	LGPlaytestPack._remove(dir)
 
 #endregion
 
@@ -417,10 +538,19 @@ func _test_deck_scene() -> void:
 	check(s.player != null and s.player.is_inside_tree(), "the tech is on the deck")
 	check(s.power.free_cells() == s.deck.cells, "every cell starts free")
 	check(not s.run.held, "the deck isn't held at the start")
+	# Until you've used the lights, MARI says how in the first dark room.
+	LGSettings.set_value("tutorial", "lights", false, false)
+	s.hud.hush()
+	await put_player(s, Vector2i(0, 0))
+	check(s.teach_lights(), "MARI teaches the lights in a dark room")
+	check(s.hud.subtitle_text().contains(LGInput.label_for_action("power_lights")), "naming the button")
+	s.hud.hush()
+	check(not s.teach_lights(), "once")
 	# Lights: a cell each, and the growth slows there.
 	var room: String = s.level.room_ids[0]
 	check(s.toggle_lights(room), "lights take a cell")
 	check(s.power.has("lights:" + room), "the room has power")
+	check(bool(LGSettings.get_value("tutorial", "lights")), "and the lesson is learnt")
 	s.toggle_lights(room)
 	check(not s.power.has("lights:" + room), "and give it back")
 	# The lift wants a cell before it goes.
@@ -465,15 +595,29 @@ func _test_combat() -> void:
 	var hot := ars.heat
 	await frames(60)
 	check(ars.heat < hot, "and cools")
+	# A health tube with the suit whole stays put, and says why.
+	check(not s.player.take_pickup("health", 1), "a whole suit leaves a health tube")
+	check("Suit's whole. Leave it for later" in s.hud.toast_lines(), "and says why")
 	# Getting hurt, and the Bloom getting in.
 	var suit := s.player.health
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 10.0, s.player.global_position, forward))
 	check(s.player.health < suit, "the suit takes damage")
 	check(s.player.infection > 0.0, "claws carry the Bloom in")
-	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward))
+	# Dropping low with a medkit in your pocket says how to use it.
+	s.player.items["medkit"] = 1
+	s.player.take_hit(Hit.make(Hit.Kind.BULLET, s.player.health - s.player.max_health * 0.3, s.player.global_position, forward))
+	check(Array(s.hud.toast_lines()).any(_is_medkit_reminder), "a low suit reminds you of your medkit")
+	var sk2 := s.director.spawn("skitter", at, false)
+	await physics(2)
+	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward, sk2))
 	check(s.player.is_dead, "too much and you're down")
+	check(s.player.last_hit_by == "skitter" and DeckScene.DOWNED_BY.has("skitter"), "and you're told what got you")
 	await frames(2)
 	await close_deck(s)
+
+
+func _is_medkit_reminder(line: String) -> bool:
+	return line.begins_with("Suit low:")
 
 #endregion
 

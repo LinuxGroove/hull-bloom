@@ -151,6 +151,7 @@ func select(w: String) -> void:
 		return
 	_stop_beam()
 	current = w
+	LGPlaytest.event("weapon", {"weapon": w})
 	reloading = 0.0
 	swapping = 0.35
 	_burst_left = 0
@@ -205,6 +206,8 @@ func _tick(delta: float) -> void:
 			if int(mag[current]) <= 0:
 				if tap:
 					Sfx.ui(self, "dry_fire", -6.0)
+					if int(reserve.get(current, 0)) <= 0:
+						LGPlaytest.event("out_of_ammo", {"weapon": current})
 					reload()
 			else:
 				_shot_t = float(spec["rate"])
@@ -213,7 +216,7 @@ func _tick(delta: float) -> void:
 					_burst_t = float(spec["burst_gap"])
 				_shoot(spec)
 	firing = pull
-	if Input.is_action_just_pressed("reload"):
+	if Input.is_action_just_pressed("reload") and not _using():
 		reload()
 	if Input.is_action_just_pressed("swap"):
 		cycle(1)
@@ -450,6 +453,7 @@ func throw() -> void:
 			return
 	if not player.use_item(throwable):
 		return
+	LGPlaytest.event("threw", {"what": throwable})
 	var cam := player.camera
 	var t: RigidBody3D
 	match throwable:
@@ -484,3 +488,12 @@ func ammo_text() -> String:
 	if int(spec["carry"]) < 0:
 		return "%d" % int(mag[current])
 	return "%d / %d" % [int(mag[current]), int(reserve[current])]
+
+
+## Whether this press of the use button (X on a pad, which also reloads) is
+## using something in view, so it doesn't reload as well.
+func _using() -> bool:
+	if not Input.is_action_just_pressed("interact") or player == null:
+		return false
+	var pic: Variant = player.get("player_interaction_component")
+	return pic != null and is_instance_valid(pic) and pic.interactable != null and is_instance_valid(pic.interactable)

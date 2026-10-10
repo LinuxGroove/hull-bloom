@@ -20,6 +20,9 @@ static func make() -> DeckDef:
 	d.music = "core"
 	d.arrive = "This is the Core, night shift. Every feed on Marigold leads here: water, air, power, nutrients. The organic obstruction has followed all of them. Its centre is in the sample chamber. Dr Okafor's badge is still reading in there."
 	d.held = "Organic obstruction: none. Every feed is clear. Thank you, night shift. It's very quiet down here now."
+	d.root_name = "the Heart"
+	d.cut_banner = "THE HEART IS CUT"
+	d.cut_line = "The Heart has stopped. I'm reading the obstruction go quiet on every deck, one after another. Burn out what's left down here, night shift."
 	d.hatches = {"skitter": 0.4, "stalker": 0.3, "watcher": 0.15, "feeder": 0.15}
 	d.max_alive = 12
 	d.color = Color(0.78, 0.12, 0.1)

@@ -7,6 +7,7 @@ extends VBoxContainer
 const LOOK := [[0.15, "Slow"], [0.25, "Normal"], [0.35, "Quick"], [0.5, "Fast"]]
 const BOB := [[0.0, "Off"], [0.5, "Gentle"], [1.0, "Full"]]
 const FOV := [[65.0, "Narrow"], [75.0, "Normal"], [90.0, "Wide"]]
+const BRIGHT := [[0.85, "Darker"], [1.0, "Normal"], [1.25, "Brighter"], [1.5, "Brightest"]]
 const CALM := [[1.0, "Off"], [0.4, "Slow"], [0.0, "Still"]]
 const GORE := [["full", "Full"], ["less", "Less"], ["off", "Off"]]
 const SPREAD := [[0.75, "Slow"], [1.0, "Normal"], [1.3, "Fast"]]
@@ -43,6 +44,7 @@ func rebuild() -> void:
 	add_child(LGCycler.make("Head bob", BOB, LGSettings.get_value("play", "bob"), _on_set.bind("play", "bob"), width))
 	add_child(LGCycler.make("View roll", SettingsPanel.ON_OFF, LGSettings.get_value("play", "tilt"), _on_set.bind("play", "tilt"), width))
 	add_child(LGCycler.make("Field of view", FOV, LGSettings.get_value("play", "fov"), _on_set.bind("play", "fov"), width))
+	add_child(LGCycler.make("Brightness", BRIGHT, _nearest(BRIGHT, LGSettings.get_value("play", "brightness", 1.0)), _on_set.bind("play", "brightness"), width))
 	add_child(LGCycler.make("Calm walls", CALM, LGSettings.get_value("play", "calm_walls"), _on_set.bind("play", "calm_walls"), width))
 	add_child(LGCycler.make("Spore blur", SettingsPanel.ON_OFF, LGSettings.get_value("play", "spore_blur"), _on_set.bind("play", "spore_blur"), width))
 	add_child(LGCycler.make("Rumble", SettingsPanel.ON_OFF, LGSettings.get_value("play", "rumble"), _on_set.bind("play", "rumble"), width))
@@ -85,6 +87,8 @@ func _on_set(value: Variant, section: String, key: String) -> void:
 	LGSettings.set_value(section, key, value)
 	if key == "calm_walls":
 		RenderingServer.global_shader_parameter_set("calm_walls", float(value))
+	elif key == "brightness" and DeckScene.current and DeckScene.current.world_env:
+		DeckScene.light(DeckScene.current.world_env.environment, DeckScene.current.hub)
 	changed.emit()
 
 

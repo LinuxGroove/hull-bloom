@@ -17,7 +17,7 @@ static func make() -> DeckDef:
 	d.gives = "rail"
 	d.gives_text = "The research team's prototype rail rifle is yours."
 	d.music = "labs"
-	d.arrive = "Welcome to Labs. Containment C-1 reports a breach. Its emergency vent was locked out by Dr Vos at 21:14. Dr Vos has not signed in since, so the lockout has lapsed. You may vent it from the panel outside its door."
+	d.arrive = "Welcome to Labs. Containment C-1 reports a breach. Its emergency vent was locked out by Dr Vos. Dr Vos has not signed in since, so the lockout has lapsed. You may vent it from the panel outside its door."
 	d.held = "Organic obstruction cleared. Labs is holding. The prototype rail rifle is signed out to you. Please return it in good condition."
 	d.hatches = {"skitter": 0.6, "watcher": 0.25, "stalker": 0.15}
 	d.max_alive = 10

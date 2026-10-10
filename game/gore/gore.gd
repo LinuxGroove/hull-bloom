@@ -186,9 +186,10 @@ static func _track_gib(body: Node3D) -> void:
 			old.queue_free()
 
 
-static func _expire(body: Node3D) -> void:
+## Untyped: the gib may have gone with its deck before its timer runs out.
+static func _expire(body) -> void:
+	_gibs.erase(body)
 	if is_instance_valid(body):
-		_gibs.erase(body)
 		body.queue_free()
 
 
@@ -200,10 +201,10 @@ static func sever(body: Node3D, skel: Skeleton3D, hider: LimbHider, bone: String
 	if bi < 0 or hider == null or hider.is_hidden(bi):
 		return null
 	var limb_xf := skel.global_transform * skel.get_bone_global_pose(bi)
-	hider.hide_bone(bi)
 	if not full():
 		gibs(body, limb_xf.origin, 2, "ichor", 3.0, kind)
 		return null
+	hider.hide_bone(bi)
 	var rb := RigidBody3D.new()
 	rb.name = "Severed_" + bone
 	rb.collision_layer = Kit.LAYER_GIBS

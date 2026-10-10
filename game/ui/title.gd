@@ -165,11 +165,11 @@ func show_shift() -> void:
 	_clear()
 	_heading("Shift mode")
 	if Progress.endings_seen().is_empty() and not ShiftNight.unlocked():
-		_text("A station built from a seed, a few decks and one night to save as many as you can. It opens once you've seen the night shift through to the end.")
+		_text("A new station each time, a few decks and one night to save as many as you can. It opens once you've seen the night shift through to the end.")
 		_back(show_main)
 		LGUi.focus_first(_col)
 		return
-	_text("A station built from a seed: %d decks and one night. Hold as many as you can before the Bloom takes them." % ShiftNight.DECKS)
+	_text("A new station each time: %d decks and one night. Hold as many as you can before the Bloom takes them." % ShiftNight.DECKS)
 	var today := ShiftNight.daily_seed()
 	var best := Progress.shift_best(today)
 	var line := "Tonight's station"
@@ -266,7 +266,7 @@ func show_about() -> void:
 
 
 func _quit() -> void:
-	get_tree().quit()
+	LGScenes.quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:

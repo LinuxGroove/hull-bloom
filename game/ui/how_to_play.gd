@@ -26,7 +26,7 @@ const PAGES := [
 	]],
 	["The ring", [
 		"Marigold is a ring of decks round the Core. Each visit to a deck takes an hour of the shift, and while you're away the others grow. A deck left too long is lost to the Bloom.",
-		"Each deck you save gives something the others need. Lost decks can be taken back, but they come back overgrown.",
+		"Each deck you save gives something the others need. Lost decks can be taken back, and still give it, but they come back overgrown.",
 		"When every deck is saved or lost, the Core opens.",
 	]],
 	["Comfort and gore", [

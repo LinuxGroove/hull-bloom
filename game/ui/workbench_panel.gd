@@ -7,6 +7,7 @@ signal closed
 
 var _salvage: Label
 var _list: VBoxContainer
+var _col: VBoxContainer
 var _panel: PanelContainer
 var on_bought := Callable()
 
@@ -36,6 +37,7 @@ func _init() -> void:
 	_list.add_theme_constant_override("separation", 6)
 	col.add_child(_list)
 	col.add_child(LGUi.button("Done", close, 600))
+	_col = col
 
 
 func _ready() -> void:
@@ -47,7 +49,8 @@ func open() -> void:
 	visible = true
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	LGUi.focus_first(_list)
+	# The first upgrade you can buy, or Done when there's none.
+	LGUi.focus_first(_col)
 
 
 func close() -> void:
@@ -62,6 +65,7 @@ func close() -> void:
 func _refresh() -> void:
 	_salvage.text = "SALVAGE: %d" % Progress.salvage()
 	for c in _list.get_children():
+		_list.remove_child(c)
 		c.queue_free()
 	for u in Progress.UPGRADES:
 		var info: Array = Progress.UPGRADES[u]
@@ -71,6 +75,8 @@ func _refresh() -> void:
 		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		b.disabled = have or Progress.salvage() < int(info[2])
 		_list.add_child(b)
+	if visible:
+		LGUi.focus_first(_col)
 
 
 func _buy(u: String) -> void:
@@ -79,7 +85,6 @@ func _buy(u: String) -> void:
 		if on_bought.is_valid():
 			on_bought.call(u)
 	_refresh()
-	LGUi.focus_first(_list)
 
 
 func _unhandled_input(event: InputEvent) -> void:

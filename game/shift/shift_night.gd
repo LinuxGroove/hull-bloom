@@ -1,6 +1,6 @@
 class_name ShiftNight
 extends RefCounted
-## A Shift night: a station built from a seed, [constant DECKS] decks one
+## A Shift night: a station made from a seed, [constant DECKS] decks one
 ## after another, and one night to hold as many as you can. Each deck spreads
 ## faster than the last. You keep what you carry between decks; going down
 ## ends the night. The score counts decks held, survivors, the time each
@@ -63,7 +63,7 @@ static func make(p_seed: int) -> ShiftNight:
 		d.music = ["hydroponics", "labs", "core"][i]
 		d.color = Color.from_hsv(r.randf(), 0.5, 0.95)
 		d.arrive = "Deck %d of %d tonight: the %s. Organic obstruction on every sensor." % [i + 1, DECKS, d.name.to_lower()]
-		d.held = "The %s is holding." % d.name.to_lower()
+		d.held = "The %s deck is holding." % d.name.to_lower()
 		d.level = "res://game/shift/shift_level.gd"
 		n.decks.append(d)
 	n._kit = START_KIT.duplicate(true)
@@ -71,6 +71,7 @@ static func make(p_seed: int) -> ShiftNight:
 
 
 static func start(p_seed: int) -> void:
+	LGPlaytest.event("shift_start", {"seed": p_seed, "daily": p_seed == daily_seed()})
 	current = make(p_seed)
 	current.play_deck()
 
@@ -145,6 +146,7 @@ func survivors() -> int:
 
 func _finish(scene: DeckScene, down := false) -> void:
 	over = true
+	LGPlaytest.moment("shift_end", {"seed": seed, "score": score(), "held": decks_held(), "down": down})
 	var best := Progress.record_shift(seed, decks_held(), survivors(), score())
 	var lines := []
 	for r in results:

@@ -20,13 +20,13 @@ const SPARE_CELLS := 3
 const UPGRADES := {
 	"cutter_cool": ["Cutter heat sink", "The cutter heats up a third slower.", 6],
 	"cutter_focus": ["Focusing lens", "Aiming the cutter reaches further and takes limbs off faster.", 8],
-	"suit": ["Suit plating", "25 more suit.", 8],
+	"suit": ["Suit plating", "Your suit takes a quarter more before it gives out.", 8],
 	"pockets": ["Webbing", "Carry one more of every throwable and health pack.", 6],
-	"sidearm_red": ["Sidearm, red", "Hits harder and holds more.", 4],
-	"scattergun_red": ["Scattergun, red", "Hits harder and holds more.", 8],
-	"rifle_red": ["Pulse rifle, red", "Hits harder and holds more.", 10],
-	"smg_red": ["Burst SMG, red", "Hits harder and holds more.", 8],
-	"rail_red": ["Rail rifle, red", "Hits harder and holds more.", 10],
+	"sidearm_red": ["Heavy sidearm", "Hits harder and holds more.", 4],
+	"scattergun_red": ["Heavy scattergun", "Hits harder and holds more.", 8],
+	"rifle_red": ["Heavy pulse rifle", "Hits harder and holds more.", 10],
+	"smg_red": ["Heavy burst SMG", "Hits harder and holds more.", 8],
+	"rail_red": ["Heavy rail rifle", "Hits harder and holds more.", 10],
 }
 
 var _cfg := ConfigFile.new()
@@ -155,7 +155,7 @@ func core_open() -> bool:
 ## What a deck being saved gives: whether it's been given yet.
 func has_gift(gift: String) -> bool:
 	for id in Decks.ids():
-		if deck_state(id) == "saved" and Decks.get_deck(id).gives == gift:
+		if deck_state(id) in ["saved", "reclaimed"] and Decks.get_deck(id).gives == gift:
 			return true
 	return false
 

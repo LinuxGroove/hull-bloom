@@ -124,6 +124,7 @@ func pop(spores := true) -> void:
 		var player := get_tree().get_first_node_in_group("tech") as Node3D
 		if player and player.has_method("spores"):
 			var d := player.global_position.distance_to(global_position)
+			LGPlaytest.event("pod_burst", {"from_you": snappedf(d, 0.1)})
 			if d < SPORE_RANGE:
 				player.spores(1.0 - d / SPORE_RANGE)
 		queue_free()
