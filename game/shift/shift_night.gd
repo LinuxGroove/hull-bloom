@@ -1,6 +1,6 @@
 class_name ShiftNight
 extends RefCounted
-## A Shift night: a station built from a seed, [constant DECKS] decks one
+## A Shift night: a station made from a seed, [constant DECKS] decks one
 ## after another, and one night to hold as many as you can. Each deck spreads
 ## faster than the last. You keep what you carry between decks; going down
 ## ends the night. The score counts decks held, survivors, the time each

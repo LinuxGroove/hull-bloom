@@ -25,6 +25,7 @@ static func make(what: String, opts := {}) -> Creature:
 				t.female = bool(opts["female"])
 			if opts.has("seed"):
 				t.look_seed = int(opts["seed"])
+			t.badge = String(opts.get("badge", ""))
 			c = t
 		_:
 			if Robot.KINDS.has(what):

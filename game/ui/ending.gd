@@ -10,18 +10,24 @@ const ENDINGS := {
 	"shuttle": ["THE SHUTTLE", [
 		"You take the shuttle. The survivors fill the seats you don't, and nobody says much.",
 		"Marigold turns below you, lights on in the decks you held and dark in the ones you didn't. Something on the dark decks is still growing. It has nothing left to feed it. Probably.",
-		"Your suit radio picks up MARI one last time: \"Organic obstruction reported on all decks. Night shift, please investigate.\"",
+		"Your suit radio picks up MARI one last time: \"Organic obstruction reported. Night shift, please investigate.\"",
 	]],
 	"burn": ["THE NIGHT SHIFT", [
 		"You stay. With the Heart burnt out, the growth has nothing feeding it, and it dies back a deck at a time while you burn what's left.",
-		"It takes weeks. The decks you lost stay sealed; you don't go in, and MARI stops asking you to.",
-		"Forty days later a relief ship docks at Cargo. You meet it at the lift with the cutter on your back. MARI logs the time, and notes the obstruction as cleared.",
+		"It takes weeks. Some doors you never open again, and MARI stops asking you to.",
+		"Forty days later a relief ship docks. You meet its crew at the lift with the cutter on your back. MARI logs the time, and notes the obstruction as cleared.",
 	]],
 	"both": ["MARIGOLD HOLDS", [
 		"Every deck held. The shuttle takes the survivors home, and you stay to burn out the last of it.",
 		"The grow rooms are planted again by the time the relief ship docks. Somebody starts a rota for the night shift. Your name is at the top.",
 		"MARI's report to the colonies is three words long: \"Obstruction cleared. Investigating.\"",
 	]],
+}
+
+## The first lines instead, when nobody came out with you.
+const ALONE := {
+	"shuttle": "You take the shuttle. Every seat but yours is empty, and the quiet is worse than the decks were.",
+	"both": "Every deck held. The shuttle goes home empty but for MARI's logs, and you stay to burn out the last of it.",
 }
 
 var backdrop: MenuBackdrop
@@ -90,7 +96,7 @@ func _text(text: String, color := StationTheme.TEXT, delay := 0.0) -> Label:
 func show_choice() -> void:
 	_clear()
 	_col.add_child(StationTheme.hud_label("THE HEART IS BURNT", 40, StationTheme.TEAL))
-	_text("The growth on the Core is dying back. At Cargo's dock the shuttle is fuelled, and the survivors are waiting by it.")
+	_text("The growth on the Core is dying back. At Cargo's dock the shuttle is fuelled%s." % (", and the survivors are waiting by it" if Progress.total_survivors() > 0 else ""))
 	_text("MARI asks whether she should prepare it for launch.", StationTheme.DIM)
 	_col.add_child(LGUi.button("Take the shuttle home", show_ending.bind("shuttle"), WIDTH))
 	_col.add_child(LGUi.button("Stay with Marigold", show_ending.bind("burn"), WIDTH))
@@ -105,7 +111,10 @@ func show_ending(e: String) -> void:
 	_clear()
 	_col.add_child(StationTheme.hud_label(ENDINGS[e][0], 44, StationTheme.TEAL if e != "shuttle" else StationTheme.AMBER))
 	var delay := 0.6
-	for p in ENDINGS[e][1]:
+	var lines: Array = ENDINGS[e][1].duplicate()
+	if Progress.total_survivors() == 0 and ALONE.has(e):
+		lines[0] = ALONE[e]
+	for p in lines:
 		_text(p, StationTheme.TEXT, delay)
 		delay += 2.2
 	var held := Progress.held_decks().size()

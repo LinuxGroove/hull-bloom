@@ -34,6 +34,11 @@ var music := ""
 ## MARI's lines when you step out of the lift, and when the deck is held.
 var arrive := ""
 var held := ""
+## The root as the objectives name it ("" for "the root"), the banner when
+## it's cut ("" for ROOT CUT) and MARI's line once the last one is.
+var root_name := ""
+var cut_banner := ""
+var cut_line := ""
 ## What pods and hearts hatch here: creature -> weight.
 var hatches := {"skitter": 1.0}
 ## Most creatures awake on the deck at once, besides those the level places.

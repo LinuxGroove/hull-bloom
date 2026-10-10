@@ -127,7 +127,7 @@ func select(id: String) -> void:
 		for n in d.news:
 			news.append(n[0].to_lower() + n.substr(1) if not n.begins_with("MARI") else n)
 		_line("New here: " + ", ".join(news) + ".", StationTheme.DIM)
-	if d.gives_text != "" and Progress.deck_state(id) in ["open", "locked"]:
+	if d.gives != "" and Progress.deck_state(id) in ["open", "locked"]:
 		_line("Save it: " + d.gives_text, StationTheme.DIM)
 	if Progress.survivors_saved(id) > 0:
 		_line("Survivors brought out: %d" % Progress.survivors_saved(id), StationTheme.GREEN)
@@ -153,7 +153,7 @@ func _state_line(id: String) -> String:
 	match Progress.deck_state(id):
 		"open":
 			if Progress.hours_left(id) <= 0:
-				return "Open. The Bloom has it under way; it won't be lost while you're elsewhere."
+				return "Open. It won't be lost while you're away."
 			var h := Progress.hours_left(id)
 			var cell := " A spare cell keeps its lights on." if Progress.has_spare_cell(id) else ""
 			return ("Open. %d hour before the Bloom takes it." % h if h == 1 else "Open. %d hours before the Bloom takes it." % h) + cell
@@ -164,7 +164,7 @@ func _state_line(id: String) -> String:
 		"reclaimed":
 			return "Taken back from the Bloom."
 	if id == "core":
-		return "Locked. It opens once every deck on the ring is saved or lost."
+		return "Locked. Every feed on Marigold leads here. It opens once every deck on the ring is saved or lost."
 	return "Locked. The ring's lifts open once Hydroponics is held."
 
 

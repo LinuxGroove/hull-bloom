@@ -195,7 +195,7 @@ func _chamber() -> void:
 	prop("Prop_Chest", Vector2i(0, 1), Vector3(0.0, 0, 1.1), 10.0, {"solid": false})
 	prop("Prop_Pod", Vector2i(-1, 2), Vector3(-0.5, 0, 0.6))
 	prop("Prop_Pod", Vector2i(1, 2), Vector3(0.5, 0, 0.6))
-	spawn("taken", Vector2i(-1, 1), Vector3(-0.4, 0, 0.3), 1, {"job": "science", "female": true,
+	spawn("taken", Vector2i(-1, 1), Vector3(-0.4, 0, 0.3), 1, {"job": "science", "female": true, "badge": "Dr Okafor",
 		"routine": [Vector2i(-1, 1), Vector2i(-1, 0), Vector2i(-2, 0), Vector2i(-2, 1), Vector2i(-1, -1)]})
 	spawn("watcher", Vector2i(1, -1), Vector3(0.3, 0, -0.2), 1)
 	spawn("feeder", Vector2i(-1, -2), Vector3(0.2, 0, 0.3), 1)

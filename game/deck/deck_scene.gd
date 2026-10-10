@@ -107,9 +107,9 @@ func _ready() -> void:
 			if not level.rooms[id]["dark"]:
 				_set_lights(id, true)
 		lift.set_powered(true)
-		hud.say("MARI", "Deck %d is safe. The workbench and the bunk are working." % deck.number)
+		hud.say("MARI", "%s is safe. The workbench and the bunk are working." % deck.name)
 	elif deck.arrive != "":
-		hud.say("MARI", deck.arrive if not overgrown else "Deck %d is overgrown. Organic obstruction everywhere. I'm sorry." % deck.number)
+		hud.say("MARI", deck.arrive if not overgrown else "%s is overgrown. Organic obstruction everywhere. I'm sorry." % deck.name)
 	if not quiet:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		_play_music("calm")
@@ -528,13 +528,15 @@ func _on_held() -> void:
 func _on_heart_killed(_h: Heart) -> void:
 	run.cut_root()
 	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
-	hud.banner("ROOT CUT", StationTheme.AMBER, 3.0)
+	hud.banner(deck.cut_banner if deck.cut_banner != "" else "ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
-		hud.say("MARI", "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
+		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
 
 
 func _on_creature_died(c: Creature) -> void:
 	run.kills += 1
+	if c is Taken and (c as Taken).badge != "":
+		hud.say("MARI", "%s's badge has stopped reading." % (c as Taken).badge)
 	LGPlaytest.event("killed", {"kind": c.kind, "room": _room_at(c.global_position)})
 
 
