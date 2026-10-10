@@ -15,10 +15,10 @@ global uniform float calm_walls;
 
 // 0 floor, 1 wall, 2 ceiling.
 uniform int surface = 0;
-uniform vec3 edge_color : source_color = vec3(0.1, 0.018, 0.028);
-uniform vec3 mid_color : source_color = vec3(0.38, 0.065, 0.085);
-uniform vec3 top_color : source_color = vec3(0.64, 0.26, 0.25);
-uniform vec3 fat_color : source_color = vec3(0.62, 0.46, 0.32);
+uniform vec3 edge_color : source_color = vec3(0.17, 0.03, 0.04);
+uniform vec3 mid_color : source_color = vec3(0.56, 0.1, 0.11);
+uniform vec3 top_color : source_color = vec3(0.84, 0.4, 0.36);
+uniform vec3 fat_color : source_color = vec3(0.82, 0.62, 0.44);
 uniform vec3 vein_color : source_color = vec3(0.09, 0.02, 0.1);
 uniform vec3 glow_color : source_color = vec3(0.95, 0.2, 0.16);
 uniform float glow = 0.35;
@@ -123,10 +123,10 @@ void fragment() {
 	SPECULAR = 0.6;
 	CLEARCOAT = 1.0 - char_amt;
 	CLEARCOAT_ROUGHNESS = 0.08;
-	SSS_STRENGTH = 0.25 * (1.0 - char_amt);
+	SSS_STRENGTH = 0.5 * (1.0 - char_amt);
 	// A few swollen nodules glow from inside, slowly.
 	float pulse = 0.75 + 0.25 * sin(TIME * 1.1 + hb_noise(wpos * 0.5) * 6.0) * calm_walls;
-	float node = smoothstep(0.86, 0.95, hb_noise(wpos * 6.5 + 11.0)) * smoothstep(0.4, 0.9, t);
-	EMISSION = glow_color * (node * 0.7 + vein * 0.05) * glow * pulse * (1.0 - char_amt)
+	float node = smoothstep(0.9, 0.97, hb_noise(wpos * 3.2 + 11.0)) * smoothstep(0.5, 0.95, t);
+	EMISSION = glow_color * node * 0.6 * glow * pulse * (1.0 - char_amt)
 		+ vec3(1.0, 0.35, 0.05) * char_amt * scorch * 0.6 * smoothstep(0.6, 0.9, hb_noise(wpos * 9.0 + TIME));
 }
