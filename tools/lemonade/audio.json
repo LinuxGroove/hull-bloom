@@ -1,0 +1,552 @@
+{
+	"server": "http://192.168.1.226:13305",
+	"notes": "Generated with Lemonade by tools/lemonade/generate.py. Ogg Vorbis 44.1 kHz; voices and sfx mono, music stereo; trim silence, peak about -3 dBFS; loops crossfade their ends. Log every file in assets/audio/GENERATED.md (model, prompt, seed).",
+	"music": {
+		"model": "ACE-Step-Music",
+		"tracks": [
+			{
+				"file": "assets/audio/music/title.ogg",
+				"seconds": 90,
+				"loop": true,
+				"prompt": "dark ambient horror soundtrack for a derelict space station, slow evolving synth drone, distant metallic clangs ringing out in an empty hull, eerie high string harmonics, sparse and cold, no drums, no melody, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/drone.ogg",
+				"seconds": 120,
+				"loop": true,
+				"prompt": "quiet dark ambient drone for creeping through a dark space station, low rumbling synth pads, faint ventilation hiss, distant groaning metal, uneasy and calm, no drums, no melody, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/hunted.ogg",
+				"seconds": 60,
+				"loop": true,
+				"prompt": "tense horror chase music, pulsing low synth ostinato, heavy heartbeat kick drum at 80 bpm, dissonant string clusters, metallic ticking percussion, rising dread, dark and relentless, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/ring.ogg",
+				"seconds": 90,
+				"loop": true,
+				"prompt": "slow brooding ambient for a space station map, deep bass drone, sparse low piano notes with long reverb, cold synth pads, the hum of a spinning station ring, melancholy and uneasy, no drums, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/ending.ogg",
+				"seconds": 90,
+				"loop": true,
+				"prompt": "somber ending theme, slow mournful strings over low synth pads, distant wordless choir, bittersweet and exhausted, the last survivors leaving a dying space station, no drums, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/hydroponics.ogg",
+				"seconds": 120,
+				"loop": true,
+				"prompt": "dark ambient horror for an overgrown greenhouse deck on a space station, wet organic textures, slow breathing pads, dripping water, faint dissonant strings, creeping dread, no drums, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/labs.ogg",
+				"seconds": 120,
+				"loop": true,
+				"prompt": "cold clinical horror ambient for an abandoned research lab on a space station, sterile synth drones, glitching electronic textures, faint beeping machines, dissonant high strings, no drums, sci-fi horror, instrumental, loopable"
+			},
+			{
+				"file": "assets/audio/music/core.ogg",
+				"seconds": 120,
+				"loop": true,
+				"prompt": "massive dark horror drone at the core of a space station, the beating heart of an alien growth, deep pulsing sub bass like a slow heartbeat, wet organic textures, ominous low choir, overwhelming dread, sci-fi horror, instrumental, loopable"
+			}
+		]
+	},
+	"voices": {
+		"model": "kokoro-v1",
+		"voices": {}
+	},
+	"sfx": {
+		"model": "ThinkSound-SFX",
+		"sounds": [
+			{
+				"file": "assets/audio/sfx/watcher_scream.ogg",
+				"prompt": "a monstrous creature's long, ragged, inhuman shriek, several throats screaming at once, rising and cracking, echoing down a metal corridor, horror",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/vent_crawl.ogg",
+				"prompt": "something small with claws scrabbling and crawling fast inside a thin metal air duct, hollow metallic bumps and scraping, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/taken_rise.ogg",
+				"prompt": "a dead body peeling itself up off a wet floor, sticky wet tearing and squelching, clothes rustling, a long wet gurgling groan, horror",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_die.ogg",
+				"prompt": "a zombie collapsing with a choking gurgle, the body slumping onto a metal floor with a heavy wet thud, a last bubbling breath, gore, horror",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_die.ogg",
+				"prompt": "a huge insect monster's high pitched rattling squeal suddenly cut off by a wet crunch, its body crashing to the floor, horror",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/spit.ogg",
+				"prompt": "a creature hawking up thick phlegm in its throat and spitting a big wet glob, splatter, gross, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_leap.ogg",
+				"prompt": "a small alien insect leaping at you with a quick chittering hiss, clicking legs scraping on metal, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/shove.ogg",
+				"prompt": "a man grunting with effort as he shoves something heavy and soft away, a heavy work suit's fabric rustling, a dull thud",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/sever.ogg",
+				"prompt": "a limb torn off a body, wet bone cracking and flesh ripping, blood gushing, the severed limb hitting a metal floor with a wet thud, gore, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/robot_drop.ogg",
+				"prompt": "a heavy security robot dropping from a ceiling mount onto a metal floor with a loud clanking thud, its legs clattering, then a servo motor whining as it stands up",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/pod_hatch.ogg",
+				"prompt": "an alien egg pod splitting open, a wet membrane stretching and tearing, slimy fluid gushing out and dripping, gore, horror",
+				"seconds": 3,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/heart_die.ogg",
+				"prompt": "a giant alien heart beating one last time, then deflating with a long wet squelching gurgle, slow fading heartbeats, gore, horror",
+				"seconds": 4,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/heal.ogg",
+				"prompt": "a medical spray hissing from a medkit, then a soft, warm electronic tone",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stim.ogg",
+				"prompt": "a spring loaded auto injector clicking into skin with a sharp pneumatic hiss, then a rising rushing whoosh",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_grab.ogg",
+				"prompt": "a long wet tongue lashing out and slapping onto a person with a sticky wet slap, then stretching taut, gross, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/robot_alert.ogg",
+				"prompt": "a security robot's two tone electronic alarm chirp, glitchy and distorted",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/robot_idle.ogg",
+				"prompt": "a security robot idling, a quiet servo motor whirring as it turns, then a short electronic scanning beep",
+				"seconds": 2
+			},
+			{
+				"file": "assets/audio/sfx/gib.ogg",
+				"prompt": "a body bursting apart into wet chunks of flesh that splatter across a metal floor, gore, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/splat.ogg",
+				"prompt": "a wet glob of slime splatting onto a metal floor, gross",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/hit_flesh.ogg",
+				"prompt": "a shot hitting a body, a wet meaty thwack, gore",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/pod_burst.ogg",
+				"prompt": "a fleshy alien pod bursting from a gunshot, a wet pop, a puff of spores and a slimy splatter, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/heart_beat_loop.ogg",
+				"prompt": "a huge slow wet heartbeat, deep and organic, a steady double beat, gore, horror, loopable",
+				"seconds": 8
+			},
+			{
+				"file": "assets/audio/sfx/bloom_loop.ogg",
+				"prompt": "quiet wet organic ambience, slimy flesh slowly squelching and shifting, water dripping, faint bubbling, in a metal room, horror, loopable",
+				"seconds": 12,
+				"steady": true
+			},
+			{
+				"file": "assets/audio/sfx/hum_loop.ogg",
+				"prompt": "a space station's low ventilation hum, a steady air conditioning drone in a metal corridor, loopable",
+				"seconds": 10,
+				"steady": true
+			},
+			{
+				"file": "assets/audio/sfx/taken_alert_1.ogg",
+				"prompt": "an infected zombie man gasps wetly, then gives a rising, gurgling snarl through a throat full of fluid, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_alert_2.ogg",
+				"prompt": "a zombie chokes and coughs, then roars a wet, choking shout, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_alert_3.ogg",
+				"prompt": "a zombie lets out a long, rising, guttural groan, wet and gurgling, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_idle_1.ogg",
+				"prompt": "a zombie's low, wet, tired moan, its throat gurgling, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/taken_idle_2.ogg",
+				"prompt": "a zombie's rattling wet breathing, gurgling in and out, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/taken_idle_3.ogg",
+				"prompt": "a zombie slurring a broken word through a throat full of liquid, a wet mumble, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/taken_attack_1.ogg",
+				"prompt": "a zombie lunging with a short, harsh roar that ends in snapping teeth, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_attack_2.ogg",
+				"prompt": "a zombie lunging with a wet, spraying, hissing shout, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_attack_3.ogg",
+				"prompt": "a zombie's vicious gurgling snarl as it attacks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_hurt_1.ogg",
+				"prompt": "a zombie grunting in pain, then coughing wetly, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_hurt_2.ogg",
+				"prompt": "a zombie yelping in pain, choked off by gurgling fluid, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/taken_hurt_3.ogg",
+				"prompt": "a zombie's strained, pained grunt and a wet splutter, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_alert_1.ogg",
+				"prompt": "a small alien insect's rising chittering trill ending in a shrill squeak, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_alert_2.ogg",
+				"prompt": "a small alien bug clacking its mandibles twice, then hissing, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_alert_3.ogg",
+				"prompt": "a small insect creature's fast buzzing trill and two clicks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_idle_1.ogg",
+				"prompt": "a small alien insect quietly clicking its mandibles and tapping its legs, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/skitter_idle_2.ogg",
+				"prompt": "a small alien insect softly ticking and chittering, a wet smack, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/skitter_idle_3.ogg",
+				"prompt": "soft, uneven clicking and skittering of a small insect creature, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/skitter_attack_1.ogg",
+				"prompt": "a small alien insect lunging with a sharp hissing shriek and a clack, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_attack_2.ogg",
+				"prompt": "a small alien bug's quick, rising, hissing screech, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_attack_3.ogg",
+				"prompt": "a small insect creature's short shrieking hiss as it pounces, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_hurt_1.ogg",
+				"prompt": "a small alien insect squealing in pain, sputtering clicks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_hurt_2.ogg",
+				"prompt": "a small alien bug's high, short yelp of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/skitter_hurt_3.ogg",
+				"prompt": "a small insect creature's falling squeal and a wet pop, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_alert_1.ogg",
+				"prompt": "a large alien predator's loud hollow clicks speeding up into a rattle, then a long throaty hiss, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_alert_2.ogg",
+				"prompt": "a big insect monster's rattling clicks and a deep hissing growl, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_alert_3.ogg",
+				"prompt": "a large alien hunter's clicking rattle building into a long hiss, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_idle_1.ogg",
+				"prompt": "a large alien predator slowly clicking to listen, like echolocation, and a soft hissing breath, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/stalker_idle_2.ogg",
+				"prompt": "a few slow, hollow clicks from a big insect monster, then a breath, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/stalker_idle_3.ogg",
+				"prompt": "a large alien hunter's spaced out clicking in the dark, a low hiss, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/stalker_attack_1.ogg",
+				"prompt": "a large alien predator lunging with a screeching hiss and a burst of clicks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_attack_2.ogg",
+				"prompt": "a big insect monster's rising screech as it strikes, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_attack_3.ogg",
+				"prompt": "a large alien hunter's raspy screaming hiss as it attacks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_hurt_1.ogg",
+				"prompt": "a large alien predator's rattling screech of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_hurt_2.ogg",
+				"prompt": "a big insect monster's high, rattling cry of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/stalker_hurt_3.ogg",
+				"prompt": "a large alien hunter's falling, rattling screech, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_alert_1.ogg",
+				"prompt": "a huge wet toad-like alien croaking, a rising gurgling croak ending in a gulp, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_alert_2.ogg",
+				"prompt": "a slimy creature hanging from the ceiling giving a deep, wet, rising croak, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_alert_3.ogg",
+				"prompt": "a big wet alien croak swelling up, then a gulp, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_idle_1.ogg",
+				"prompt": "slow wet croaks and gulps of a big slimy creature hanging from the ceiling, dripping, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/feeder_idle_2.ogg",
+				"prompt": "one long, low, wet croak and dripping slime, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/feeder_idle_3.ogg",
+				"prompt": "a slimy alien creature's slow croaking and gulping, slime dripping, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/feeder_attack_1.ogg",
+				"prompt": "a slimy alien creature's hungry croaking snarl and a wet sucking slurp, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_attack_2.ogg",
+				"prompt": "a wet, greedy, gurgling croak and a slurp, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_attack_3.ogg",
+				"prompt": "a slimy creature's croaking roar and a wet suck, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_hurt_1.ogg",
+				"prompt": "a slimy alien creature's squealing croak of pain and a gurgling cough, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_hurt_2.ogg",
+				"prompt": "a wet creature's high croak of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/feeder_hurt_3.ogg",
+				"prompt": "a slimy alien's squealing gurgle of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_alert_1.ogg",
+				"prompt": "an eerie alien creature's thin rising whine, like a wet, glassy moan, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_alert_2.ogg",
+				"prompt": "a floating alien eye creature's rising, wavering whine that stops short, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_alert_3.ogg",
+				"prompt": "an alien creature's high, thin, rising wail, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_idle_1.ogg",
+				"prompt": "a floating alien eye creature's low, wavering whine, quiet and eerie, and a wet blink, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/watcher_idle_2.ogg",
+				"prompt": "an alien creature's soft wavering whine rising and falling, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/watcher_idle_3.ogg",
+				"prompt": "a quiet, eerie, whining moan from an alien creature, and a wet blink, horror",
+				"seconds": 3
+			},
+			{
+				"file": "assets/audio/sfx/watcher_attack_1.ogg",
+				"prompt": "an alien creature's sharp rising whine, then a wet click, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_attack_2.ogg",
+				"prompt": "an alien eye creature's quick swooping whine, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_attack_3.ogg",
+				"prompt": "an alien creature's piercing whine as it attacks, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_hurt_1.ogg",
+				"prompt": "an alien creature's warbling, falling whine of pain and a wet squelch, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_hurt_2.ogg",
+				"prompt": "an alien eye creature's warbling cry of pain, horror",
+				"seconds": 2,
+				"events": 1
+			},
+			{
+				"file": "assets/audio/sfx/watcher_hurt_3.ogg",
+				"prompt": "an alien creature's falling, wavering whine and a squelch, horror",
+				"seconds": 2,
+				"events": 1
+			}
+		]
+	}
+}
