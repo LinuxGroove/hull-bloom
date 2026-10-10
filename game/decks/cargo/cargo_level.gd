@@ -68,7 +68,7 @@ func build() -> void:
 	vent(Vector2i(-4, -4), Vector2i(-3, -3))
 	cable(Vector2i(1, -7), Vector2i(1, -8))
 	root(Vector2i(6, -5))
-	grow_room("bay2", 4.0)
+	grow_room("bay2", 3.4)
 	grow(Vector2i(1, -5), 2.6)
 	grow(Vector2i(1, -6), 2.0)
 	grow(Vector2i(1, -4), 2.0)
@@ -140,7 +140,7 @@ func _conveyor() -> void:
 
 
 func _bay1() -> void:
-	spawn("raptor", Vector2i(-3, -6), Vector3(0.4, 0, 0.4), 1)
+	spawn("raptor", Vector2i(-3, -6), Vector3(0.4, 0, 0.4), 1, {"asleep": true})
 	spawn("stalker", Vector2i(-4, -4), Vector3(-0.4, 0, 0.5), 1, {"asleep": true})
 	body(Vector2i(-2, -6), Vector3(0.5, 0, 0.3), 140.0, "cargo")
 	# Crate stacks to fight round, on the corners between tiles so the

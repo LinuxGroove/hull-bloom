@@ -24,6 +24,6 @@ static func make() -> DeckDef:
 	d.cut_banner = "THE HEART IS CUT"
 	d.cut_line = "The Heart has stopped. I'm reading the obstruction go quiet on every deck, one after another. Burn out what's left down here, night shift."
 	d.hatches = {"skitter": 0.4, "stalker": 0.3, "watcher": 0.15, "feeder": 0.15}
-	d.max_alive = 12
+	d.max_alive = 6
 	d.color = Color(0.78, 0.12, 0.1)
 	return d

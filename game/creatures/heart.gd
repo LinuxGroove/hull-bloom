@@ -29,7 +29,7 @@ static func make(lvl: DeckLevel, at_cell: Vector2i, core := false) -> Heart:
 	h.level = lvl
 	h.cell = at_cell
 	h.big = core
-	h.max_health = 1500.0 if core else 320.0
+	h.max_health = 1000.0 if core else 320.0
 	if lvl and lvl.overgrown:
 		h.max_health *= 1.4
 	h.health = h.max_health
@@ -120,19 +120,20 @@ func _process(delta: float) -> void:
 	if player == null:
 		return
 	var d := player.global_position.distance_to(global_position)
-	if d > 18.0 * (1.6 if big else 1.0):
+	if d > 18.0:
 		return
 	_spawn_t -= delta
 	if _spawn_t <= 0.0:
-		_spawn_t = randf_range(7.0, 12.0) * (0.7 if big else 1.0) * (0.6 + 0.4 * health / max_health)
+		_spawn_t = randf_range(7.0, 12.0) * (0.6 + 0.4 * health / max_health)
 		if DeckScene.current and DeckScene.current.director:
 			DeckScene.current.director.heart_spawn(self)
 	_spit_t -= delta
 	if _spit_t <= 0.0 and d < 14.0:
-		_spit_t = randf_range(2.5, 4.5) * (0.6 if big else 1.0)
+		_spit_t = randf_range(2.5, 4.5) * (0.8 if big else 1.0)
 		var s := Spit.new()
 		s.from = self
-		s.damage = 9.0 if big else 6.0
+		s.damage = 7.0 if big else 6.0
+		s.infect = 4.0 if big else 6.0
 		get_tree().current_scene.add_child(s)
 		# From under the ceiling: the Core's Heart is taller than a storey.
 		s.global_position = global_position + Vector3(0, minf(2.4 * _scale, Kit.HEIGHT - 0.8), 0)

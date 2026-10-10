@@ -5,7 +5,8 @@ extends Node
 ##   godot --headless --path . tools/autopilot.tscn -- --campaign --skill=expert --seed=1 --out=/tmp/campaign.json
 ## --skill is novice, average or expert (tools/autopilot/skill.gd). --kit=start
 ## starts every deck with the first kit (the cutter and sidearm); the default
-## for decks after Hydroponics adds the scattergun Hydroponics gives you.
+## for decks after Hydroponics adds the scattergun Hydroponics gives you, and
+## --kit=late adds the rifle and SMG from Security's armoury, for the Core.
 ## --campaign plays Hydroponics, the middle decks in an order from the seed,
 ## then the Core, carrying Progress (hours, gifts, salvage, the kit) between
 ## them. With a display (xvfb-run, software Vulkan),
@@ -33,6 +34,10 @@ const MUST_TRIES := 8
 ## there and some of its rounds.
 const AFTER_HYDROPONICS := {"weapons": ["cutter", "sidearm", "scattergun"],
 	"items": {"flare": 3, "grenade": 0, "mine": 0, "medkit": 1, "stim": 0}, "ammo": {"scattergun": 18}}
+## What a Tech might carry onto the Core or a deck late in the ring: the rifle
+## and SMG from Security's armoury, and a few things to throw.
+const LATE := {"weapons": ["cutter", "sidearm", "scattergun", "rifle", "smg"],
+	"items": {"flare": 3, "grenade": 1, "mine": 0, "medkit": 2, "stim": 0}, "ammo": {"scattergun": 24, "rifle": 120, "smg": 128}}
 ## Upgrades the campaign buys at a held deck's workbench, in order.
 const BUY_ORDER := ["cutter_cool", "suit", "pockets", "scattergun_red", "cutter_focus", "rifle_red", "smg_red", "sidearm_red", "rail_red"]
 
@@ -176,8 +181,8 @@ func _fast() -> void:
 
 ## One visit to a deck: the autopilot plays until the deck is held and it
 ## takes the lift, the Tech goes down, it's stuck for good or time runs out.
-## opts: "mode" ("test" or "campaign"), "kit" ("start", "after_hydroponics"
-## or "" for what the mode gives).
+## opts: "mode" ("test" or "campaign"), "kit" ("start", "after_hydroponics",
+## "late" or "" for what the mode gives).
 func play(deck_id: String, skill_name: String, seed_n: int, minutes: float, opts := {}) -> Dictionary:
 	seed(seed_n * 7919 + deck_id.hash())
 	var s := DeckScene.new()
@@ -187,6 +192,8 @@ func play(deck_id: String, skill_name: String, seed_n: int, minutes: float, opts
 	get_tree().root.add_child(s)
 	if String(opts.get("kit", "")) == "after_hydroponics":
 		s.player.load_kit(AFTER_HYDROPONICS.duplicate(true))
+	elif String(opts.get("kit", "")) == "late":
+		s.player.load_kit(LATE.duplicate(true))
 	await _frames(3)
 	await get_tree().physics_frame
 	await get_tree().physics_frame
