@@ -189,7 +189,8 @@ func _bay2() -> void:
 
 
 func _cold() -> void:
-	survivor("cargo_lind", "Dockmaster Ewa Lind", Vector2i(-3, -2), "Shut the door. It's slow in the cold, it hasn't come in here yet. I signed that case through, you know. SV-3. Without a scan. Get me to the lift.", Vector3(0.1, 0, 0.7), 150.0, "cargo")
+	thing("survivor", Vector2i(-3, -2), Vector3(0.1, 0, 0.7), 150.0, {"id": "cargo_lind", "name": "Dockmaster Ewa Lind", "job": "cargo", "female": true,
+		"line": "Shut the door. It's slow in the cold, it hasn't come in here yet. I signed that case through, you know. SV-3. Without a scan. Get me to the lift."})
 	prop("ess:Prop_Shelves_WideTall", Vector2i(-3, -3), Vector3(-1.45, 0, 0.0), 90.0)
 	prop("ess:Prop_Shelves_WideTall", Vector2i(-3, -2), Vector3(-1.45, 0, 0.0), 90.0)
 	prop("ess:Prop_Crate", Vector2i(-3, -3), Vector3(0.3, 0, -1.2), 5.0)
@@ -202,7 +203,8 @@ func _cold() -> void:
 
 func _dock() -> void:
 	spawn("raptor", Vector2i(2, -9), Vector3(0.6, 0, 0.0), 1, {"asleep": true})
-	survivor("cargo_dunmore", "Rafe Dunmore", Vector2i(1, -8), "You're not the pilot. She went up for the clearance and never came back. The Corran's fuelled. She said it would fly without her. I'll come up to the lift with you, if you'll have me.", Vector3(0.4, 0, -1.4), 180.0, "cargo")
+	thing("survivor", Vector2i(1, -8), Vector3(0.4, 0, -1.4), 180.0, {"id": "cargo_dunmore", "name": "Rafe Dunmore", "job": "cargo", "pose": "torch",
+		"line": "You're not the pilot. She went up for the clearance and never came back. The Corran's fuelled. She said it would fly without her. I'll come up to the lift with you, if you'll have me."})
 	thing("log", Vector2i(0, -8), Vector3(0.8, 0, -1.45), 180.0, {"id": "cargo_pilot", "style": "terminal", "title": "Pilot's note",
 		"by": "Capt. Lena Marsh, pilot", "text": PILOT})
 	thing("light", Vector2i(0, -9), Vector3(2.0, 4.1, 0.6), 0.0, {"color": Color(0.75, 0.85, 1.0), "energy": 0.9, "range": 10.0})

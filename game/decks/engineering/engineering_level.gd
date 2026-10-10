@@ -177,7 +177,9 @@ func _control_and_office() -> void:
 	prop("ess:Prop_Desk_Small", Vector2i(-4, -4), Vector3(-1.2, 0, 0.2), 90.0)
 	prop("ess:Prop_Computer", Vector2i(-4, -4), Vector3(-1.4, 0.94, 0.5), 90.0, {"solid": false})
 	prop("ess:Prop_CeilingComputer", Vector2i(-4, -5), Vector3(0, Kit.HEIGHT, -0.4), 0.0, {"solid": false})
-	survivor("eng_varga", "Chief Engineer Ilse Varga", Vector2i(-4, -5), "You got the lift running? Then there's power left. I shut the decks down one by one to starve it, and it liked the dark. Get the spare cells out to the ring. I'll make my way to the lift.", Vector3(0.6, 0, -0.7), -100.0, "engineer")
+	thing("survivor", Vector2i(-4, -5), Vector3(0.6, 0, -0.7), -100.0, {"id": "eng_varga", "name": "Chief Engineer Ilse Varga",
+		"job": "engineer", "pose": "fold", "female": true,
+		"line": "You got the lift running? Then there's power left. I shut the decks down one by one to starve it, and it liked the dark. Get the spare cells out to the ring. I'll make my way to the lift."})
 	pickup("ammo", Vector2i(-3, -4), Vector3(1.0, 0, 1.2), 2)
 	# The office: her desk, her orders, and a cell she kept back.
 	prop("ess:Prop_Desk_L", Vector2i(-3, -7), Vector3(0.6, 0, -0.9), 0.0)
@@ -236,7 +238,8 @@ func _fuel() -> void:
 	prop("ess:Prop_Barrel2_Closed", Vector2i(3, -2), Vector3(-1.4, 0, 0.1))
 	prop("ess:Prop_Barrel2_Closed", Vector2i(3, -1), Vector3(-1.4, 0, -0.6), 30.0)
 	prop("ess:Prop_Crate_Tarp", Vector2i(3, -1), Vector3(-0.8, 0, 1.0), 8.0)
-	survivor("eng_kim", "Rosa Kim", Vector2i(4, -1), "Don't shout. It hears everything on this deck. I've been sat behind the tanks since the lights went. I'll go to the lift. Quietly.", Vector3(-0.6, 0, 0.9), 200.0, "tech")
+	thing("survivor", Vector2i(4, -1), Vector3(-0.6, 0, 0.9), 200.0, {"id": "eng_kim", "name": "Rosa Kim", "job": "tech", "female": true,
+		"line": "Don't shout. It hears everything on this deck. I've been sat behind the tanks since the lights went. I'll go to the lift. Quietly."})
 	pickup("cell", Vector2i(3, -1), Vector3(0.4, 0, 1.3), 1)
 	pickup("salvage", Vector2i(4, -2), Vector3(-0.8, 0, -1.2), 1)
 
