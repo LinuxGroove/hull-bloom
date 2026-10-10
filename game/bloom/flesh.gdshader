@@ -22,9 +22,12 @@ uniform float wet = 0.9;
 uniform float breathe = 0.02;
 uniform bool use_rest = false;
 
-// Per creature: how hurt it looks for a moment, and how charred by the cutter.
+// Per creature: how hurt it looks for a moment, how charred by the cutter,
+// and how strongly its outline shows against the growth it hunts in.
 instance uniform float hurt = 0.0;
 instance uniform float charred = 0.0;
+instance uniform float edge = 0.0;
+uniform vec3 edge_color : source_color = vec3(1.0, 0.78, 0.66);
 
 varying vec3 rest;
 
@@ -48,4 +51,5 @@ void fragment() {
 	RIM_TINT = 0.6;
 	float pulse = 0.75 + 0.25 * sin(TIME * 1.3 + hb_noise(rest * 0.7) * 6.0) * calm_walls;
 	EMISSION = glow_color * vein * glow * pulse * (1.0 - clamp(charred, 0.0, 1.0));
+	EMISSION += edge_color * pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0) * edge;
 }

@@ -13,6 +13,10 @@ signal died(c: Creature)
 
 enum State {ASLEEP, IDLE, WANDER, HUNT, ATTACK, HURT, DEAD}
 
+## How brightly a flesh creature's outline shows, so it can be picked out
+## from the growth around it (the flesh shader's `edge`).
+const EDGE := 0.35
+
 ## Which creature it is ("skitter", "taken", "quadshell").
 var kind := "creature"
 var max_health := 40.0
@@ -613,6 +617,7 @@ func die(hit: Hit) -> void:
 	for h in find_children("", "Area3D", true, false):
 		(h as Area3D).collision_layer = 0
 	remove_from_group("creatures")
+	_set_edge(0.0)
 	died.emit(self)
 	death(hit)
 
@@ -628,6 +633,12 @@ func _set_flash(v: float) -> void:
 	for m in meshes:
 		if is_instance_valid(m) and m.material_override is ShaderMaterial:
 			m.set_instance_shader_parameter("hurt", v)
+
+
+func _set_edge(v: float) -> void:
+	for m in meshes:
+		if is_instance_valid(m) and m.material_override is ShaderMaterial:
+			m.set_instance_shader_parameter("edge", v)
 
 
 ## Burns from the cutter char it for good.
@@ -662,6 +673,7 @@ func load_model(name: String, want_height: float, look := "", hang := false) -> 
 		meshes.append(mi)
 	if look != "":
 		Flesh.apply(model, look)
+		_set_edge(EDGE)
 	if skeleton:
 		hider = LimbHider.new()
 		skeleton.add_child(hider)
