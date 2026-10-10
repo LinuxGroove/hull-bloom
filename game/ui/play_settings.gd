@@ -32,8 +32,9 @@ static func make(p_width := 480) -> PlaySettings:
 
 func rebuild() -> void:
 	for c in get_children():
-		remove_child(c)
-		c.queue_free()
+		if c != _code:
+			remove_child(c)
+			c.queue_free()
 	_head("Looking")
 	add_child(LGCycler.make("Look speed", LOOK, _nearest(LOOK, LGSettings.get_value("play", "mouse_sensitivity")), _on_set.bind("play", "mouse_sensitivity"), width))
 	add_child(LGCycler.make("Invert look", SettingsPanel.ON_OFF, LGSettings.get_value("play", "invert_look"), _on_set.bind("play", "invert_look"), width))
@@ -103,8 +104,16 @@ func _on_code(code: String) -> void:
 	elif code == String(LGSettings.get_value("gore", "lock", "")):
 		LGSettings.set_value("gore", "lock", "")
 	rebuild()
-	LGUi.focus_first(self)
+	_focus_first.call_deferred()
 
 
 func _on_code_cancelled() -> void:
-	LGUi.focus_first(self)
+	_focus_first.call_deferred()
+
+
+## Focuses the first control once the rebuild has settled (several rebuilds
+## in a frame would leave an earlier pick out of the tree).
+func _focus_first() -> void:
+	var c := LGUi.first_focusable(self)
+	if c and c.is_inside_tree():
+		c.grab_focus()

@@ -124,13 +124,20 @@ static func space_sky() -> Sky:
 
 
 func _build_environment() -> void:
+	world_env = WorldEnvironment.new()
+	world_env.environment = make_environment(hub)
+	add_child(world_env)
+
+
+## The station's light: dark but for its own lamps, with space outside the
+## windows. Brighter on a held deck.
+static func make_environment(bright := false) -> Environment:
 	var env := Environment.new()
-	# Space shows through the windows; the light inside is the station's own.
 	env.background_mode = Environment.BG_SKY
 	env.sky = space_sky()
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.32, 0.36, 0.44)
-	env.ambient_light_energy = 0.45 if hub else 0.12
+	env.ambient_light_energy = 0.45 if bright else 0.12
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_exposure = 0.95
 	env.glow_enabled = true
@@ -142,9 +149,7 @@ func _build_environment() -> void:
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.05, 0.035, 0.04)
 	env.fog_density = 0.018
-	world_env = WorldEnvironment.new()
-	world_env.environment = env
-	add_child(world_env)
+	return env
 
 
 func _build_level() -> void:

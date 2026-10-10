@@ -15,6 +15,10 @@ const SETTING_DEFAULTS := {
 	"tutorial": {
 		"welcomed": false,
 	},
+	"player": {
+		# The name on the online boards ("" for "Night tech").
+		"name": "",
+	},
 	"play": {
 		"invert_look": false,
 		"mouse_sensitivity": 0.25,
@@ -112,3 +116,9 @@ const ACTIONS := {
 
 static func version() -> String:
 	return LGVersion.current()
+
+
+## The player's name on the online boards.
+static func player_name() -> String:
+	var n := str(LGSettings.get_value("player", "name", "")).strip_edges()
+	return n if n != "" else "Night tech"

@@ -170,3 +170,13 @@ static func slug(text: String) -> String:
 static func music(id: String, fallback := "") -> String:
 	var path := MUSIC_DIR + id + ".ogg"
 	return path if ResourceLoader.exists(path) else fallback
+
+
+## Plays the first of `ids` that has a track, or the drone; nothing when
+## there's no music at all.
+static func play_music(ids: Array, volume_db := -10.0) -> void:
+	for id in ids + ["drone"]:
+		var path := music(id)
+		if path != "":
+			LGAudio.play_music(path, volume_db)
+			return
