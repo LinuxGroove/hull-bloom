@@ -513,8 +513,14 @@ func alert(pos: Vector3) -> void:
 ## Plays one of this kind's voice sounds ("alert", "idle", "attack",
 ## "hurt"): `<kind>_<what>`, or `robot_<what>` for machines.
 func say(what: String, volume_db := 0.0) -> void:
-	if not dead and is_inside_tree():
-		Sfx.at(self, ("robot" if robot else kind) + "_" + what, global_position + Vector3(0, height * 0.8, 0), volume_db)
+	if dead or not is_inside_tree():
+		return
+	# Machines only chirp and hum; their guns and hits make their own noise.
+	if robot and not what in ["alert", "idle"]:
+		return
+	# The robots' and watchers' sounds are sharper than the rest; even them out.
+	var trim: float = {"watcher": -3.0}.get(kind, -6.0 if robot else 0.0)
+	Sfx.at(self, ("robot" if robot else kind) + "_" + what, global_position + Vector3(0, height * 0.8, 0), volume_db + trim)
 
 
 ## The sounds a creature makes while it waits or hunts: rare and quiet

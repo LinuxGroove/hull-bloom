@@ -25,7 +25,7 @@ Made for Hull Bloom, all CC0 like the rest:
 - `assets/audio/sfx/` and `assets/audio/music/`: sounds and fallback music
   synthesized by a script (`tools/sfx/make_sfx.py`); see the README there.
 - `assets/audio/kenney/`: sounds from [Kenney](https://kenney.nl)'s Sci-Fi
-  Sounds, Impact Sounds and Interface Sounds, CC0.
+  Sounds, Impact Sounds, Interface Sounds and Foley Sounds, CC0.
 - `tools/lemonade/` has the prompts for making music and sounds with
   [Lemonade](https://lemonade-server.ai); what it makes is listed in
   `assets/audio/GENERATED.md`.
