@@ -20,7 +20,7 @@ const PAGES := [
 		"Some rooms can be opened to space. Everything inside goes, growth and all, and the room stays airless.",
 	]],
 	["Holding a deck", [
-		"Every deck's growth feeds from a root. Find it, burn it out, and the growth stops feeding. What's left dies back slowly; burn it to finish the job.",
+		"Every deck's growth feeds from a root. Find it, burn it out, and the growth stops feeding. What's left dies back on its own in a minute or so; burn it to hurry it along.",
 		"A deck is held when its root is gone and nothing thick is left. Survivors you find follow you; bring them to the lift.",
 		"A held deck is safe: its workbench turns salvage into upgrades, and its bunk heals you.",
 	]],

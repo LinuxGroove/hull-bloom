@@ -73,7 +73,7 @@ func objectives(bloom: Bloom) -> Array:
 		for g in bloom.growth:
 			if g >= 1.0:
 				left_tiles += 1
-		out.append(["Burn back the growth (%d tiles left)" % left_tiles, false])
+		out.append(["The growth is dying back (%d tiles left)" % left_tiles, false])
 	elif held:
 		out.append(["The deck is held", true])
 	if survivors_total > 0:

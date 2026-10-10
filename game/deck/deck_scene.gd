@@ -532,7 +532,7 @@ func _on_heart_killed(_h: Heart) -> void:
 	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
 	hud.banner(deck.cut_banner if deck.cut_banner != "" else "ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
-		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
+		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. The deck holds once it's gone; the cutter speeds that up.")
 
 
 func _on_creature_died(c: Creature) -> void:
