@@ -53,9 +53,13 @@ void sky() {
 	vec3 pd = normalize(planet_dir);
 	float a = acos(clamp(dot(d, pd), -1.0, 1.0));
 	if (a < planet_size) {
-		vec3 p = normalize(d - pd * cos(a));
-		vec3 nrm = normalize(d * 0.0 + (d - pd) * 0.0 + mix(-pd, p, a / planet_size));
-		float lit = clamp(dot(nrm, normalize(sun_dir)) * 0.9 + 0.15, 0.0, 1.0);
+		// The sphere's normal where this ray meets it: facing us at the
+		// middle, turning to the side at the rim.
+		vec3 p = d - pd * cos(a);
+		p = length(p) > 1e-5 ? normalize(p) : vec3(0.0, 1.0, 0.0);
+		float r = clamp(sin(a) / sin(planet_size), 0.0, 1.0);
+		vec3 nrm = normalize(p * r - pd * sqrt(1.0 - r * r));
+		float lit = smoothstep(-0.25, 0.6, dot(nrm, normalize(sun_dir))) * 0.95 + 0.05;
 		float bands = fbm(vec3(dot(d, vec3(0.2, 1.0, 0.1)) * 18.0, n * 2.0, 0.0));
 		vec3 surf = mix(planet_color, band_color, smoothstep(0.35, 0.7, bands));
 		c = surf * lit * 0.55;
