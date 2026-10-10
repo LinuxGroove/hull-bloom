@@ -129,7 +129,8 @@ func _process(delta: float) -> void:
 		s.from = self
 		s.damage = 9.0 if big else 6.0
 		get_tree().current_scene.add_child(s)
-		s.global_position = global_position + Vector3(0, 2.4 * _scale, 0)
+		# From under the ceiling: the Core's Heart is taller than a storey.
+		s.global_position = global_position + Vector3(0, minf(2.4 * _scale, Kit.HEIGHT - 0.8), 0)
 		var aim: Vector3 = (player.chest_position() if player.has_method("chest_position") else player.global_position) - s.global_position
 		s.velocity = aim.normalized() * 10.0 + Vector3(0, aim.length() * 0.15, 0)
 
