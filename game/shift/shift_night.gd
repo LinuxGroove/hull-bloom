@@ -63,7 +63,7 @@ static func make(p_seed: int) -> ShiftNight:
 		d.music = ["hydroponics", "labs", "core"][i]
 		d.color = Color.from_hsv(r.randf(), 0.5, 0.95)
 		d.arrive = "Deck %d of %d tonight: the %s. Organic obstruction on every sensor." % [i + 1, DECKS, d.name.to_lower()]
-		d.held = "The %s is holding." % d.name.to_lower()
+		d.held = "The %s deck is holding." % d.name.to_lower()
 		d.level = "res://game/shift/shift_level.gd"
 		n.decks.append(d)
 	n._kit = START_KIT.duplicate(true)

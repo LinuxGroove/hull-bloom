@@ -519,7 +519,7 @@ func on_burn(cell: Vector2i, amount: float) -> void:
 
 
 func on_scream(_w: Node) -> void:
-	hud.toast("A Watcher screamed. The pods are waking", StationTheme.RED)
+	hud.toast("A watcher screamed. The pods are waking", StationTheme.RED)
 
 
 func add_salvage(n: int) -> void:
@@ -671,7 +671,7 @@ func _show_down() -> void:
 	var why := "The Bloom took you."
 	match player.down_reason:
 		"drained":
-			why = "A Feeder drained you dry."
+			why = "A feeder drained you dry."
 		"killed":
 			why = String(DOWNED_BY.get(player.last_hit_by, "")) + "Your suit gave out."
 	if mode == "shift" and night:

@@ -27,9 +27,9 @@ const MARI_LOG := """21:40. Hydroponics stopped answering. Organic obstruction i
 
 22:31. I have lowered the temperature in this hall to protect my servers. The obstruction grows slowly in the cold.
 
-23:02. Dr Okafor asked me to open the sample chamber, and I did. Her badge is still reading in there. Her heart rate is 31 beats a minute, very steady. So is the room's. I have logged both as sensor faults."""
+22:42. Dr Okafor asked me to open the sample chamber, and I did. Her badge is still reading in there. Her heart rate is 31 beats a minute, very steady. So is the room's. I have logged both as sensor faults."""
 
-const OKAFOR_LOG := """Day 22. Station rules: every off-world sample goes to the Core's sample chamber, the deepest containment we have. I sent SV-3's case down on day 2 and kept a few spores for the seed vault. Everything upstairs grew from those few.
+const OKAFOR_LOG := """Day 21. Station rules: every off-world sample goes to the Core's sample chamber, the deepest containment we have. I sent SV-3's case down on day 2 and kept a few spores for the seed vault. Everything upstairs grew from those few.
 
 The rest has had three weeks down here, at the end of every feed on the station. Water, nutrients, air, power. It never needed to find a way out. We built it a hundred.
 
@@ -243,7 +243,7 @@ func _junction() -> void:
 	prop("ess:Prop_Barrel2_Open", Vector2i(-4, 1), Vector3(-0.5, 0, 1.45))
 	thing("log", Vector2i(-4, -1), Vector3(-0.4, 0, -1.45), 0.0, {"id": "core_junction", "style": "terminal", "title": "Maintenance ticket 5120",
 		"by": "MARI",
-		"text": "Ticket 5120: Hydroponics nutrient feed, flow reversed. Cause: organic obstruction.\n\nTicket 5121: Crew quarters water feed, flow reversed. Cause: organic obstruction.\n\nTickets 5122 to 5139: every other feed on Marigold, flow reversed. Everything on the station is flowing toward the sample chamber.\n\nAll tickets assigned to: night shift."})
+		"text": "Ticket 5120: Hydroponics nutrient feed, flow reversed. Cause: organic obstruction.\n\nTicket 5121: Crew quarters water feed, flow reversed. Cause: organic obstruction.\n\nTickets 5122 to 5139: every other feed on Marigold, flow reversed. Everything on the station is flowing towards the sample chamber.\n\nAll tickets assigned to: night shift."})
 	spawn("taken", Vector2i(-5, 0), Vector3(0.5, 0, 0.2), 1, {"job": "botanist"})
 	spawn("skitter", Vector2i(-4, -1), Vector3(-0.4, 0, 0.4), 2, {"asleep": true})
 	spawn("pod", Vector2i(-4, 0), Vector3(1.2, 0, 0.6), 1)
