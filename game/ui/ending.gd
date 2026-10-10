@@ -100,6 +100,7 @@ func show_choice() -> void:
 func show_ending(e: String) -> void:
 	ending = e
 	var first := Progress.endings_seen().is_empty()
+	LGPlaytest.moment("ending", {"ending": e, "held": Progress.held_decks().size(), "first": first})
 	Progress.set_ending(e)
 	_clear()
 	_col.add_child(StationTheme.hud_label(ENDINGS[e][0], 44, StationTheme.TEAL if e != "shuttle" else StationTheme.AMBER))

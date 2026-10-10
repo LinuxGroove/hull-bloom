@@ -218,6 +218,8 @@ func take_hit(hit: Hit) -> void:
 	var amount := hit.amount
 	if DeckScene.current:
 		amount *= DeckScene.current.creature_damage()
+	if health >= max_health * 0.25 and health - amount < max_health * 0.25 and health - amount > 0.0:
+		LGPlaytest.event("low_health", {"health": roundi(health - amount), "hit_by": Hit.Kind.keys()[hit.kind].to_lower()})
 	health -= amount
 	Sfx.ui(self, "hit_player", -2.0)
 	if hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
@@ -363,6 +365,7 @@ func use_medkit() -> void:
 	if items["medkit"] <= 0 or health >= max_health or _heal_left > 0.0:
 		return
 	items["medkit"] -= 1
+	LGPlaytest.event("medkit", {"health": roundi(health), "left": items["medkit"]})
 	_heal_left = MEDKIT_HEAL
 	Sfx.ui(self, "heal", -4.0)
 	items_changed.emit()
@@ -372,6 +375,7 @@ func use_stim() -> void:
 	if items["stim"] <= 0:
 		return
 	items["stim"] -= 1
+	LGPlaytest.event("stim", {"infection": roundi(infection), "left": items["stim"]})
 	infection = maxf(0.0, infection - STIM_CURE)
 	immune = STIM_TIME
 	Sfx.ui(self, "stim", -4.0)

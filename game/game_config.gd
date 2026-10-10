@@ -4,6 +4,17 @@ extends RefCounted
 
 const GAME_ID := "hull-bloom"
 
+## This round's own questions at the end of a play test (LGPlaytest), on top
+## of the standard ones. Change them for each round of play testing.
+const PLAYTEST := {
+	"questions": [
+		{"id": "first_minutes", "text": "How did your first few minutes on Hydroponics feel?", "kind": "text"},
+		{"id": "tense", "text": "How tense or scary was it?", "kind": "rating"},
+		{"id": "bloom_clear", "text": "How easy was it to tell where the Bloom was spreading and what slowed it?", "kind": "rating"},
+		{"id": "lost_deck", "text": "If you lost a deck to the Bloom, did you want to go back for it? Why?", "kind": "text"},
+	],
+}
+
 const SETTING_DEFAULTS := {
 	"online": {
 		"enabled": true,

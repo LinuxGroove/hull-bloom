@@ -185,6 +185,7 @@ func _pressed(id: String) -> void:
 
 
 func _go(id: String) -> void:
+	LGPlaytest.event("deck_picked", {"deck": id, "hours": Progress.hours_left(id), "state": Progress.deck_state(id)})
 	DeckScene.play(id, {"mode": "campaign"})
 
 

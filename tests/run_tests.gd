@@ -45,7 +45,8 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat"]:
+				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat",
+				"_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -387,6 +388,108 @@ func _test_launch_ping() -> void:
 	check(main.source_code.contains("LGLaunchPing.send(GameConfig.GAME_ID)"), "main sends the launch ping")
 	check(GameConfig.GAME_ID == "hull-bloom", "the game id is hull-bloom")
 	check(OnlineServer.SERVER_KEY == "defaultkey", "the server key in git is the default")
+
+#endregion
+
+#region Play testing
+
+## The play test recorder: game events, a note, a death on a deck, the
+## survey, the zip, and a session a crash cut short.
+func _test_playtest() -> void:
+	var dir := "user://test_playtest"
+	LGPlaytestPack._remove(dir)
+	var main := load("res://game/main.gd") as GDScript
+	check(main.source_code.contains("LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)"), "main sets up play test recording")
+	check((load("res://game/ui/title.gd") as GDScript).source_code.contains("LGScenes.quit()"), "quitting from the title ends a play test first")
+	var p := LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)
+	p.dir = dir
+	await frames(2)
+	check(p.is_inside_tree() and LGPlaytest.current() == p, "the recorder joins the tree")
+	check(not LGPlaytest.recording(), "nothing is recorded until asked")
+	var button := LGPlaytestButton.make()
+	add_child(button)
+	check(not button.visible, "Note this moment is hidden with no play test")
+	p.begin()
+	check(LGPlaytest.recording() and button.visible, "a play test records, and pause menus can note moments")
+	button.queue_free()
+	var panel := SettingsPanel.new()
+	add_child(panel)
+	await frames(1)
+	var row := false
+	for c in panel.get_children():
+		row = row or (c is LGCycler and (c as LGCycler).label_text == "Play test recording")
+	check(row, "the settings have a Play test recording row")
+	panel.queue_free()
+	LGPlaytest.event("test", {"at": Vector3(1, 2, 3)})
+	p.open_note()
+	await frames(1)
+	var note: LGPlaytestNote = p.find_children("*", "LGPlaytestNote", true, false).front()
+	check(note != null and get_tree().paused, "F8 asks what's happening, and pauses a game nobody else is in")
+	note.note.text = "  the vent hissed  "
+	note.pick("fun")
+	await frames(1)
+	check(not get_tree().paused, "the game carries on after the note")
+	var s := await open_deck("hydroponics")
+	s.player.die("killed")
+	await frames(3)
+	await close_deck(s)
+	p._next_perf = 0.0
+	await frames(2)
+	p.finish("quit")
+	await frames(1)
+	var survey: LGPlaytestSurvey = p.find_children("*", "LGPlaytestSurvey", true, false).front()
+	check(survey != null, "finishing asks the survey")
+	for q in ["fun", "story", "tense", "first_minutes", "best", "name"]:
+		check(q in survey.questions(), "the survey asks " + q)
+	survey.set_answer("fun", 4)
+	survey.set_answer("best", "Burning the first Heart")
+	survey.set_answer("genre", "often")
+	survey.submit()
+	await frames(2)
+	var card: LGPlaytestCard = p.find_children("*", "LGPlaytestCard", true, false).front()
+	check(card != null and "Quit" in card.button_texts(), "then says where the play test went")
+	check(not LGPlaytest.recording(), "and stops recording")
+	card.close("done")
+	await frames(2)
+	check(not get_tree().paused, "the game isn't left paused")
+	var zips := Array(DirAccess.get_files_at(dir)).filter(func(f): return f.ends_with(".zip"))
+	check(zips.size() == 1 and zips[0].begins_with("hull-bloom-playtest-"), "one zip, named for the game")
+	var r := ZIPReader.new()
+	r.open(dir.path_join(zips[0]))
+	var files := r.get_files()
+	for f in ["session.json", "events.jsonl", "survey.json"]:
+		check(f in files, "the zip holds " + f)
+	var info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
+	check(info.get("game") == "hull-bloom" and info.get("ended_how") == "quit" and int(info.get("marks", 0)) == 1, "session.json says what was played and how it ended")
+	check(info.has("settings") and not info["settings"].get("online", {}).has("server_key"), "the server key never goes in a recording")
+	var types := []
+	var mark := {}
+	for line in r.read_file("events.jsonl").get_string_from_utf8().split("\n", false):
+		var e: Dictionary = JSON.parse_string(line)
+		types.append(e["type"])
+		if e["type"] == "mark":
+			mark = e
+	for t in ["start", "test", "mark", "deck_start", "died", "perf", "survey", "end"]:
+		check(t in types, "the events hold " + t)
+	check(mark.get("tag") == "fun" and mark.get("note") == "the vent hissed", "a note keeps its tag and words")
+	var answers: Dictionary = JSON.parse_string(r.read_file("survey.json").get_string_from_utf8())
+	check(answers.get("fun") == 4.0 and answers.get("best") == "Burning the first Heart" and answers.get("genre") == "often" and not answers.has("story"),
+		"the survey keeps only what was answered")
+	r.close()
+	# A session the game never ended: packed the next time it starts.
+	var cut := dir.path_join("2026-01-01-000000")
+	DirAccess.make_dir_recursive_absolute(cut)
+	LGPlaytestPack.write_json(cut.path_join("session.json"), {"game": "hull-bloom"})
+	FileAccess.open(cut.path_join("events.jsonl"), FileAccess.WRITE).store_line("{}")
+	var recovered := LGPlaytestPack.recover(dir)
+	check(recovered.size() == 1 and not DirAccess.dir_exists_absolute(cut), "a session a crash cut short is packed")
+	r.open(recovered[0])
+	var cut_info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
+	check(cut_info.get("ended_how") == "suddenly", "and marked as ended suddenly")
+	r.close()
+	p.queue_free()
+	await frames(1)
+	LGPlaytestPack._remove(dir)
 
 #endregion
 

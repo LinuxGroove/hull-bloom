@@ -266,7 +266,7 @@ func show_about() -> void:
 
 
 func _quit() -> void:
-	get_tree().quit()
+	LGScenes.quit()
 
 
 func _unhandled_input(event: InputEvent) -> void:

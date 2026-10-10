@@ -107,6 +107,9 @@ func _ready() -> void:
 		_play_music("calm")
 		_hum = _ambience("hum_loop", -22.0)
 		_wet = _ambience("bloom_loop", -60.0)
+	LGPlaytest.follow(player)
+	LGPlaytest.event("deck_start", {"deck": deck.id, "mode": mode, "hub": hub, "overgrown": overgrown,
+		"roots": run.roots, "difficulty": LGSettings.get_value("difficulty", "spread", 1.0)})
 
 
 func _exit_tree() -> void:
@@ -446,12 +449,15 @@ func toggle_lights(id: String) -> bool:
 	if power.has(key):
 		power.give(key)
 		_set_lights(id, false)
+		LGPlaytest.event("lights", {"room": id, "on": false})
 		return false
 	if not power.take(key):
 		hud.toast("No free power cell", StationTheme.RED)
 		Sfx.ui(self, "door_denied", -6.0)
+		LGPlaytest.event("no_power", {"for": key})
 		return false
 	_set_lights(id, true)
+	LGPlaytest.event("lights", {"room": id, "on": true})
 	return true
 
 
@@ -475,6 +481,7 @@ func add_cell() -> void:
 #region Things that happen
 
 func _on_held() -> void:
+	LGPlaytest.moment("deck_held", {"deck": deck.id, "time": roundi(run.time)})
 	hud.banner("DECK HELD", StationTheme.TEAL, 4.0)
 	hud.say("MARI", deck.held if deck.held != "" else "Organic obstruction cleared. Deck %d is holding." % deck.number)
 	if not quiet:
@@ -484,13 +491,15 @@ func _on_held() -> void:
 
 func _on_heart_killed(_h: Heart) -> void:
 	run.cut_root()
+	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
 	hud.banner("ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
 		hud.say("MARI", "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
 
 
-func _on_creature_died(_c: Creature) -> void:
+func _on_creature_died(c: Creature) -> void:
 	run.kills += 1
+	LGPlaytest.event("killed", {"kind": c.kind, "room": _room_at(c.global_position)})
 
 
 ## The cutter burnt a tile: pods there may wither.
@@ -525,6 +534,7 @@ func say(person: String, line: String, voice := "") -> void:
 
 
 func _on_log_read(log: LogTerminal) -> void:
+	LGPlaytest.event("log_read", {"log": log.log_id, "again": log.log_id in run.logs})
 	run.read(log.log_id)
 	Progress.read_log(log.log_id)
 	log.set_read(true)
@@ -532,6 +542,7 @@ func _on_log_read(log: LogTerminal) -> void:
 
 
 func _on_survivor_found(s: Survivor) -> void:
+	LGPlaytest.event("survivor_found", {"survivor": s.survivor_id})
 	run.found(s.survivor_id)
 	hud.toast("%s is heading for the lift" % s.person, StationTheme.TEAL)
 
@@ -547,6 +558,7 @@ func _on_vent_asked(panel: VentPanel) -> void:
 ## Opens a room to space: its growth, its pods and everything in it are
 ## gone, and its doors stay shut for good.
 func vent_room(id: String) -> void:
+	LGPlaytest.event("vented", {"room": id})
 	level.bloom.vent_room(id)
 	if power.has("lights:" + id):
 		power.give("lights:" + id)
@@ -594,6 +606,7 @@ func _on_hub_opened(st: HubStation) -> void:
 
 
 func _on_upgrade(u: String) -> void:
+	LGPlaytest.event("upgrade", {"what": u})
 	if u == "suit":
 		player.max_health = Tech.MAX_HEALTH + Tech.SUIT_BONUS
 		player.heal(Tech.SUIT_BONUS)
@@ -639,6 +652,8 @@ func leave() -> void:
 func _on_player_died() -> void:
 	if run.over:
 		return
+	LGPlaytest.moment("died", {"how": player.down_reason, "room": _room_at(player.global_position),
+		"time": roundi(run.time), "health_packs": player.items.get("medkit", 0)})
 	run.downs += 1
 	run.over = true
 	var t := create_tween()
@@ -666,6 +681,9 @@ func _show_down() -> void:
 func _finish() -> void:
 	run.over = true
 	player.is_movement_paused = true
+	LGPlaytest.event("deck_done", {"deck": deck.id, "held": run.held, "time": roundi(run.time),
+		"roots_cut": run.roots_cut, "survivors": run.survivors_saved.size(), "kills": run.kills,
+		"salvage": run.salvage, "logs": run.logs.size(), "ammo": _ammo_left()})
 	if mode == "shift" and night:
 		night.deck_done(self)
 		return
@@ -673,6 +691,7 @@ func _finish() -> void:
 	var out := {}
 	if mode == "campaign":
 		out = Progress.finish_deck(deck.id, run.result(player.kit()))
+		LGPlaytest.event("ring", {"lost": out.get("lost", []), "opened": out.get("opened", []), "decks": _deck_states()})
 		for id in out.get("lost", []):
 			lines.append(["Lost to the Bloom", Decks.get_deck(id).name])
 		for id in out.get("opened", []):
@@ -708,6 +727,7 @@ func _summary_lines() -> Array:
 
 
 func _retry() -> void:
+	LGPlaytest.event("retry", {"deck": deck.id})
 	get_tree().paused = false
 	if mode == "test" or mode == "campaign":
 		DeckScene.play(deck.id, {"mode": mode})
@@ -735,5 +755,28 @@ func _on_quit() -> void:
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	LGScenes.change_scene(TITLE)
+
+
+## The name of the room at a spot, for play test events.
+func _room_at(at: Vector3) -> String:
+	return str(level.tiles.get(DeckLevel.cell_at(at), ""))
+
+
+## Rounds left for each gun, for play test events.
+func _ammo_left() -> Dictionary:
+	var a: Arsenal = player.arsenal
+	var out := {}
+	for w in a.owned:
+		if w != "cutter":
+			out[w] = int(a.mag.get(w, 0)) + int(a.reserve.get(w, 0))
+	return out
+
+
+## Each deck's state and hours left, for play test events.
+static func _deck_states() -> Dictionary:
+	var out := {}
+	for id in Decks.ORDER:
+		out[id] = [Progress.deck_state(id), Progress.hours_left(id)]
+	return out
 
 #endregion

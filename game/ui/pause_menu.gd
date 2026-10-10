@@ -32,6 +32,7 @@ func _init() -> void:
 	_panel.add_child(_col)
 	_col.add_child(LGUi.label("Paused", "HeaderMedium"))
 	_col.add_child(LGUi.button("Carry on", close_pause_menu, 500))
+	_col.add_child(LGPlaytestButton.make(500))
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(520, 380)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

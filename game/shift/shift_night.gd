@@ -71,6 +71,7 @@ static func make(p_seed: int) -> ShiftNight:
 
 
 static func start(p_seed: int) -> void:
+	LGPlaytest.event("shift_start", {"seed": p_seed, "daily": p_seed == daily_seed()})
 	current = make(p_seed)
 	current.play_deck()
 
@@ -145,6 +146,7 @@ func survivors() -> int:
 
 func _finish(scene: DeckScene, down := false) -> void:
 	over = true
+	LGPlaytest.moment("shift_end", {"seed": seed, "score": score(), "held": decks_held(), "down": down})
 	var best := Progress.record_shift(seed, decks_held(), survivors(), score())
 	var lines := []
 	for r in results:
