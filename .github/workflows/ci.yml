@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GODOT_VERSION: 4.7.2
+
+defaults:
+  run:
+    # Named explicitly so pipefail is on and a failing Godot run fails the
+    # step even though its output goes through tee.
+    shell: bash
+
+jobs:
+  test:
+    # The core tests (the Bloom, power, weapons, creatures, menus, Shift
+    # mode) in one job, and each deck's own tests side by side.
+    name: Tests (${{ matrix.part }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [core, hydroponics, crew, medical, labs, security, engineering, cargo, core_deck]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot
+        run: |
+          curl -sSfL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          sudo mv "Godot_v${GODOT_VERSION}-stable_linux.x86_64" /usr/local/bin/godot
+      - name: Import
+        # Twice: Cogito's fonts only import cleanly once the rest has.
+        run: godot --headless --path . --import && godot --headless --path . --import
+      - name: Check every script
+        if: matrix.part == 'core'
+        run: godot --headless --path . tools/check_scripts.tscn 2>&1 | tee check.log; ! grep -q "SCRIPT ERROR" check.log
+      - name: Run tests
+        timeout-minutes: 25
+        run: |
+          case "${{ matrix.part }}" in
+            core) args=--core ;;
+            core_deck) args=--deck=core ;;
+            *) args=--deck=${{ matrix.part }} ;;
+          esac
+          godot --headless --path . tests/run_tests.tscn -- $args 2>&1 | tee test.log
+          ! grep -q "SCRIPT ERROR" test.log

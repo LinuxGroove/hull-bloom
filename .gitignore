@@ -9,3 +9,7 @@
 /parts/
 /stage/
 /prime/
+
+# Claude Code worktrees
+/.claude/
+/_scratch/
