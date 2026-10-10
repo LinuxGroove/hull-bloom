@@ -647,6 +647,18 @@ func _test_combat() -> void:
 	check(s.player.grabbed_by == null, "three shoves free you from a Feeder")
 	feeder.take_hit(Hit.make(Hit.Kind.BULLET, 100000.0, feeder.global_position, forward, s.player))
 	await physics(2)
+	# Spit still lands when what spat it died while it flew.
+	s.player.health = s.player.max_health
+	var spitter := Node3D.new()
+	s.add_child(spitter)
+	var spit := Spit.new()
+	spit.from = spitter
+	s.add_child(spit)
+	spit.global_position = s.player.global_position + flat * 1.5 + Vector3(0, 1.0, 0)
+	spit.velocity = -flat * 8.0
+	spitter.free()
+	await physics(30)
+	check(s.player.health < s.player.max_health, "spit lands after what spat it is gone")
 	var sk2 := s.director.spawn("skitter", at, false)
 	await physics(2)
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward, sk2))
