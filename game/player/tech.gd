@@ -100,6 +100,8 @@ func _ready():
 	camera.cull_mask = 0xFFFFF
 	_reload_options()
 	super()
+	# Cogito's options menu, in the player's scene, turns the window's stretch off as it starts.
+	get_window().content_scale_size = Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
 	max_health = MAX_HEALTH + (SUIT_BONUS if Progress.has_upgrade("suit") else 0.0)
 	health = max_health
 	torch = SpotLight3D.new()
