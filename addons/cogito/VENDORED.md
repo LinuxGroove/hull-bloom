@@ -25,6 +25,9 @@ version, update the version above and re-apply the changes below.
     `Cogito_EmergencyInjector.tres`: `Kenney/woosh1.ogg`.
 - `CogitoSettings.tres`: dropped the references to the demo scenes.
 - `EasyMenus/Scenes/PauseMenu.tscn`: `main_menu_scene` is `res://game/main.tscn`.
+- `Components/DynamicInputIcon.gd`: `_is_steam_deck` works its answer out
+  once for every icon, and no longer prints a line for each icon when the
+  renderer has no rendering device (OpenGL, or headless).
 - `Components/LootComponent.gd`: `_get_configuration_warnings` returns `[]` on
   every path (Godot 4.7 rejects the missing return).
 - `LICENSE` copied in from the upstream repository root.
