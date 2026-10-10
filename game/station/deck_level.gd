@@ -112,7 +112,7 @@ func room(id: String, name: String, rect: Rect2i, style := "", opts := {}) -> vo
 func room_cells(id: String, name: String, cells: Array, style := "", opts := {}) -> void:
 	if not rooms.has(id):
 		rooms[id] = {"name": name, "style": style if style != "" else _default_style, "cells": [] as Array[Vector2i],
-			"dark": opts.get("dark", false), "warm": float(opts.get("warm", 1.0)), "vent": opts.get("vent", false)}
+			"dark": opts.get("dark", false), "warm": float(opts.get("warm", 0.7 if opts.get("cold", false) else 1.0)), "vent": opts.get("vent", false)}
 		room_ids.append(id)
 	for c in cells:
 		if tiles.has(c) and tiles[c] != id:

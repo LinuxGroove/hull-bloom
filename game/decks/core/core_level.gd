@@ -83,7 +83,7 @@ func _layout() -> void:
 	window(Vector2i(0, 3), Vector2i(0, 2))
 	window(Vector2i(-1, -3), Vector2i(-1, -2))
 	window(Vector2i(1, -3), Vector2i(1, -2))
-	room("mari", "MARI core", Rect2i(4, -1, 2, 3), "lab", {"warm": 0.7})
+	room("mari", "MARI core", Rect2i(4, -1, 2, 3), "lab", {"cold": true})
 	door(Vector2i(3, -1), Vector2i(4, -1))
 	room_cells("observation", "Observation room", [Vector2i(0, -4), Vector2i(-1, -5), Vector2i(0, -5), Vector2i(1, -5)], "window", {"vent": true})
 	door(Vector2i(0, -3), Vector2i(0, -4))
@@ -277,7 +277,7 @@ func _crew_rest() -> void:
 	prop("ess:Prop_Locker", Vector2i(-5, 3), Vector3(-0.5, 0, -1.38))
 	prop("ess:Prop_Shelves_WideShort", Vector2i(-4, 3), Vector3(0.3, 0, -1.36))
 	thing("log", Vector2i(-4, 4), Vector3(0.6, 0.95, 1.15), 170.0, {"id": "core_rest", "title": "Note for Theo",
-		"by": "Ines Varga, core tech",
+		"by": "Ines Halloran, core tech",
 		"text": "Theo, if you get this up on the ring: don't come down. The Core's warm. It's never warm down here.\n\nThe lines are wet where they come in through the wall. I put my hand on the nutrient main and it was beating. Not pumping. Beating.\n\nI'm going to sleep in the cold hall with MARI's servers. She says it's slower in there. Love you. Ines."})
 	body(Vector2i(-5, 3), Vector3(0.6, 0, 0.2), 120.0, "tech")
 	pickup("medkit", Vector2i(-4, 3), Vector3(0.6, 1.22, -1.36), 1)

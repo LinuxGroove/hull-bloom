@@ -49,7 +49,7 @@ func build() -> void:
 	door(Vector2i(-1, -5), Vector2i(0, -5))
 	room("bay2", "Loading bay 2", Rect2i(2, -6, 5, 3), "cargo")
 	door(Vector2i(1, -5), Vector2i(2, -5))
-	room("cold", "Cold store", Rect2i(-3, -3, 2, 2), "medical", {"cold": true, "warm": 0.7})
+	room("cold", "Cold store", Rect2i(-3, -3, 2, 2), "medical", {"cold": true})
 	door(Vector2i(-2, -2), Vector2i(-2, -1))
 	door(Vector2i(-2, -3), Vector2i(-2, -4))
 	room("dock", "Dock", Rect2i(-1, -10, 4, 3), "window")
