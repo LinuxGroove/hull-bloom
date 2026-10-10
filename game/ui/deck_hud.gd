@@ -207,7 +207,7 @@ func _build_weapon() -> void:
 	_hints.alignment = BoxContainer.ALIGNMENT_END
 	_hints.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(_hints)
-	for h in [["action_primary", "FIRE"], ["swap", "SWAP"], ["throw", "THROW"], ["power_map", "POWER"]]:
+	for h in [["action_primary", "FIRE"], ["swap", "SWAP"], ["throw", "THROW"], ["power_lights", "LIGHTS"], ["power_map", "POWER"], ["heal", "MEDKIT"]]:
 		var a := ActionPrompt.make(h[0], h[1], 22)
 		a.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_hints.add_child(a)
@@ -436,7 +436,7 @@ func say(person: String, line: String, seconds := -1.0) -> void:
 	var col := StationTheme.TEAL if person == "MARI" else StationTheme.AMBER
 	_subtitle_label.text = "[b][color=#%s]%s[/color][/b]  %s" % [col.to_html(false), person.to_upper(), line]
 	_subtitle.visible = true
-	_subtitle_t = seconds if seconds > 0.0 else clampf(2.0 + line.length() * 0.055, 3.0, 9.0)
+	_subtitle_t = seconds if seconds > 0.0 else clampf(2.0 + line.length() * 0.065, 3.0, 16.0)
 
 
 ## Clears the subtitle, alerts and banner at once.

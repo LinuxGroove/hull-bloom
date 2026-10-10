@@ -67,7 +67,7 @@ func _init() -> void:
 	_cells = LGUi.label("", "")
 	_cells.add_theme_color_override("font_color", StationTheme.AMBER)
 	col.add_child(_cells)
-	var hint := LGUi.label("Lit rooms grow at half speed. Lights, sealed doors, turrets and the lift share the cells.", "DimLabel")
+	var hint := LGUi.label("Pick a room to switch its lights on or off. Lit rooms grow at half speed. Lights, sealed doors, turrets and the lift share the cells.", "DimLabel")
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	hint.custom_minimum_size = Vector2(400, 0)
 	col.add_child(hint)
@@ -141,7 +141,7 @@ func _refresh() -> void:
 	for id in _buttons:
 		var on := power.has("lights:" + id)
 		var lvl := level.bloom.room_level(id)
-		var state := "ON" if on else "OFF"
+		var state := "LIGHTS ON" if on else "LIGHTS OFF"
 		if level.bloom.airless[level.bloom.room_names.find(id)] == 1:
 			state = "AIRLESS"
 		var growth := "" if lvl < 0.5 else ("   BLOOM %d" % ceili(lvl))

@@ -62,6 +62,8 @@ var _hum: AudioStreamPlayer
 var _wet: AudioStreamPlayer
 var _hunted_t := 0.0
 var _music := ""
+var _lights_taught := false
+var _room_check := 0.0
 
 
 ## Starts a deck: Progress decides whether it's a hub or overgrown.
@@ -150,9 +152,8 @@ static func make_environment(bright := false) -> Environment:
 	env.sky = space_sky()
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color(0.32, 0.36, 0.44)
-	env.ambient_light_energy = 0.45 if bright else 0.12
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 0.95
+	light(env, bright)
 	env.glow_enabled = true
 	env.glow_intensity = 0.55
 	env.glow_bloom = 0.04
@@ -163,6 +164,14 @@ static func make_environment(bright := false) -> Environment:
 	env.fog_light_color = Color(0.05, 0.035, 0.04)
 	env.fog_density = 0.018
 	return env
+
+
+## Sets how bright the station's dark is, from the Brightness setting: the
+## light that's everywhere, and the exposure.
+static func light(env: Environment, bright := false) -> void:
+	var b := float(LGSettings.get_value("play", "brightness", 1.0))
+	env.ambient_light_energy = (0.45 if bright else 0.12) * b * b
+	env.tonemap_exposure = 0.95 * b
 
 
 func _build_level() -> void:
@@ -303,6 +312,26 @@ func _process(delta: float) -> void:
 			tick_bloom()
 	_update_music(delta)
 	_update_ambience(delta)
+	_room_check -= delta
+	if _room_check <= 0.0:
+		_room_check = 0.5
+		teach_lights()
+
+
+## Until you've switched a room's lights on once, MARI tells you how in the
+## first dark room you walk into with a cell to spare (one for the lift).
+## Returns whether she did.
+func teach_lights() -> bool:
+	if _lights_taught or hub or bool(LGSettings.get_value("tutorial", "lights", false)):
+		return false
+	var id := _room_at(player.global_position)
+	if id == "" or level.rooms[id]["dark"] or power.has("lights:" + id) or hud.subtitle_text() != "":
+		return false
+	if power.free_cells() < (1 if power.has("lift") else 2):
+		return false
+	_lights_taught = true
+	hud.say("MARI", "This room is unlit. Lit rooms report slower obstruction. %s lights it for one power cell, and %s shows every room." % [LGInput.label_for_action("power_lights"), LGInput.label_for_action("power_map")])
+	return true
 
 
 ## Stops the deck where it is, for screenshots: no Bloom ticks, no clock,
@@ -463,6 +492,7 @@ func toggle_lights(id: String) -> bool:
 		LGPlaytest.event("no_power", {"for": key})
 		return false
 	_set_lights(id, true)
+	LGSettings.set_value("tutorial", "lights", true, not quiet)
 	LGPlaytest.event("lights", {"room": id, "on": true})
 	return true
 

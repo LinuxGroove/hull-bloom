@@ -379,6 +379,12 @@ func _test_settings_panel() -> void:
 		check(h in labels, "the settings have a %s group" % h.to_lower())
 	check(float(LGSettings.get_value("play", "bob")) == 0.0, "head bob is off by default")
 	check(not bool(LGSettings.get_value("play", "tilt")), "view roll is off by default")
+	# Brightness lifts the dark.
+	var dim := DeckScene.make_environment(false)
+	LGSettings.set_value("play", "brightness", 1.5, false)
+	var lifted := DeckScene.make_environment(false)
+	LGSettings.set_value("play", "brightness", 1.0, false)
+	check(lifted.ambient_light_energy > dim.ambient_light_energy and lifted.tonemap_exposure > dim.tonemap_exposure, "brightness lifts the dark")
 	ps.queue_free()
 	await frames(1)
 
@@ -527,10 +533,19 @@ func _test_deck_scene() -> void:
 	check(s.player != null and s.player.is_inside_tree(), "the tech is on the deck")
 	check(s.power.free_cells() == s.deck.cells, "every cell starts free")
 	check(not s.run.held, "the deck isn't held at the start")
+	# Until you've used the lights, MARI says how in the first dark room.
+	LGSettings.set_value("tutorial", "lights", false, false)
+	s.hud.hush()
+	await put_player(s, Vector2i(0, 0))
+	check(s.teach_lights(), "MARI teaches the lights in a dark room")
+	check(s.hud.subtitle_text().contains(LGInput.label_for_action("power_lights")), "naming the button")
+	s.hud.hush()
+	check(not s.teach_lights(), "once")
 	# Lights: a cell each, and the growth slows there.
 	var room: String = s.level.room_ids[0]
 	check(s.toggle_lights(room), "lights take a cell")
 	check(s.power.has("lights:" + room), "the room has power")
+	check(bool(LGSettings.get_value("tutorial", "lights")), "and the lesson is learnt")
 	s.toggle_lights(room)
 	check(not s.power.has("lights:" + room), "and give it back")
 	# The lift wants a cell before it goes.

@@ -25,6 +25,9 @@ const SETTING_DEFAULTS := {
 	},
 	"tutorial": {
 		"welcomed": false,
+		# Set once you've switched a room's lights on; until then MARI tells
+		# you how in the first dark room you walk into.
+		"lights": false,
 	},
 	"player": {
 		# The name on the online boards ("" for "Night tech").
@@ -40,6 +43,9 @@ const SETTING_DEFAULTS := {
 		"bob": 0.0,
 		"tilt": false,
 		"fov": 75.0,
+		# How bright the dark is: 1 as the station was built, more to see
+		# further on a dim screen.
+		"brightness": 1.0,
 		# How much the walls breathe: 1 normal, 0.4 slow, 0 still.
 		"calm_walls": 1.0,
 		# Spore bursts blur the view for a moment.
