@@ -91,6 +91,7 @@ func setup(p_scene: Node, p_level: DeckLevel, p_power: Power, p_run: DeckRun, pl
 	power = p_power
 	run = p_run
 	_map.level = level
+	_map.show_all_survivors = p_scene.mode == "campaign" and Progress.has_gift("survivors")
 	_map.player = player
 	for id in level.room_ids:
 		if level.rooms[id]["dark"]:

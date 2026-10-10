@@ -205,6 +205,15 @@ func finish_deck(id: String, result: Dictionary) -> Dictionary:
 		out["opened"].append("core")
 	if id == "engineering" and held and was == "open":
 		_cfg.set_value("shift", "spare_cells", SPARE_CELLS)
+	# The labs' prototype rail rifle comes with saving them.
+	if held and was == "open" and Decks.get_deck(id).gives == "rail":
+		var w := weapons()
+		if not "rail" in w:
+			w.append("rail")
+			_cfg.set_value("carry", "weapons", w)
+			var a := ammo()
+			a["rail"] = int(a.get("rail", 0)) + 12
+			_cfg.set_value("carry", "ammo", a)
 	_save()
 	changed.emit()
 	return out

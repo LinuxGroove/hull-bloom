@@ -18,6 +18,8 @@ var player: Node3D
 ## whole deck when 0.
 var follow_scale := 0.0
 var show_names := false
+## Shows survivors you haven't found yet too.
+var show_all_survivors := false
 ## The room picked on the deck map, outlined.
 var picked := ""
 
@@ -115,12 +117,16 @@ func _draw() -> void:
 		var pulse := 0.5 + 0.5 * sin(_time * 3.0)
 		draw_circle(rp, s * (0.2 + 0.08 * pulse), Color(1.0, 0.15, 0.1, 0.9))
 		draw_circle(rp, s * (0.36 + 0.1 * pulse), Color(1.0, 0.2, 0.1, 0.5), false, maxf(1.0, s * 0.05))
-	# Survivors you've found.
+	# Survivors you've found, and with the crew's roll call (Crew quarters'
+	# gift) those you haven't.
 	for sv in get_tree().get_nodes_in_group("survivors"):
 		var su := sv as Survivor
-		if su and su.is_found:
+		if su and (su.is_found or show_all_survivors):
 			var sp := off + Vector2(su.global_position.x, su.global_position.z) / Kit.TILE * s
-			draw_circle(sp, maxf(2.5, s * 0.12), StationTheme.GREEN)
+			if su.is_found:
+				draw_circle(sp, maxf(2.5, s * 0.12), StationTheme.GREEN)
+			else:
+				draw_circle(sp, maxf(2.5, s * 0.12), Color(StationTheme.GREEN, 0.55), false, maxf(1.0, s * 0.05))
 	if show_names:
 		var font := LGTheme.heading_font if LGTheme.heading_font else get_theme_default_font()
 		for id in level.room_ids:

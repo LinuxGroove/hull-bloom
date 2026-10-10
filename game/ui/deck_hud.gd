@@ -311,6 +311,7 @@ func setup(p_scene: Node, p_player: Tech, p_level: DeckLevel, p_run: DeckRun, p_
 	run = p_run
 	power = p_power
 	_map.level = level
+	_map.show_all_survivors = p_scene.mode == "campaign" and Progress.has_gift("survivors")
 	_map.player = player
 	var d := level.deck
 	_title.text = ("DECK %d · %s" % [d.number, d.name.to_upper()]) if d and d.number > 0 else (d.name.to_upper() if d else "DECK")

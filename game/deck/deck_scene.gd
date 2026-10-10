@@ -215,7 +215,13 @@ func _build_player() -> void:
 	player.global_transform = level.start_transform()
 	player.reset_physics_interpolation()
 	if mode == "campaign":
-		player.load_kit(Progress.loadout())
+		var kit := Progress.loadout()
+		# Medical's gift: its stores top up your stims and medkits.
+		if Progress.has_gift("stims"):
+			var items: Dictionary = kit["items"]
+			items["stim"] = maxi(int(items.get("stim", 0)), 2)
+			items["medkit"] = maxi(int(items.get("medkit", 0)), 2)
+		player.load_kit(kit)
 	elif night and night.has_method("kit"):
 		player.load_kit(night.kit())
 	else:
@@ -236,7 +242,8 @@ func _wire_things() -> void:
 	for t in get_tree().get_nodes_in_group("turrets"):
 		var tu := t as Turret
 		tu.power = _cell_for.bind("turret:%d" % tu.get_instance_id())
-		if hub:
+		# Security's gift: turrets that run on their own.
+		if hub or (mode == "campaign" and Progress.has_gift("turrets")):
 			tu.power = _free_cell
 	lift.used.connect(_on_lift_used)
 	for v in get_tree().get_nodes_in_group("vent_panels"):
