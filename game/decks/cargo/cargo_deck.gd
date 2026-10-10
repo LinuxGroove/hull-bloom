@@ -19,7 +19,7 @@ static func make() -> DeckDef:
 	d.music = "cargo"
 	d.arrive = "Cargo and docking. The shuttle Corran is fuelled and waiting for clearance. I have not given clearance: there is an organic obstruction in loading bay 2. Bay security is still on its rounds. Please carry your badge."
 	d.held = "Organic obstruction cleared. Cargo is holding. The Corran is cleared to leave from the dock whenever you are ready. I will keep her engines warm."
-	d.hatches = {"skitter": 0.5, "stalker": 0.3, "feeder": 0.2}
-	d.max_alive = 11
+	d.hatches = {"skitter": 0.7, "stalker": 0.1, "feeder": 0.2}
+	d.max_alive = 5
 	d.color = Color(1.0, 0.84, 0.2)
 	return d

@@ -81,9 +81,9 @@ func build() -> void:
 	vent(Vector2i(-3, -6), Vector2i(-3, -1))
 	cable(Vector2i(1, -7), Vector2i(4, -2))
 	root(Vector2i(1, -8))
-	grow_room("laundry", 4.0)
+	grow_room("laundry", 3.4)
 	grow_room("showers", 3.2)
-	grow(Vector2i(-2, -7), 3.6)
+	grow(Vector2i(-2, -7), 3.2)
 	grow(Vector2i(0, -6), 2.6)
 	grow(Vector2i(0, -5), 1.8)
 	grow(Vector2i(0, -4), 1.0)
@@ -192,22 +192,22 @@ func _bunks_b() -> void:
 	prop("ess:Prop_Locker", Vector2i(1, -3), Vector3(0.4, 0, 1.4), 180.0)
 	thing("survivor", Vector2i(3, -4), Vector3(0.8, 0, -1.2), -120.0, {"id": "crew_novak", "name": "Marek Novak", "job": "engineer", "pose": "crouch",
 		"line": "It came out of that vent an hour ago and it's been creeping at me ever since. I couldn't get past it to the door. I'm going. The lift, yes?"})
-	pickup("ammo:scattergun", Vector2i(1, -5), Vector3(-1.0, 0, 1.0), 1)
+	pickup("ammo:scattergun", Vector2i(1, -5), Vector3(-1.0, 0, 1.0), 2)
 	pickup("salvage", Vector2i(2, -3), Vector3(-1.2, 0, 0.6), 1)
 	# A card table and a footlocker where the tile corners meet, out of the walkways.
 	prop("ess:Prop_Desk_Small", Vector2i(2, -4), Vector3(1.9, 0, 1.9), 90.0)
 	prop("ess:Prop_Mug", Vector2i(2, -4), Vector3(1.8, 0.94, 1.6), 0.0, {"solid": false})
 	prop("ess:Prop_Crate_Tarp", Vector2i(1, -5), Vector3(1.9, 0, 1.9), 30.0)
-	spawn("taken", Vector2i(2, -4), Vector3(0.0, 0, 0.6), 1, {"job": "engineer",
+	spawn("taken", Vector2i(2, -4), Vector3(0.0, 0, 0.6), 1, {"asleep": true, "job": "engineer",
 		"routine": [Vector2i(1, -5), Vector2i(3, -4), Vector2i(2, -3), Vector2i(0, -4), Vector2i(0, -2)]})
 
 
 func _rec() -> void:
 	prop("ess:Prop_Desk_Small", Vector2i(-2, 0), Vector3(0, 0, 1.1), 180.0)
 	prop("ess:Prop_Screen", Vector2i(-2, 0), Vector3(0, 0.94, 1.25), 180.0, {"solid": false})
-	pickup("ammo:scattergun", Vector2i(-3, 0), Vector3(-1.0, 0, 1.0), 1)
+	pickup("ammo:scattergun", Vector2i(-3, 0), Vector3(-1.0, 0, 1.0), 2)
 	pickup("salvage", Vector2i(-1, -1), Vector3(0.9, 0, 1.2), 2)
-	spawn("taken", Vector2i(-3, -2), Vector3(0.5, 0, 0.8), 1, {"job": "security",
+	spawn("taken", Vector2i(-3, -2), Vector3(0.5, 0, 0.8), 1, {"asleep": true, "job": "security",
 		"routine": [Vector2i(-3, -2), Vector2i(-1, -2), Vector2i(-1, 0), Vector2i(-3, 0), Vector2i(-2, -1)]})
 
 
@@ -230,7 +230,7 @@ func _bunks_a() -> void:
 	prop("ess:Prop_Desk_Small", Vector2i(-3, -4), Vector3(1.9, 0, 1.9), 0.0)
 	prop("ess:Prop_Crate_Tarp", Vector2i(-3, -5), Vector3(1.9, 0, 1.9), -20.0)
 	# Lena walks from her bunk to the showers and stands over the drain.
-	spawn("taken", Vector2i(-2, -4), Vector3(-0.4, 0, 0.2), 1, {"job": "botanist", "female": true,
+	spawn("taken", Vector2i(-2, -4), Vector3(-0.4, 0, 0.2), 1, {"asleep": true, "job": "botanist", "female": true,
 		"routine": [Vector2i(-3, -4), Vector2i(-1, -3), Vector2i(-2, -6), Vector2i(-3, -7), Vector2i(-2, -5)]})
 
 
