@@ -1359,6 +1359,20 @@ def read(rng):
     return 0.5 * lowpass(beeps, 4500) + 0.3 * click(rng, t, 0.0, 0.002, 2500)
 
 
+def hit_marker(rng):
+    """A shot landing, for whoever fired it: a short dry tick (0.08 s)."""
+    t = timeline(0.08)
+    return modes(t, [2400, 3700], [1.0, 0.5], [0.012, 0.008]) + 0.5 * click(rng, t, 0.0, 0.002, 2000)
+
+
+def kill_marker(rng):
+    """A kill: a heavier double tick (0.18 s)."""
+    t = timeline(0.18)
+    a = modes(t, [1500, 2300], [1.0, 0.5], [0.02, 0.012]) + 0.4 * click(rng, t, 0.0, 0.003, 1500)
+    b = modes(t, [1100, 1800], [1.0, 0.4], [0.04, 0.02], 0.06) + 0.4 * click(rng, t, 0.06, 0.003, 1200)
+    return a + 0.9 * b
+
+
 # ---------------------------------------------------------------------------
 # Music fallbacks: stereo loops, every tone a whole number of cycles per loop
 
@@ -1535,7 +1549,7 @@ def catalogue():
     sounds = {}
     for build in (watcher_scream, vent_crawl, taken_rise, taken_die, stalker_die, spit, skitter_leap, shove,
                   sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle,
-                  cutter_start, cutter_stop, read):
+                  cutter_start, cutter_stop, read, hit_marker, kill_marker):
         sounds[build.__name__] = (build, "sfx")
     for build in (heart_beat_loop, bloom_loop, hum_loop):
         sounds[build.__name__] = (build, "loop")

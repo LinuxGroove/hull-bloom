@@ -1,5 +1,5 @@
-// What's happening to the tech, over the whole view: red at the edges when
-// hurt, the Bloom's veins creeping in as the infection rises, and a short
+// What's happening to the tech, over the whole view: a red flash and red at
+// the edges when hurt, the Bloom's veins creeping in as the infection rises, and a short
 // blur when a pod's spores burst in your face (or only a tint, with the
 // Spore blur setting off).
 shader_type canvas_item;
@@ -8,6 +8,7 @@ shader_type canvas_item;
 
 uniform sampler2D screen : hint_screen_texture, filter_linear_mipmap;
 uniform float hurt = 0.0;
+uniform float pulse = 0.0;
 uniform float infection = 0.0;
 uniform float blur = 0.0;
 uniform float tint = 0.0;
@@ -33,9 +34,10 @@ void fragment() {
 		c = mix(c, vec3(0.16, 0.02, 0.08), reach * (0.4 + 0.6 * v) * 0.85);
 		c = mix(c, vec3(0.5, 0.05, 0.1), v * reach * 0.5);
 	}
-	// Hurt: red at the edges.
-	float edge = smoothstep(0.45, 1.05, r);
-	c = mix(c, vec3(0.45, 0.0, 0.0), edge * hurt * 0.85);
+	// Hurt: red at the edges, and a moment's red over everything as a blow lands.
+	float edge = smoothstep(0.35, 1.0, r);
+	c = mix(c, vec3(0.5, 0.0, 0.0), edge * hurt * 0.9);
+	c = mix(c, vec3(0.6, 0.02, 0.0), pulse * (0.2 + 0.45 * edge));
 	// Down: everything fades to dark red.
 	c = mix(c, vec3(0.08, 0.0, 0.0), down * smoothstep(0.0, 1.0, r + down * 0.6));
 	COLOR = vec4(c, 1.0);
