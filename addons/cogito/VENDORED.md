@@ -12,7 +12,7 @@ version, update the version above and re-apply the changes below.
 ## Local changes
 
 - Removed `DemoScenes/`, `DynamicFootstepSystem/DynamicFootstepDemoScene.tscn`
-  and `EasyMenus/Scenes/main_menu.tscn` (Hull Bloom has its own menus and levels).
+  and `EasyMenus/Scenes/main_menu.tscn` (Verdigris Protocol has its own menus and levels).
 - Removed audio that isn't CC0 or MIT (and some unused): alarm siren (CC BY),
   running water (CC BY), fire burn (CC BY-NC), underwater loop (CC BY), the
   Pixabay spray, energy drink and soda sounds, and the sliding door sounds.
@@ -33,14 +33,14 @@ version, update the version above and re-apply the changes below.
 - `LICENSE` copied in from the upstream repository root.
 - The `*.import` files are Godot 4.7's.
 
-## How Hull Bloom uses it
+## How Verdigris Protocol uses it
 
 - The player (`game/player/tech.gd`, `Tech`) extends `CogitoPlayer` and frees
-  the parts Hull Bloom doesn't use (stamina, sanity, currency, Cogito's pause
+  the parts Verdigris Protocol doesn't use (stamina, sanity, currency, Cogito's pause
   menu and inventory screen). Health, the weapons and the kit are Hull
   Bloom's own (`game/arsenal/`). Settings come from LGSettings, not Cogito's
   options file; head bob and view roll start off.
-- Doors, panels and pick-ups are Hull Bloom's own, driven by Cogito's
+- Doors, panels and pick-ups are Verdigris Protocol's own, driven by Cogito's
   interaction raycast and prompts as they are.
 - Footsteps use Cogito's `FootstepSurface`; `game/player/step_noise.gd`
   makes each step a noise creatures can hear.

@@ -1,4 +1,4 @@
-"""Builds Hull Bloom's plasma cutter in Blender from the Modular Sci-Fi MegaKit's trim sheets.
+"""Builds Verdigris Protocol's plasma cutter in Blender from the Modular Sci-Fi MegaKit's trim sheets.
 
 Run: blender-venv/bin/python cutter.py <textures dir> <out dir>
 Writes cutter.blend, cutter.glb and cutter.gltf (textures referenced by the kit's file names).

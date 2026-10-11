@@ -14,6 +14,8 @@ const STORY := [
 	"You're the night shift. Get to Hydroponics.",
 ]
 const WIDTH := 560
+## The game's name, on two lines to fit the column.
+const NAME := "VERDIGRIS\nPROTOCOL"
 
 var backdrop: MenuBackdrop
 var _ui: Control
@@ -99,7 +101,7 @@ func button_texts() -> PackedStringArray:
 
 func show_main() -> void:
 	_clear()
-	var title := StationTheme.hud_label("HULL BLOOM", 64, TITLE_COLOR)
+	var title := StationTheme.hud_label(NAME, 64, TITLE_COLOR)
 	_col.add_child(title)
 	_text("Night shift on Marigold Station.", true)
 	_col.add_child(Control.new())
@@ -257,7 +259,7 @@ func _on_name_changed(text: String) -> void:
 
 func show_about() -> void:
 	_clear()
-	_heading("About Hull Bloom")
+	_heading("About Verdigris Protocol")
 	_text("A first person horror shooter about a growth that spreads room by room through a research station, and the night tech trying to stop it.")
 	_text("Created by", true)
 	_text("Drew VanDine\nKaden VanDine\nKen VanDine")
@@ -274,6 +276,6 @@ func _quit() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and _col.get_child_count() > 0:
 		var title := _col.get_child(0) as Label
-		if title and title.text != "HULL BLOOM":
+		if title and title.text != NAME:
 			get_viewport().set_input_as_handled()
 			show_main()

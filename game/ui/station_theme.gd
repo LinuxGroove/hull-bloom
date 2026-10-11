@@ -1,6 +1,6 @@
 class_name StationTheme
 extends RefCounted
-## Hull Bloom's look for the shared theme: the station's own screens, dark
+## Verdigris Protocol's look for the shared theme: the station's own screens, dark
 ## glass panels with thin pale edges, teal for what's fine, amber for what
 ## needs you and red for trouble. Headings use the shared add-on's fonts;
 ## running text (speech, logs, menus) uses Montserrat, which comes with

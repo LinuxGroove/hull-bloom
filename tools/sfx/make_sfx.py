@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Synthesizes Hull Bloom's procedural sound effects and fallback music.
+"""Synthesizes Verdigris Protocol's procedural sound effects and fallback music.
 
     python3 tools/sfx/make_sfx.py <out_dir> [--wav <dir>] [--only name,name] [--music <dir>]
 

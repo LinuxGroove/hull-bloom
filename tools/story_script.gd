@@ -1,5 +1,5 @@
 extends SceneTree
-## Writes the story script: every player-facing line of Hull Bloom as one
+## Writes the story script: every player-facing line of Verdigris Protocol as one
 ## Markdown file, in the order a player meets it. The title and the story so
 ## far, then what every deck shares (the HUD, prompts, MARI's own lines, the
 ## pause menu, results), then each deck in ring order (its briefing, MARI,
@@ -208,7 +208,7 @@ func _line_of(path: String, needles: Array) -> String:
 #region The title
 
 func _intro() -> void:
-	_h(1, "Hull Bloom: the story script")
+	_h(1, "Verdigris Protocol: the story script")
 	_p("Every player-facing line, in the order a player meets it, written by `tools/story_script.gd` from the game's own data, screens and level builds. Each line names its file and who says it. Buttons are in [brackets]; setting rows list their choices. Lines marked **source** are read from the code (prompts, toasts, the HUD), with `%%d`/`%%s` where the game fills in a number or a name. Spoken lines that the HUD shows too briefly to read at %d characters a second are marked with their timing." % READ_CPS)
 
 

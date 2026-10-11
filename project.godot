@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="Hull Bloom"
+config/name="Verdigris Protocol"
 config/description="The alien isn't aboard the station. It's growing through it. A first person horror shooter: burn the Bloom back deck by deck before it takes all of Marigold Station."
 config/version="0.1.0"
 run/main_scene="res://game/main.tscn"
@@ -19,7 +19,7 @@ boot_splash/bg_color=Color(0.03, 0.02, 0.03, 1)
 boot_splash/show_image=false
 config/icon="res://icon.svg"
 config/use_custom_user_dir=true
-config/custom_user_dir_name="hull-bloom"
+config/custom_user_dir_name="verdigris-protocol"
 
 [autoload]
 

@@ -195,7 +195,7 @@ func _control_and_office() -> void:
 
 
 func _generators() -> void:
-	spawn("taken", Vector2i(5, -4), Vector3(-0.6, 0, 0.2), 1, {"job": "engineer",
+	spawn("taken", Vector2i(5, -4), Vector3(-0.6, 0, 0.2), 1, {"asleep": true, "job": "engineer",
 		"routine": [Vector2i(3, -5), Vector2i(5, -5), Vector2i(4, -4), Vector2i(4, -3), Vector2i(2, -3)]})
 	pickup("cell", Vector2i(3, -5), Vector3(0.6, 0, -1.4), 1)
 	pickup("salvage", Vector2i(5, -5), Vector3(-0.8, 0, -1.4), 2)
@@ -225,7 +225,7 @@ func _pumps_and_workshop() -> void:
 	prop("ess:Prop_Shelves_WideTall", Vector2i(-3, -1), Vector3(1.45, 0, 0.2), -90.0)
 	prop("ess:Prop_Chest", Vector2i(-5, -1), Vector3(-1.1, 0, 1.2))
 	prop("ess:Prop_Crate", Vector2i(-3, -2), Vector3(1.0, 0, -1.0), 10.0)
-	spawn("taken", Vector2i(-5, -1), Vector3(0.4, 0, -0.4), 1, {"job": "tech",
+	spawn("taken", Vector2i(-5, -1), Vector3(0.4, 0, -0.4), 1, {"asleep": true, "job": "tech",
 		"routine": [Vector2i(-5, -2), Vector2i(-3, -1), Vector2i(-4, -3), Vector2i(-2, -3)]})
 	pickup("mine", Vector2i(-5, -1), Vector3(-0.2, 0, 0.6), 2)
 	pickup("ammo:scattergun", Vector2i(-3, -1), Vector3(0.4, 0, 1.2), 3)

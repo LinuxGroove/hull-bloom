@@ -2,7 +2,7 @@ class_name GameConfig
 extends RefCounted
 ## Game-wide constants: identity, version, input map and setting defaults.
 
-const GAME_ID := "hull-bloom"
+const GAME_ID := "verdigris-protocol"
 
 ## This round's own questions at the end of a play test (LGPlaytest), on top
 ## of the standard ones. Change them for each round of play testing.
@@ -116,7 +116,7 @@ const ACTIONS := {
 	"heal": ["key:H", "joy:left"],
 	"stim": ["key:J", "joy:right"],
 	"deck_map": ["key:Tab", "key:M", "joy:back"],
-	# Cogito reads these; Hull Bloom has no inventory screen.
+	# Cogito reads these; Verdigris Protocol has no inventory screen.
 	"inventory": [],
 	"inventory_move_item": [],
 	"inventory_use_item": [],

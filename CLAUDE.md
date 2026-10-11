@@ -1,6 +1,6 @@
-# Hull Bloom
+# Verdigris Protocol
 
-A first person horror shooter against an alien growth on a space station, in Godot 4.7 with GDScript on top of the COGITO immersive sim template, built from Quaternius' sci-fi kits. The concept is idea 21 in [game-ideas](https://github.com/LinuxGroove/game-ideas/blob/main/ideas/21-hull-bloom.md). It shares the LinuxGroove add-on with the other games; **read game-ideas' [online-addon.md](https://github.com/LinuxGroove/game-ideas/blob/main/online-addon.md) before touching online features or the shared add-on.**
+A first person horror shooter against an alien growth on a space station, in Godot 4.7 with GDScript on top of the COGITO immersive sim template, built from Quaternius' sci-fi kits. The concept is idea 21 in [game-ideas](https://github.com/LinuxGroove/game-ideas/blob/main/ideas/21-verdigris-protocol.md). It shares the LinuxGroove add-on with the other games; **read game-ideas' [online-addon.md](https://github.com/LinuxGroove/game-ideas/blob/main/online-addon.md) before touching online features or the shared add-on.**
 
 ## Commands
 
@@ -62,7 +62,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 - **Layers**: 1 station, 2 interactables, 4 creatures, 8 player, 16 doors, 32 gibs, 64 glass, 128 hitboxes. `Kit.LAYER_SOLID` is what blocks sight and shots.
 - **Gore** respects the Gore setting (`Full`, `Less`, `Off`) everywhere through `Gore.shown()` and `Gore.full()`; the setting can be locked with a code. With gore off there's no blood, no gibs and no dismemberment.
 - **Comfort.** Head bob and view roll are off by default, with physics interpolation; Calm walls slows or stops the growth's breathing and Spore blur can be turned off. Never add camera shake that can't be turned off.
-- **Shift mode** opens after the first ending. A night is three decks built by `ShiftLevel` from a seed; tonight's station (the date as its seed) submits its score to the `shift_daily` and `shift_best` boards with `core.score_submit`, which the game server declares in `modules/src/games/hull-bloom.ts`.
+- **Shift mode** opens after the first ending. A night is three decks built by `ShiftLevel` from a seed; tonight's station (the date as its seed) submits its score to the `shift_daily` and `shift_best` boards with `core.score_submit`, which the game server declares in `modules/src/games/verdigris-protocol.ts`.
 - **Play tests.** The shared add-on's `LGPlaytest` records a play test when the Play test recording setting is on (or with `-- --playtest`): a picture every few seconds, game events, frame times and controls, the player's notes (F8, or Note this moment in the pause menu) and a survey when they quit, all in one zip in `user://playtest/`. Game events go through `LGPlaytest.event()` and `moment()`; the round's own survey questions are `GameConfig.PLAYTEST`. Quit through `LGScenes.quit()` so the survey comes first.
 - **Everything works offline.** No server or network is needed; the boards are only tried when online play is on.
 - **Launch ping.** `game/main.gd` calls `LGLaunchPing.send(GameConfig.GAME_ID)` at startup: one anonymous request to the game server's `/launch` (game, random install id, version, OS, CPU) so the server counts every player. It's skipped headless, from source and with `DO_NOT_TRACK` set, and never blocks or retries.

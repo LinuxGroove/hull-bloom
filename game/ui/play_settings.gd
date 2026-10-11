@@ -1,6 +1,6 @@
 class_name PlaySettings
 extends VBoxContainer
-## Hull Bloom's own settings, for the pause menu and the title's settings:
+## Verdigris Protocol's own settings, for the pause menu and the title's settings:
 ## looking and crouching, the comfort settings, the Gore setting (with its
 ## parental lock) and the difficulty switches. Each change is saved at once.
 
