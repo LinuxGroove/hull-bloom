@@ -282,6 +282,11 @@ static func center(cell: Vector2i) -> Vector3:
 	return Vector3(cell.x * Kit.TILE, 0.0, cell.y * Kit.TILE)
 
 
+## The floor under a vent tile's ceiling grille.
+static func grille(cell: Vector2i) -> Vector3:
+	return center(cell) + Vector3(1.0, 0.0, -1.0)
+
+
 static func cell_at(pos: Vector3) -> Vector2i:
 	return Vector2i(roundi(pos.x / Kit.TILE), roundi(pos.z / Kit.TILE))
 
@@ -721,7 +726,7 @@ func _build_vents() -> void:
 			if seen.has(c):
 				continue
 			seen[c] = true
-			var m := Kit.model(_static, "Prop_Vent_Big", center(c) + Vector3(1.0, Kit.HEIGHT - 0.02, -1.0), 0.0)
+			var m := Kit.model(_static, "Prop_Vent_Big", grille(c) + Vector3(0, Kit.HEIGHT - 0.02, 0), 0.0)
 			m.rotation.x = PI
 
 

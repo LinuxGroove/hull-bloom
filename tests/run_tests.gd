@@ -47,7 +47,7 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
+				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
 				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
@@ -544,6 +544,41 @@ func _test_creatures() -> void:
 		check(not is_instance_valid(c) or c.dead, "%s dies" % what)
 	lvl.queue_free()
 	Gore.clear()
+	await frames(3)
+
+
+## Skitters climb into a vent by its ceiling grille and drop out of the one
+## at the far end, so they don't seem to walk through walls.
+func _test_vents() -> void:
+	var lvl := Decks.make_level("hydroponics")
+	add_child(lvl)
+	lvl.finish()
+	var a: Vector2i = lvl.vents[0][0]
+	var b: Vector2i = lvl.vents[0][1]
+	var sk := Creatures.make("skitter")
+	sk.setup(lvl, DeckLevel.center(a) + Vector3(-1.0, 0.05, 1.0), false)
+	lvl.add_child(sk)
+	await physics(2)
+	sk.state = Creature.State.WANDER
+	sk.plan_to(DeckLevel.center(b))
+	check(sk.path.size() == 2 and sk.path[0][2], "a skitter takes the vent from %s to %s" % [a, b])
+	var went_in := Vector3.INF
+	var came_out := Vector3.INF
+	for i in 600:
+		await physics(1)
+		if went_in == Vector3.INF and not sk.visible:
+			went_in = sk.global_position
+		elif went_in != Vector3.INF and sk.visible:
+			came_out = sk.global_position
+			break
+	var under_a := DeckLevel.grille(a)
+	var under_b := DeckLevel.grille(b)
+	check(went_in != Vector3.INF and Vector2(went_in.x - under_a.x, went_in.z - under_a.z).length() < 0.8, "it climbs in under the grille (%s, grille at %s)" % [went_in, under_a])
+	check(came_out != Vector3.INF and came_out.y > Kit.HEIGHT - 1.5 and Vector2(came_out.x - under_b.x, came_out.z - under_b.z).length() < 0.8, "and comes out of the far grille (%s)" % came_out)
+	await physics(90)
+	# Onto the floor, or the desk under the grille.
+	check(sk.is_on_floor() and sk.global_position.y < 1.0, "and drops down (%s)" % sk.global_position)
+	lvl.queue_free()
 	await frames(3)
 
 

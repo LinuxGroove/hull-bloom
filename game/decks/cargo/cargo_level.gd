@@ -140,7 +140,8 @@ func _conveyor() -> void:
 
 
 func _bay1() -> void:
-	spawn("raptor", Vector2i(-3, -6), Vector3(0.4, 0, 0.4), 1, {"asleep": true})
+	# Asleep in the far corner, away from the door from the conveyor hall.
+	spawn("raptor", Vector2i(-4, -7), Vector3(-0.2, 0, 0.2), 1, {"asleep": true})
 	spawn("stalker", Vector2i(-4, -4), Vector3(-0.4, 0, 0.5), 1, {"asleep": true})
 	body(Vector2i(-2, -6), Vector3(0.5, 0, 0.3), 140.0, "cargo")
 	# Crate stacks to fight round, on the corners between tiles so the

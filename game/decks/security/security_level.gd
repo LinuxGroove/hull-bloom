@@ -254,7 +254,6 @@ func _bay() -> void:
 	spawn("quadorb", Vector2i(-2, -11), Vector3(0.0, 0, -0.3), 1, {"asleep": true})
 	spawn("quadshell", Vector2i(2, -11), Vector3(0.0, 0, -0.3), 1, {"asleep": true})
 	spawn("pod", Vector2i(-1, -10), Vector3(-0.5, 0, -0.6), 1)
-	spawn("pod", Vector2i(1, -11), Vector3(0.9, 0, -0.9), 1)
 	spawn("pod", Vector2i(1, -9), Vector3(-0.7, 0, -0.4), 1)
 
 

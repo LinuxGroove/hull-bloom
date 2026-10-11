@@ -183,7 +183,8 @@ func _mess() -> void:
 	pickup("flare", Vector2i(1, 0), Vector3(-1.0, 0, 0.9), 1)
 	prop("ess:Prop_Mug", Vector2i(1, -2), Vector3(1.2, 0.8, 1.9), 0.0, {"solid": false})
 	prop("ess:Prop_Locker", Vector2i(4, -1), Vector3(1.4, 0, 0.0), -90.0)
-	spawn("taken", Vector2i(3, -1), Vector3(0.4, 0, -0.4), 1, {"job": "tech",
+	# Asleep at the table until something wakes it.
+	spawn("taken", Vector2i(3, -1), Vector3(0.4, 0, -0.4), 1, {"asleep": true, "job": "tech",
 		"routine": [Vector2i(1, -1), Vector2i(4, -2), Vector2i(2, 0), Vector2i(4, 0), Vector2i(1, -2)]})
 
 
@@ -235,7 +236,7 @@ func _bunks_a() -> void:
 
 
 func _showers() -> void:
-	spawn("skitter", Vector2i(-2, -7), Vector3(0.4, 0, 0.6), 2, {"asleep": true})
+	spawn("skitter", Vector2i(-2, -7), Vector3(0.4, 0, 0.6), 1, {"asleep": true})
 	spawn("pod", Vector2i(-3, -7), Vector3(0.6, 0, 0.6), 1)
 	pickup("flare", Vector2i(-2, -6), Vector3(1.0, 0, 1.2), 1)
 
@@ -243,9 +244,9 @@ func _showers() -> void:
 func _laundry() -> void:
 	thing("log", Vector2i(-1, -8), Vector3(-1.4, 0, -0.5), 90.0, {"id": "crew_laundry", "style": "terminal", "title": "Laundry: service log",
 		"by": "MARI", "text": LAUNDRY_LOG})
-	thing("body", Vector2i(0, -8), Vector3(-0.3, 0, 1.0), 250.0, {"job": "botanist", "swallowed": true})
+	# One pod by the Heart, and nobody swallowed there to get up beside it:
+	# Crew is the second deck most people try, so its root is a gentle one.
 	spawn("pod", Vector2i(0, -8), Vector3(0.4, 0, 0.2), 1)
-	spawn("pod", Vector2i(1, -7), Vector3(-0.6, 0, 0.8), 1)
 	pickup("salvage", Vector2i(-1, -7), Vector3(0.2, 0, 1.3), 2)
 	pickup("ammo:scattergun", Vector2i(0, -7), Vector3(1.0, 0, 1.1), 1)
 	spawn("taken", Vector2i(-1, -7), Vector3(0.6, 0, 0.0), 1, {"job": "tech",

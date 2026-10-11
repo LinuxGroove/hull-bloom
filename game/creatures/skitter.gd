@@ -16,7 +16,8 @@ func configure() -> void:
 	kind = "skitter"
 	max_health = 16.0
 	walk_speed = 2.2
-	run_speed = 6.2
+	# A little slower than the Tech's sprint, so you can get away and aim.
+	run_speed = 5.4
 	turn_rate = 12.0
 	damage = 6.0
 	reach = 1.2
