@@ -663,7 +663,7 @@ func _update_top() -> void:
 				next = o[0]
 				break
 		if next == "":
-			next = "Get to the lift" if not objs.is_empty() else ""
+			next = "Take the lift" if not objs.is_empty() else ""
 		_objective.text = next.to_upper()
 	if level and level.bloom:
 		var cov := level.bloom.coverage()

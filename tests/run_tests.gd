@@ -269,6 +269,7 @@ func _test_run() -> void:
 	for i in b.cells.size():
 		b.growth[i] = 0.0
 	check(run.check_held(b), "held once the roots are cut and the growth is gone")
+	check(["Power the lift at its console", false] in run.objectives(b), "then the lift wants its power")
 	check(not run.check_held(b), "it only becomes held once")
 	run.read("log_a")
 	run.read("log_a")

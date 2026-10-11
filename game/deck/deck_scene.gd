@@ -108,6 +108,7 @@ func _ready() -> void:
 			if not level.rooms[id]["dark"]:
 				_set_lights(id, true)
 		lift.set_powered(true)
+		run.lift_powered = true
 		hud.say("MARI", "%s is safe. The workbench and the bunk are working." % deck.name)
 	elif deck.arrive != "":
 		hud.say("MARI", deck.arrive if not overgrown else "%s is overgrown. Organic obstruction everywhere. I'm sorry." % deck.name)
@@ -667,6 +668,7 @@ func _on_lift_used() -> void:
 	if not lift.powered:
 		if hub or power.take("lift"):
 			lift.set_powered(true)
+			run.lift_powered = true
 			hud.say("MARI", "The lift has power. Use it again when you're ready to go.")
 		else:
 			hud.toast("The lift needs a free power cell", StationTheme.RED)

@@ -13,6 +13,8 @@ var roots_cut := 0
 ## stays held from then on.
 var held := false
 var held_at := -1.0
+## Whether the lift has its power cell (a hub's has it from the start).
+var lift_powered := false
 var survivors_total := 0
 var survivors_found: Array[String] = []
 var survivors_saved: Array[String] = []
@@ -76,6 +78,8 @@ func objectives(bloom: Bloom) -> Array:
 		out.append(["The growth is dying back (%d tiles left)" % left_tiles, false])
 	elif held:
 		out.append(["The deck is held", true])
+	if held:
+		out.append(["Power the lift at its console", lift_powered])
 	if survivors_total > 0:
 		out.append(["Bring survivors to the lift (%d of %d)" % [survivors_saved.size(), survivors_total], survivors_saved.size() >= survivors_total])
 	return out
