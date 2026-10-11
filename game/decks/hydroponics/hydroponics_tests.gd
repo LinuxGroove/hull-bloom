@@ -28,11 +28,11 @@ func run(t: Node) -> void:
 	t.check(gun, "hydroponics: the scattergun is on the deck")
 	lvl.free()
 	# On the deck: the grow rooms' growth gets the toast when it reaches the
-	# corridor, and the seed lab's pods are real.
+	# corridor, and the seed lab's pod is real.
 	var s: DeckScene = await t.open_deck("hydroponics")
 	var pods := 0
 	for k in s.director.pods:
 		pods += s.director.pods[k].size()
-	t.check(pods >= 2, "hydroponics: the seed lab's pods are on the deck (%d)" % pods)
+	t.check(pods >= 1, "hydroponics: the seed lab's pod is on the deck (%d)" % pods)
 	t.check(s.hud.subtitle_text().contains("Hydroponics"), "hydroponics: MARI speaks on arrival")
 	await t.close_deck(s)

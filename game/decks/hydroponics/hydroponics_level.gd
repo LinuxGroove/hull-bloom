@@ -136,9 +136,7 @@ func _seed_lab() -> void:
 	prop("ess:Prop_Shelves_ThinTall", Vector2i(2, -6), Vector3(1.45, 0, 0), -90.0)
 	thing("log", Vector2i(2, -8), Vector3(0.5, 0.94, -1.1), 0.0, {"id": "hydro_sv3", "title": "Sample SV-3",
 		"by": "Dr Imani Okafor, botany", "text": SAMPLE_LOG})
-	body(Vector2i(1, -7), Vector3(0.4, 0, 0.5), 240.0, "science")
 	spawn("pod", Vector2i(-2, -8), Vector3(-0.6, 0, -0.6), 1)
-	spawn("pod", Vector2i(2, -7), Vector3(0.9, 0, 0.3), 1)
 	spawn("skitter", Vector2i(-1, -6), Vector3.ZERO, 1, {"asleep": true})
 	pickup("ammo:scattergun", Vector2i(-2, -7), Vector3(-1.2, 0, 0), 6)
 
@@ -149,6 +147,7 @@ func _vault() -> void:
 
 
 func _gallery_and_stores() -> void:
+	body(Vector2i(4, -7), Vector3(0.4, 0, 0.6), 240.0, "science")
 	pickup("grenade", Vector2i(5, -7), Vector3(0, 0, 1.2), 1)
 	prop("ess:Prop_Shelves_WideTall", Vector2i(5, -9), Vector3(-0.2, 0, -1.6))
 	prop("ess:Prop_Shelves_WideTall", Vector2i(6, -9), Vector3(0.2, 0, -1.6))
