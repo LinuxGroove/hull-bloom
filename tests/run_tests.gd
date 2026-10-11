@@ -47,7 +47,7 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_combat",
+				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
 				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
@@ -632,6 +632,31 @@ func _test_stations() -> void:
 	check(Progress.salvage() == before + 6, "and leaving doesn't count it twice")
 	await close_deck(s)
 	Progress.new_campaign()
+
+
+## A heart hurt from out of its reach answers: it hatches spawn that come
+## for you and spits back.
+func _test_heart_answers() -> void:
+	var s := await open_deck("hydroponics")
+	await put_player(s, s.level.lift_cell)
+	var h: Heart = s.director.hearts[0]
+	var far := s.player.global_position.distance_to(h.global_position)
+	check(far > Heart.SPAWN_RANGE, "the lift is out of the heart's reach (%d m)" % far)
+	await frames(30)
+	check(not h.roused(), "the heart leaves you be out there")
+	var before := s.director.alive()
+	h.take_hit(Hit.make(Hit.Kind.BULLET, 1.0, h.global_position + Vector3(0, 1.2, 0), Vector3.FORWARD, s.player))
+	check(h.roused(), "a hit from out of its reach rouses it")
+	var spat := false
+	var hatched := false
+	# Physics ticks keep time: three seconds.
+	for i in 180:
+		await physics(1)
+		spat = spat or not get_tree().root.find_children("", "Spit", true, false).is_empty()
+		hatched = hatched or s.director.alive() > before
+	check(spat, "it spits back")
+	check(hatched, "and hatches spawn that come for you")
+	await close_deck(s)
 
 
 func _is_workbench(h: Node) -> bool:
