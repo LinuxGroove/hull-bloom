@@ -152,7 +152,7 @@ func _ward() -> void:
 	pickup("stim", Vector2i(3, 2), Vector3(0.6, 0, 0.4), 1)
 	pickup("salvage", Vector2i(6, 3), Vector3(1.2, 0, 0.0), 1)
 	pickup("ammo:scattergun", Vector2i(5, 2), Vector3(0.6, 0, 1.0), 1)
-	spawn("taken", Vector2i(5, 2), Vector3(0.3, 0, 0.3), 1, {"job": "botanist",
+	spawn("taken", Vector2i(5, 2), Vector3(0.3, 0, 0.3), 1, {"asleep": true, "job": "botanist",
 		"routine": [Vector2i(3, 1), Vector2i(6, 3), Vector2i(4, 2), Vector2i(6, 1), Vector2i(3, 3)]})
 
 
@@ -161,7 +161,7 @@ func _surgery() -> void:
 	pickup("medkit", Vector2i(9, 2), Vector3(1.2, 0, 1.2), 1)
 	pickup("stim", Vector2i(7, 1), Vector3(-1.2, 0, -1.2), 1)
 	pickup("salvage", Vector2i(9, 1), Vector3(1.3, 0, -1.2), 1)
-	spawn("taken", Vector2i(8, 2), Vector3(0.9, 0, 0.6), 1, {"job": "medic",
+	spawn("taken", Vector2i(8, 2), Vector3(0.9, 0, 0.6), 1, {"asleep": true, "job": "medic",
 		"routine": [Vector2i(7, 1), Vector2i(9, 2), Vector2i(8, 1), Vector2i(7, 2)]})
 
 
