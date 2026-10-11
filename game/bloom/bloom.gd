@@ -7,7 +7,7 @@ extends RefCounted
 ## Each tick a tile that can trace a path back to a living root grows, and
 ## tiles at [constant SPREAD_FROM] or more seed their neighbours through open
 ## ways, doors (barely, when shut; never when sealed), vents and cable runs.
-## Tiles cut off from every root die back slowly. Lit tiles grow and are
+## Tiles cut off from every root die back quickly. Lit tiles grow and are
 ## seeded at half speed; vented rooms are airless and stay clean. Overgrown
 ## tiles sprout pods, which [Director] turns into creatures.
 
@@ -25,8 +25,9 @@ const SPREAD_FROM := 2.0
 const SEED := 0.35
 ## Growth per tick on a tile fed from a root.
 const FEED := 0.09
-## Growth lost per tick on a tile cut off from every root.
-const DECAY := 0.07
+## Growth lost per tick on a tile cut off from every root: once the root is
+## cut, the thickest growth is gone in under a minute.
+const DECAY := 0.2
 ## The chance per tick that a tile at full growth seeds a neighbour through
 ## an open way (scaled by how grown it is and how the way lets it through).
 const SPREAD_CHANCE := 0.14

@@ -7,10 +7,17 @@ extends Node3D
 ## The cutter is the only thing that burns the Bloom back: its beam burns the
 ## tile it touches down a level at a time and builds heat. The guns kill what
 ## hatches.
+##
+## Swap (Q, RB) works like Throw: a tap goes back to the weapon you had
+## before, and a hold opens the weapon wheel, where the right stick or the
+## mouse points at a weapon and letting go takes it. The mouse wheel steps
+## through them and the number keys pick one.
 
 signal changed
 signal hit_marker(kill: bool)
 signal fired(weapon: String)
+## The weapon wheel opened, closed or points at another weapon.
+signal wheel_changed
 
 ## Every weapon, in slot order. Kinds: beam (the cutter), shot (one round
 ## a pull, or held for automatic), pellets, burst, rail (pierces).
@@ -41,10 +48,22 @@ const THROW_SPEED := 11.0
 const HOLD_TO_PICK := 0.35
 const OVERHEAT := 100.0
 const COOL_AT := 35.0
+## How far the right stick leans before the wheel points with it.
+const WHEEL_STICK := 0.5
+## How far the mouse travels (in pixels) before the wheel points with it, and
+## the most it counts, so turning back takes as little as going.
+const WHEEL_MOUSE := 30.0
+const WHEEL_MOUSE_MAX := 100.0
 
 var player: Tech
 var owned: Array[String] = []
 var current := "cutter"
+## The weapon held before this one, for a tap of Swap.
+var last := ""
+## Whether the weapon wheel is open (Swap held), and the weapon it points at
+## ("" for none yet).
+var wheel_open := false
+var wheel_pick := ""
 ## Rounds in each gun's magazine, and carried for it.
 var mag := {}
 var reserve := {}
@@ -62,6 +81,9 @@ var _shot_t := 0.0
 var _burst_left := 0
 var _burst_t := 0.0
 var _throw_held := 0.0
+var _swap_held := 0.0
+var _wheel_mouse := Vector2.ZERO
+var _wheel_stick := Vector2.ZERO
 var _burn_t := 0.0
 var _beam_hit := {}
 var _beam_sound: AudioStreamPlayer
@@ -89,6 +111,9 @@ func setup(weapons: Array, carried: Dictionary) -> void:
 		mag[w] = int(spec.get("mag", 0))
 		reserve[w] = int(carried.get(w, int(spec.get("mag", 0)) * 2)) if int(spec.get("carry", 0)) > 0 else 0
 	current = owned[0] if not "cutter" in owned else "cutter"
+	last = ""
+	close_wheel(false)
+	_swap_held = 0.0
 	heat = 0.0
 	overheated = false
 	if view:
@@ -150,6 +175,7 @@ func select(w: String) -> void:
 	if not w in owned or w == current:
 		return
 	_stop_beam()
+	last = current
 	current = w
 	LGPlaytest.event("weapon", {"weapon": w})
 	reloading = 0.0
@@ -163,6 +189,108 @@ func select(w: String) -> void:
 func cycle(step: int) -> void:
 	var i := owned.find(current)
 	select(owned[(i + step + owned.size()) % owned.size()])
+
+
+## A tap of Swap: back to the weapon you had before, or on to the next one
+## if you don't have it any more.
+func swap_last() -> void:
+	if last in owned and last != current:
+		select(last)
+	else:
+		cycle(1)
+
+
+## Swap (Q, RB), down or not this frame. Like Throw: a tap goes back to the
+## last weapon, a hold opens the wheel, and letting go takes what it points
+## at. Tests call it directly.
+func swap_button(down: bool, delta: float) -> void:
+	if down:
+		_swap_held += delta
+		if not wheel_open and _swap_held >= HOLD_TO_PICK:
+			open_wheel()
+	elif _swap_held > 0.0:
+		if wheel_open:
+			close_wheel(true)
+		elif _swap_held < HOLD_TO_PICK:
+			swap_last()
+		_swap_held = 0.0
+
+
+#region The weapon wheel
+
+func open_wheel() -> void:
+	if wheel_open:
+		return
+	wheel_open = true
+	wheel_pick = ""
+	_wheel_mouse = Vector2.ZERO
+	_wheel_stick = Vector2.ZERO
+	_stop_beam()
+	Sfx.ui(self, "ui_select", -12.0)
+	LGPlaytest.event("weapon_wheel", {"weapons": owned.size()})
+	wheel_changed.emit()
+
+
+## Puts the wheel away, taking what it points at if `take`.
+func close_wheel(take: bool) -> void:
+	if not wheel_open:
+		return
+	wheel_open = false
+	var pick := wheel_pick
+	wheel_pick = ""
+	wheel_changed.emit()
+	if take and pick != "":
+		select(pick)
+
+
+## Points the wheel: `dir` is on the screen (x right, y down), and anything
+## shorter than half a unit leaves it pointing where it was, so letting the
+## stick spring back before Swap doesn't lose the pick.
+func point_wheel(dir: Vector2) -> void:
+	if not wheel_open or dir.length() < 0.5 or owned.is_empty():
+		return
+	var w := wheel_weapon_at(dir)
+	if w != wheel_pick:
+		wheel_pick = w
+		Sfx.ui(self, "ui_select", -16.0)
+		wheel_changed.emit()
+
+
+## The weapon in this direction of the wheel: the owned weapons in slot order,
+## clockwise from the top.
+func wheel_weapon_at(dir: Vector2) -> String:
+	var n := owned.size()
+	var a := fposmod(atan2(dir.x, -dir.y), TAU)
+	return owned[roundi(a / (TAU / n)) % n]
+
+
+## Where a weapon sits on the wheel, as a unit direction on the screen.
+func wheel_direction(w: String) -> Vector2:
+	var a := TAU * maxi(0, owned.find(w)) / maxf(1.0, owned.size())
+	return Vector2(sin(a), -cos(a))
+
+
+## While the wheel is open the mouse and the right stick point in it instead
+## of turning the view. True if it took the event.
+func wheel_input(event: InputEvent) -> bool:
+	if not wheel_open:
+		return false
+	if event is InputEventMouseMotion:
+		_wheel_mouse = (_wheel_mouse + event.relative).limit_length(WHEEL_MOUSE_MAX)
+		if _wheel_mouse.length() >= WHEEL_MOUSE:
+			point_wheel(_wheel_mouse.normalized())
+		return true
+	if event is InputEventJoypadMotion and (event.axis == JOY_AXIS_RIGHT_X or event.axis == JOY_AXIS_RIGHT_Y):
+		if event.axis == JOY_AXIS_RIGHT_X:
+			_wheel_stick.x = event.axis_value
+		else:
+			_wheel_stick.y = event.axis_value
+		if _wheel_stick.length() >= WHEEL_STICK:
+			point_wheel(_wheel_stick.normalized())
+		return true
+	return false
+
+#endregion
 
 
 func _busy() -> bool:
@@ -191,10 +319,13 @@ func _tick(delta: float) -> void:
 		firing = false
 		aiming = false
 		_stop_beam()
+		close_wheel(false)
+		_swap_held = 0.0
 		return
 	aiming = Input.is_action_pressed("action_secondary")
-	var pull := Input.is_action_pressed("action_primary")
-	var tap := Input.is_action_just_pressed("action_primary")
+	# Fire does nothing while the wheel is open.
+	var pull := Input.is_action_pressed("action_primary") and not wheel_open
+	var tap := Input.is_action_just_pressed("action_primary") and not wheel_open
 	if current != "cutter" and swapping <= 0.0 and reloading <= 0.0:
 		if _burst_left > 0:
 			_burst_t -= delta
@@ -218,10 +349,12 @@ func _tick(delta: float) -> void:
 	firing = pull
 	if Input.is_action_just_pressed("reload") and not _using():
 		reload()
+	# The mouse wheel steps either way; Swap is the quick swap and the wheel.
 	if Input.is_action_just_pressed("swap"):
 		cycle(1)
 	elif Input.is_action_just_pressed("swap_back"):
 		cycle(-1)
+	swap_button(Input.is_action_pressed("quick_swap"), delta)
 	for i in 6:
 		if Input.is_action_just_pressed("weapon_%d" % (i + 1)):
 			for w in owned:
@@ -356,7 +489,7 @@ func _cool(delta: float, _spec: Dictionary) -> void:
 
 
 func _cutter(delta: float, spec: Dictionary) -> void:
-	var on := not _busy() and swapping <= 0.0 and not overheated and Input.is_action_pressed("action_primary")
+	var on := not _busy() and swapping <= 0.0 and not overheated and not wheel_open and Input.is_action_pressed("action_primary")
 	var focus := Input.is_action_pressed("action_secondary") and not _busy()
 	if not on:
 		_stop_beam()

@@ -1,7 +1,8 @@
 extends Node
-## Four screens at whatever window size the game is started at, for checking
+## The screens at whatever window size the game is started at, for checking
 ## that nothing is clipped or overlapping: the title, the ring map, the HUD on
-## a deck and the pause menu. Run under a display with a window size:
+## a deck, the weapon wheel, the pause menu and the deck map. Run under a
+## display with a window size:
 ##   xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --resolution 1920x1080 tools/function_shots.tscn -- --out=/tmp/shots [--tag=1920x1080] [--scale3d=0.35] [--settle=12]
 ## --settle= is how many frames each screen gets (default 12). --scale3d draws the 3D scene behind the menus at a fraction of the size
 ## (the menus stay sharp), which makes huge windows possible on software
@@ -84,6 +85,16 @@ func _deck() -> void:
 	await _frames(maxi(3, _settle / 2))
 	_save("hud")
 	scene.hud.hush()
+	# The weapon wheel, with every gun and one pointed at.
+	var ars := scene.player.arsenal
+	for w in Arsenal.WEAPONS:
+		ars.give(w)
+	ars.select("cutter")
+	ars.open_wheel()
+	ars.point_wheel(ars.wheel_direction("scattergun"))
+	await _frames(maxi(3, _settle / 2))
+	_save("wheel")
+	ars.close_wheel(false)
 	scene.pause.open_pause_menu()
 	await _frames(maxi(3, _settle / 2))
 	_save("pause")

@@ -54,8 +54,8 @@ var torch: SpotLight3D
 var bloom_pause: Node
 var level: DeckLevel
 var down_reason := ""
-## Who landed the last blow (a creature's kind, "robot", "turret" or "you"),
-## for the screen when you go down.
+## Who landed the last blow (a creature's kind, "robot", "turret", "heart",
+## "spit" or "you"), for the screen when you go down.
 var last_hit_by := ""
 ## The last blow that landed (null for a Feeder's drain), for play tests and
 ## the autopilot to tell what hurt you.
@@ -105,6 +105,11 @@ func _ready():
 	super()
 	# Cogito's options menu, in the player's scene, turns the window's stretch off as it starts.
 	get_window().content_scale_size = Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
+	# It also loads Cogito's own key bindings over the game's, so Tab (the deck
+	# map) opened Cogito's hidden inventory, which froze the Tech and hid the
+	# prompts until Tab was pressed again. Put the game's bindings back.
+	LGInput.register_actions(GameConfig.ACTIONS, float(LGSettings.get_value("input", "stick_deadzone", 0.25)))
+	LGInput.extend_ui_actions()
 	max_health = MAX_HEALTH + (SUIT_BONUS if Progress.has_upgrade("suit") else 0.0)
 	health = max_health
 	torch = SpotLight3D.new()
@@ -183,6 +188,10 @@ func _physics_process(delta):
 	if grabbed_by != null:
 		_held(delta)
 		return
+	if arsenal and arsenal.wheel_open:
+		# The right stick is pointing in the weapon wheel, so the view stays put.
+		joystick_h_event = null
+		joystick_v_event = null
 	super(delta)
 	if not _tilt:
 		eyes.rotation.z = 0.0
@@ -206,6 +215,14 @@ func _held(delta: float) -> void:
 		return
 	var lift := Vector3(grabbed_by.global_position.x, 1.3, grabbed_by.global_position.z) + Vector3(0, -_feet_offset, 0)
 	global_position = global_position.lerp(lift, clampf(delta * 1.6, 0.0, 1.0))
+
+
+## While the weapon wheel is open, the mouse and the right stick point in it
+## instead of turning the view.
+func _input(event):
+	if arsenal and arsenal.wheel_input(event):
+		return
+	super(event)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -238,8 +255,6 @@ func take_hit(hit: Hit) -> void:
 	last_hit_by = _blamed(hit)
 	health -= amount
 	Sfx.ui(self, "hit_player", -2.0)
-	if hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
-		add_infection(amount * 0.12)
 	if hit.knock > 0.0 and grabbed_by == null:
 		var k := hit.dir
 		k.y = 0
@@ -248,6 +263,9 @@ func take_hit(hit: Hit) -> void:
 	hurt.emit(amount, hit.dir)
 	if health <= 0.0:
 		die("killed")
+	# After the blow, so one that kills you is named for what struck it.
+	elif hit.kind in [Hit.Kind.CLAW, Hit.Kind.SPIT]:
+		add_infection(amount * 0.12)
 
 
 ## A Feeder's tendril: health out, the Bloom in.
@@ -284,8 +302,12 @@ func _blamed(hit: Hit) -> String:
 		return (hit.from as Creature).kind
 	if hit.from is Turret:
 		return "turret"
+	if hit.from is Heart:
+		return "heart"
 	if hit.by_player():
 		return "you"
+	if hit.kind == Hit.Kind.SPIT:
+		return "spit"
 	return ""
 
 

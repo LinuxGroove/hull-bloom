@@ -21,6 +21,7 @@ const DOWNED_BY := {
 	"skitter": "A skitter got you. ", "taken": "One of the Taken got you. ", "stalker": "A stalker got you. ",
 	"watcher": "A watcher got you. ", "feeder": "A Feeder got you. ", "robot": "A security robot shot you down. ",
 	"turret": "A turret caught you. ", "you": "Your own blast caught you. ",
+	"heart": "The Heart's spit got you. ", "spit": "Spit from the Bloom got you. ",
 }
 
 static var current: DeckScene
@@ -531,7 +532,7 @@ func _on_heart_killed(_h: Heart) -> void:
 	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
 	hud.banner(deck.cut_banner if deck.cut_banner != "" else "ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
-		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. Burn it out and the deck holds.")
+		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. The deck holds once it's gone; the cutter speeds that up.")
 
 
 func _on_creature_died(c: Creature) -> void:
@@ -714,11 +715,15 @@ func _show_down() -> void:
 	if mode == "shift" and night:
 		night.deck_down(self)
 		return
+	var lines := _summary_lines()
+	var where := level.room_name(_room_at(player.global_position))
+	if where != "":
+		lines.push_front(["Where", where])
 	var buttons := [["Try the deck again", _retry]]
 	if mode == "campaign":
 		buttons.append(["Back to the ring", _down_to_ring])
 	buttons.append(["Back to the title", _on_quit])
-	results.show_panel("YOU'RE DOWN", why, _summary_lines(), buttons, StationTheme.RED)
+	results.show_panel("YOU'RE DOWN", why, lines, buttons, StationTheme.RED)
 
 
 func _finish() -> void:

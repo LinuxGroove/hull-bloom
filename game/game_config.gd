@@ -92,8 +92,11 @@ const ACTIONS := {
 	"action_secondary": ["mouse:right", "axis:lt+"],
 	# On a pad, X reloads when there's nothing in view to use.
 	"reload": ["key:R", "joy:x"],
-	# Swap weapon (the mouse wheel goes either way); the number keys pick one.
-	"swap": ["key:Q", "mouse:wheel_down", "joy:rb"],
+	# Swap: tap for the weapon you had before, hold for the weapon wheel.
+	"quick_swap": ["key:Q", "joy:rb"],
+	# The mouse wheel steps through the weapons either way; the number keys
+	# pick one.
+	"swap": ["mouse:wheel_down"],
 	"swap_back": ["mouse:wheel_up"],
 	"weapon_1": ["key:1"],
 	"weapon_2": ["key:2"],

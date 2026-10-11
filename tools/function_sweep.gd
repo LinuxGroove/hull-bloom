@@ -368,10 +368,11 @@ func _s_input() -> void:
 			no_pad.append(a)
 		ok(InputMap.has_action(a) and InputMap.action_get_events(a).size() == specs.size(), "%s: all %d bindings registered" % [a, specs.size()])
 	ok(no_kb.is_empty(), "every bound action has a keyboard or mouse binding (missing: %s)" % [no_kb])
-	# The design's weapon wheel isn't built, so a pad has no way back a weapon or to one by number.
-	var wheel := no_pad.filter(func(a): return a == "swap_back" or a.begins_with("weapon_"))
-	if not wheel.is_empty():
-		note("a pad has no route to %s (the design's hold-for-the-wheel isn't built)" % [wheel])
+	# The mouse wheel and the number keys have no pad buttons: on a pad, a tap
+	# of Swap goes back a weapon and holding it opens the weapon wheel.
+	var wheel := no_pad.filter(func(a): return a == "swap" or a == "swap_back" or a.begins_with("weapon_"))
+	var quick: Array = GameConfig.ACTIONS.get("quick_swap", [])
+	ok(quick.any(func(s): return String(s).begins_with("joy:")), "a pad reaches every weapon by Swap and its wheel (%s)" % [wheel])
 	var no_pad_other := no_pad.filter(func(a): return not a in wheel)
 	ok(no_pad_other.is_empty(), "every other bound action has a pad binding (missing: %s)" % [no_pad_other])
 	note("actions with no binding at all, on purpose: %s" % [placeholders])
@@ -400,7 +401,7 @@ func _s_input() -> void:
 	ok(clashes.is_empty(), "no input is bound to two game actions (%s)" % [clashes])
 	# Every action the code reads exists.
 	for a in ["forward", "back", "left", "right", "jump", "crouch", "sprint", "menu", "interact", "action_primary", "action_secondary",
-			"reload", "swap", "swap_back", "throw", "torch", "shove", "power_lights", "power_map", "heal", "stim", "deck_map", "ui_cancel", "ui_accept"]:
+			"reload", "quick_swap", "swap", "swap_back", "throw", "torch", "shove", "power_lights", "power_map", "heal", "stim", "deck_map", "ui_cancel", "ui_accept"]:
 		ok(InputMap.has_action(a) and InputMap.action_get_events(a).size() > 0, "the game reads %s and it is bound" % a)
 	# Opening the map by key, then closing it by the same key.
 	var dead_keys := []

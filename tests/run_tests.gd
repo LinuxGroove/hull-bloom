@@ -48,7 +48,7 @@ func _ready() -> void:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
 				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat",
-				"_test_playtest"]:
+				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -73,6 +73,18 @@ func frames(n: int) -> void:
 func physics(n: int) -> void:
 	for i in n:
 		await get_tree().physics_frame
+
+
+## Presses and lets go of a key ("Tab", "Escape"), as a player would: the
+## event goes through the input map to every node that handles it.
+func press(key: String) -> void:
+	for down in [true, false]:
+		var ev := InputEventKey.new()
+		ev.physical_keycode = OS.find_keycode_from_string(key)
+		ev.keycode = ev.physical_keycode
+		ev.pressed = down
+		Input.parse_input_event(ev)
+		await frames(2)
 
 
 ## A visit to a deck as a test run (no campaign), quiet, with the player at
@@ -540,6 +552,29 @@ func _test_deck_scene() -> void:
 	check(s.player != null and s.player.is_inside_tree(), "the tech is on the deck")
 	check(s.power.free_cells() == s.deck.cells, "every cell starts free")
 	check(not s.run.held, "the deck isn't held at the start")
+	# The deck map's key opens only the map: Cogito's own bindings once put its
+	# hidden inventory on Tab too, which froze the Tech and hid the prompts.
+	check(InputMap.action_get_events("inventory").is_empty(), "Cogito's inventory has no key")
+	s.player.head.rotation.x = deg_to_rad(-60.0)
+	await physics(2)
+	var eye := s.player.eye_position()
+	var look := -s.player.camera.global_transform.basis.z
+	var tube := Pickup.make("health")
+	s.add_child(tube)
+	tube.global_position = eye + look * ((eye.y - s.player.feet_position().y - 0.2) / -look.y)
+	tube.global_position.y = s.player.feet_position().y
+	await physics(4)
+	await frames(2)
+	var take := ["interact", "TAKE A HEALTH TUBE"]
+	check(take in s.hud.prompt_lines(), "a health tube in view says how to take it")
+	await press("Tab")
+	check(s.map_panel.visible, "Tab opens the deck map")
+	await press("Escape")
+	check(not s.map_panel.visible, "and Escape closes it")
+	check(not s.player.is_showing_ui and not s.player.is_movement_paused, "and the Tech can move and look round again")
+	check(take in s.hud.prompt_lines(), "and the health tube still says how to take it")
+	tube.free()
+	s.player.head.rotation.x = 0.0
 	# Until you've used the lights, MARI says how in the first dark room.
 	LGSettings.set_value("tutorial", "lights", false, false)
 	s.hud.hush()
@@ -659,12 +694,103 @@ func _test_combat() -> void:
 	spitter.free()
 	await physics(30)
 	check(s.player.health < s.player.max_health, "spit lands after what spat it is gone")
+	check(s.player.last_hit_by == "spit" and DeckScene.DOWNED_BY.has("spit"), "and it's blamed on spit")
 	var sk2 := s.director.spawn("skitter", at, false)
 	await physics(2)
 	s.player.take_hit(Hit.make(Hit.Kind.CLAW, 1000.0, s.player.global_position, forward, sk2))
 	check(s.player.is_dead, "too much and you're down")
 	check(s.player.last_hit_by == "skitter" and DeckScene.DOWNED_BY.has("skitter"), "and you're told what got you")
+	s._show_down()
+	var where := s.level.room_name(s.level.room_at(s.player.global_position))
+	check(s.results._sub.text.begins_with("A skitter got you"), "the down screen says what got you (%s)" % s.results._sub.text)
+	check(where != "" and ("Where: " + where) in s.results.line_texts(), "and where (%s)" % where)
 	await frames(2)
+	await close_deck(s)
+
+
+## Swap: a tap goes back to the last weapon, a hold opens the wheel, and the
+## mouse or the right stick points in it instead of turning the view.
+func _test_swap() -> void:
+	var s := await open_deck("hydroponics")
+	await put_player(s, s.level.lift_cell)
+	var ars := s.player.arsenal
+	for w in ["scattergun", "rifle"]:
+		ars.give(w)
+	ars.select("cutter")
+	ars.select("sidearm")
+	await frames(2)
+	# A tap, as the arsenal sees it: down for a moment, then up.
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "cutter", "a tap of Swap goes back to the last weapon (%s)" % ars.current)
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "sidearm", "and a second tap goes back again (%s)" % ars.current)
+	check(not ars.wheel_open, "a tap doesn't open the wheel")
+	ars.last = "rail"
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "scattergun", "with the last weapon gone, a tap steps on (%s)" % ars.current)
+	# Each weapon has its own place on the wheel.
+	var places := true
+	for w in ars.owned:
+		places = places and ars.wheel_weapon_at(ars.wheel_direction(w)) == w
+	check(places, "every weapon has its own place on the wheel")
+	# Holding Swap opens the wheel, as the controls press it.
+	ars.select("cutter")
+	ars.heat = 0.0
+	await get_tree().process_frame
+	Input.action_press("quick_swap")
+	# This frame counts too: the arsenal ticks after this, with the same delta.
+	var waited := get_process_delta_time()
+	while not ars.wheel_open and waited < 3.0:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+	check(ars.wheel_open, "holding Swap opens the wheel")
+	check(waited >= Arsenal.HOLD_TO_PICK * 0.9, "after the hold time (%.2f s)" % waited)
+	check(Engine.time_scale == 1.0, "time doesn't slow while it's open")
+	var wheel := s.hud.weapon_wheel()
+	check(wheel.visible and wheel.item_texts().size() == ars.owned.size(), "the HUD shows the wheel with every weapon")
+	check("1 PLASMA CUTTER" in wheel.item_texts(), "with its number and name (%s)" % [wheel.item_texts()])
+	check(ars.wheel_pick == "", "pointing at nothing yet")
+	# Fire does nothing while it's open.
+	ars.swapping = 0.0
+	Input.action_press("action_primary")
+	await frames(10)
+	check(ars.heat == 0.0 and not ars.firing, "fire does nothing while the wheel is open")
+	Input.action_release("action_primary")
+	# The mouse points in it, and the view stays put.
+	var turn := s.player.body.rotation.y
+	var pitch := s.player.head.rotation.x
+	var move := InputEventMouseMotion.new()
+	move.relative = ars.wheel_direction("rifle") * 80.0
+	s.player._input(move)
+	check(ars.wheel_pick == "rifle", "the mouse points at a weapon (%s)" % ars.wheel_pick)
+	check(is_equal_approx(s.player.body.rotation.y, turn) and is_equal_approx(s.player.head.rotation.x, pitch), "and the view doesn't turn")
+	# The right stick too.
+	var stick := InputEventJoypadMotion.new()
+	stick.axis = JOY_AXIS_RIGHT_Y
+	stick.axis_value = 1.0
+	s.player._input(stick)
+	check(ars.wheel_pick == "scattergun", "the right stick points at a weapon (%s)" % ars.wheel_pick)
+	stick.axis_value = 0.0
+	s.player._input(stick)
+	check(ars.wheel_pick == "scattergun", "and letting the stick go keeps the pick")
+	ars.point_wheel(ars.wheel_direction("sidearm"))
+	check(ars.wheel_pick == "sidearm", "pointing picks the weapon there")
+	Input.action_release("quick_swap")
+	await frames(2)
+	check(not ars.wheel_open and not wheel.visible, "letting go of Swap puts the wheel away")
+	check(ars.current == "sidearm", "and takes the weapon it points at (%s)" % ars.current)
+	check(ars.last == "cutter", "and the quick swap still goes back to the cutter")
+	# Letting go without pointing keeps what you hold.
+	ars.swap_button(true, Arsenal.HOLD_TO_PICK + 0.05)
+	check(ars.wheel_open, "a long hold opens the wheel")
+	ars.swap_button(false, 0.0)
+	check(ars.current == "sidearm", "letting go without pointing keeps the weapon")
+	# With the wheel shut the mouse turns the view again.
+	s.player._input(move)
+	check(not is_equal_approx(s.player.body.rotation.y, turn), "with the wheel shut the mouse turns the view")
 	await close_deck(s)
 
 
