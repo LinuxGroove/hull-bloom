@@ -80,6 +80,7 @@ var _last_pos := Vector3.ZERO
 var _knock := Vector3.ZERO
 var _venting := 0.0
 var _vent_exit := Vector3.ZERO
+var _vent_wait := 0.0
 var _door_wait := 0.0
 var _capsule: CollisionShape3D
 var _grav := 14.0
@@ -345,6 +346,7 @@ func _floor_y() -> float:
 ## Plans a route to `pos` over the tile grid.
 func plan_to(pos: Vector3) -> void:
 	path.clear()
+	_vent_wait = 0.0
 	if level == null:
 		return
 	var from := DeckLevel.cell_at(global_position)
@@ -360,7 +362,8 @@ func plan_to(pos: Vector3) -> void:
 		var c: Vector2i = s[0]
 		var via: String = s[1]
 		if via == "vent":
-			path.append([DeckLevel.center(c), "", true])
+			# Up into the grille on this side, out of the one at the far end.
+			path.append([DeckLevel.grille(c), "", true, DeckLevel.grille(prev)])
 		else:
 			var mid := (DeckLevel.center(prev) + DeckLevel.center(c)) * 0.5
 			var key := DeckLevel.edge_key(prev, c) if via == "door" else ""
@@ -376,6 +379,13 @@ func follow(delta: float, speed: float) -> void:
 	var step: Array = path[0]
 	var wp: Vector3 = step[0]
 	if step[2]:
+		# Under the grille first, or as near as the furniture lets it get.
+		var under: Vector3 = step[3]
+		_vent_wait += delta
+		if _vent_wait < 1.5 and _stuck < 0.4 and Vector2(under.x - global_position.x, under.z - global_position.z).length() > 0.6:
+			steer(under, speed, delta)
+			return
+		_vent_wait = 0.0
 		_enter_vent(wp)
 		return
 	var key: String = step[1]
@@ -443,8 +453,9 @@ func forward() -> Vector3:
 
 
 func _enter_vent(at: Vector3) -> void:
-	# Climb into the ceiling grille here and come out of the one at `at`.
+	# Climb into the ceiling grille here and drop out of the one over `at`.
 	path.pop_front()
+	Sfx.at(self, "vent_crawl", global_position + Vector3(0, 4, 0), -6.0)
 	_venting = clampf(global_position.distance_to(at) / 6.0, 1.0, 5.0)
 	_vent_exit = at
 	visible = false
@@ -454,7 +465,8 @@ func _enter_vent(at: Vector3) -> void:
 
 
 func _leave_vent() -> void:
-	global_position = _vent_exit + Vector3(randf_range(-0.5, 0.5), 0.2, randf_range(-0.5, 0.5))
+	global_position = _vent_exit + Vector3(randf_range(-0.3, 0.3), Kit.HEIGHT - 1.2, randf_range(-0.3, 0.3))
+	velocity = Vector3.ZERO
 	reset_physics_interpolation()
 	visible = true
 	_capsule.disabled = false
