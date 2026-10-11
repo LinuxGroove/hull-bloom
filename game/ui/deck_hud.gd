@@ -281,7 +281,7 @@ func _build_middle() -> void:
 	_subtitle_label.add_theme_font_size_override("bold_font_size", 20)
 	_subtitle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_subtitle.add_child(_subtitle_label)
-	_banner = StationTheme.hud_label("", 40, StationTheme.TEAL)
+	_banner = StationTheme.title_label("", 48, StationTheme.TEAL)
 	_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.position += Vector2(-500, -170)
