@@ -19,7 +19,7 @@ All 44.1 kHz Ogg Vorbis peaking at about -3 dBFS, so how loud each one plays is 
 - **Voices:** `<kind>_<what>_1` to `_3` for each of `taken`, `skitter`, `stalker`, `feeder` and `watcher`, and each of `alert`, `idle`, `attack` and `hurt`. `Sfx` picks one of an id's numbered takes at random.
 - **Robots:** `robot_alert`, `robot_idle`.
 - **Loops:** `heart_beat_loop` (3 s), `bloom_loop` (8 s), `hum_loop` (8 s).
-- **Music** (stereo, quiet): `drone` (48 s, the calm decks), `hunted` (24 s), `title` (48 s). They play until real music exists.
+- **Music** (stereo, quiet): `drone` (48 s, the calm decks; its air stays level so it sounds like the station's machinery rather than surf), `hunted` (24 s), `title` (48 s). They play until real music exists.
 
 The robots' tones and the watchers' whines are dense, so at the same volume they sound louder than the other voices.
 
