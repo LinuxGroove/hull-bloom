@@ -22,7 +22,11 @@ func _build() -> void:
 	if kind == "workbench":
 		display_name = "Workbench"
 		Kit.model(self, "ess:Prop_Desk_Medium", Vector3.ZERO)
-		Kit.model(self, "ess:Gun_Shotgun", Vector3(-0.6, 0.97, 0.1), 0.4).rotation.z = PI * 0.5
+		# The kit's guns stand upright with the barrel along x: laid on
+		# their side on the desk's top.
+		var gun := Kit.model(self, "ess:Gun_Shotgun", Vector3(-0.6, 0.0, 0.1), 0.4)
+		gun.rotation.x = PI * 0.5
+		gun.position.y = 0.95 - Kit.aabb_of(gun).position.y
 		Kit.model(self, "ess:Prop_Ammo_Small", Vector3(0.7, 0.94, 0.0), -0.3)
 		Kit.model(self, "ess:Prop_Screen", Vector3(0.05, 0.94, -0.3))
 		add_box(Vector3(0, 0.47, 0), Vector3(2.8, 0.94, 1.0))
