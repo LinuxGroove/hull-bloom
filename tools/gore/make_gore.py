@@ -1,4 +1,4 @@
-"""Makes Hull Bloom's blood decals: splats, a pool and drag marks.
+"""Makes Verdigris Protocol's blood decals: splats, a pool and drag marks.
 
 Run: python3 tools/gore/make_gore.py assets/gore
 Each splat is a white-to-grey mask with alpha (the game tints it red for

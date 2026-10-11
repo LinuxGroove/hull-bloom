@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copies the Quaternius packs Hull Bloom uses out of a quaternius-assets
+"""Copies the Quaternius packs Verdigris Protocol uses out of a quaternius-assets
 checkout (https://github.com/LinuxGroove/quaternius-assets) into the game.
 
     python3 tools/vendor_quaternius.py /path/to/quaternius-assets
@@ -15,7 +15,7 @@ checkout (https://github.com/LinuxGroove/quaternius-assets) into the game.
   Universal Animation Library 1 and 2 clips (same rig).
 
 Textures bigger than 2048 pixels are scaled down to 2048. The crew are
-drawn in Hull Bloom's own shaders, so their textures are left out. Planets and the
+drawn in Verdigris Protocol's own shaders, so their textures are left out. Planets and the
 planet hologram are left out (the station has no use for them).
 """
 import os

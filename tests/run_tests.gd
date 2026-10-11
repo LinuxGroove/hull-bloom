@@ -411,7 +411,7 @@ func _test_settings_panel() -> void:
 func _test_launch_ping() -> void:
 	var main := load("res://game/main.gd") as GDScript
 	check(main.source_code.contains("LGLaunchPing.send(GameConfig.GAME_ID)"), "main sends the launch ping")
-	check(GameConfig.GAME_ID == "hull-bloom", "the game id is hull-bloom")
+	check(GameConfig.GAME_ID == "verdigris-protocol", "the game id is verdigris-protocol")
 	check(OnlineServer.SERVER_KEY == "defaultkey", "the server key in git is the default")
 
 #endregion
@@ -478,14 +478,14 @@ func _test_playtest() -> void:
 	await frames(2)
 	check(not get_tree().paused, "the game isn't left paused")
 	var zips := Array(DirAccess.get_files_at(dir)).filter(func(f): return f.ends_with(".zip"))
-	check(zips.size() == 1 and zips[0].begins_with("hull-bloom-playtest-"), "one zip, named for the game")
+	check(zips.size() == 1 and zips[0].begins_with("verdigris-protocol-playtest-"), "one zip, named for the game")
 	var r := ZIPReader.new()
 	r.open(dir.path_join(zips[0]))
 	var files := r.get_files()
 	for f in ["session.json", "events.jsonl", "survey.json"]:
 		check(f in files, "the zip holds " + f)
 	var info: Dictionary = JSON.parse_string(r.read_file("session.json").get_string_from_utf8())
-	check(info.get("game") == "hull-bloom" and info.get("ended_how") == "quit" and int(info.get("marks", 0)) == 1, "session.json says what was played and how it ended")
+	check(info.get("game") == "verdigris-protocol" and info.get("ended_how") == "quit" and int(info.get("marks", 0)) == 1, "session.json says what was played and how it ended")
 	check(info.has("settings") and not info["settings"].get("online", {}).has("server_key"), "the server key never goes in a recording")
 	var types := []
 	var mark := {}
@@ -511,7 +511,7 @@ func _test_playtest() -> void:
 	# A session the game never ended: packed the next time it starts.
 	var cut := dir.path_join("2026-01-01-000000")
 	DirAccess.make_dir_recursive_absolute(cut)
-	LGPlaytestPack.write_json(cut.path_join("session.json"), {"game": "hull-bloom"})
+	LGPlaytestPack.write_json(cut.path_join("session.json"), {"game": "verdigris-protocol"})
 	FileAccess.open(cut.path_join("events.jsonl"), FileAccess.WRITE).store_line("{}")
 	var recovered := LGPlaytestPack.recover(dir)
 	check(recovered.size() == 1 and not DirAccess.dir_exists_absolute(cut), "a session a crash cut short is packed")

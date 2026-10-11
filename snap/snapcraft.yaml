@@ -1,6 +1,6 @@
-name: hull-bloom
-title: Hull Bloom
-adopt-info: hull-bloom
+name: verdigris-protocol
+title: Verdigris Protocol
+adopt-info: verdigris-protocol
 base: core24
 summary: A first person horror shooter against an alien growth on a space station.
 description: |
@@ -21,22 +21,22 @@ description: |
   - Comfort settings: no head bob or view roll by default
   - Shift mode: a new station every night, with online boards
   - Plays fully offline, with a keyboard and mouse or a controller
-icon: snap/gui/hull-bloom.svg
+icon: snap/gui/verdigris-protocol.svg
 grade: stable
 confinement: strict
 compression: lzo
 license: MIT AND CC0-1.0 AND Apache-2.0 AND OFL-1.1
-website: https://github.com/LinuxGroove/hull-bloom
-source-code: https://github.com/LinuxGroove/hull-bloom
-issues: https://github.com/LinuxGroove/hull-bloom/issues
+website: https://github.com/LinuxGroove/verdigris-protocol
+source-code: https://github.com/LinuxGroove/verdigris-protocol
+issues: https://github.com/LinuxGroove/verdigris-protocol/issues
 
 platforms:
   amd64:
   arm64:
 
 apps:
-  hull-bloom:
-    command: bin/hull-bloom
+  verdigris-protocol:
+    command: bin/verdigris-protocol
     extensions: [gnome]
     plugs:
       - audio-playback
@@ -44,7 +44,7 @@ apps:
       - network
 
 parts:
-  hull-bloom:
+  verdigris-protocol:
     plugin: nil
     source: .
     build-packages:
@@ -93,7 +93,7 @@ parts:
       "$GODOT" --headless --path . --import
       "$GODOT" --headless --path . --import
       mkdir -p "$CRAFT_PART_INSTALL/game" "$CRAFT_PART_INSTALL/bin"
-      "$GODOT" --headless --path . --export-release "$PRESET" "$CRAFT_PART_INSTALL/game/hull-bloom"
-      test -f "$CRAFT_PART_INSTALL/game/hull-bloom.pck"
-      install -m 755 snap/local/hull-bloom "$CRAFT_PART_INSTALL/bin/"
+      "$GODOT" --headless --path . --export-release "$PRESET" "$CRAFT_PART_INSTALL/game/verdigris-protocol"
+      test -f "$CRAFT_PART_INSTALL/game/verdigris-protocol.pck"
+      install -m 755 snap/local/verdigris-protocol "$CRAFT_PART_INSTALL/bin/"
       cp LICENSE CREDITS.md "$CRAFT_PART_INSTALL/game/"

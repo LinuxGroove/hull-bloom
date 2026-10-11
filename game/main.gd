@@ -17,7 +17,7 @@ func _ready() -> void:
 	LGInput.register_actions(GameConfig.ACTIONS, float(LGSettings.get_value("input", "stick_deadzone", 0.2)))
 	LGInput.extend_ui_actions()
 	StationTheme.apply(get_tree().root, 22)
-	get_window().title = "Hull Bloom"
+	get_window().title = "Verdigris Protocol"
 	RenderingServer.global_shader_parameter_set("calm_walls", float(LGSettings.get_value("play", "calm_walls", 1.0)))
 	var args := OS.get_cmdline_user_args()
 	for a in args:

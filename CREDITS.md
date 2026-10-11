@@ -11,7 +11,7 @@ Made by the LinuxGroove team.
 - The crew are Quaternius' Universal Base Characters, animated with the
   Universal Animation Library 1 and 2 (CC0), in `assets/quaternius/crew/`.
 
-Made for Hull Bloom, all CC0 like the rest:
+Made for Verdigris Protocol, all CC0 like the rest:
 
 - `assets/models/cutter/`: the plasma cutter, modelled by a script
   (`tools/blender/cutter.py`).

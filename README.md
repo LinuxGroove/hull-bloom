@@ -1,11 +1,11 @@
-# Hull Bloom
+# Verdigris Protocol
 
 > *The alien isn't aboard the station. It's growing through it.*
 
 A first person horror shooter against a spreading alien growth, built with
 Godot 4 and [COGITO](https://codeberg.org/Phazorknight/Cogito) from
 Quaternius' sci-fi kits. Design:
-[idea 21](https://github.com/LinuxGroove/game-ideas/blob/main/ideas/21-hull-bloom.md)
+[idea 21](https://github.com/LinuxGroove/game-ideas/blob/main/ideas/21-verdigris-protocol.md)
 in game-ideas.
 
 ![Hydroponics, overgrown](docs/screenshots/hydroponics/arrival_overgrown.png)
@@ -35,7 +35,7 @@ doors, light flares, and dig out the Heart that roots each deck.
 
 ## Playing
 
-Get it from the Snap Store once it's published (`snap install hull-bloom`),
+Get it from the Snap Store once it's published (`snap install verdigris-protocol`),
 or run it from source with Godot 4.7:
 
 ```sh

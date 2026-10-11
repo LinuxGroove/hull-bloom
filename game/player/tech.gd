@@ -13,7 +13,7 @@ signal died
 signal items_changed
 signal grabbed(on: bool)
 
-## Cogito player nodes Hull Bloom doesn't use.
+## Cogito player nodes Verdigris Protocol doesn't use.
 const UNUSED := ["CogtoTestCurrency", "StrengthAttribute", "LightMeterAttribute",
 	"SanityAttribute", "StaminaAttribute", "HealthAttribute", "HealthAutoConsume",
 	"StaminaAutoConsume", "AutoPickUpZone"]
@@ -50,7 +50,7 @@ var torch_on := true
 var grabbed_by: Node3D = null
 var arsenal: Arsenal
 var torch: SpotLight3D
-## Hull Bloom's pause menu, set before the player enters the tree.
+## Verdigris Protocol's pause menu, set before the player enters the tree.
 var bloom_pause: Node
 var level: DeckLevel
 var down_reason := ""

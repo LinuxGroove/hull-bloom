@@ -52,7 +52,7 @@ jobs:
         id: build
       - uses: actions/upload-artifact@v4
         with:
-          name: hull-bloom-snap-${{ matrix.arch }}
+          name: verdigris-protocol-snap-${{ matrix.arch }}
           path: ${{ steps.build.outputs.snap }}
       - name: Publish to the candidate channel
         if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref_type == 'tag')

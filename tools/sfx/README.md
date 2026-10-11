@@ -1,6 +1,6 @@
 # Synthesized sounds
 
-`make_sfx.py` builds Hull Bloom's own sound effects and the fallback music from oscillators, noise, filters and envelopes, with no samples. Every sound has a fixed random seed taken from its name, so running it again gives the same files. It needs Python 3 with numpy, and ffmpeg with libvorbis.
+`make_sfx.py` builds Verdigris Protocol's own sound effects and the fallback music from oscillators, noise, filters and envelopes, with no samples. Every sound has a fixed random seed taken from its name, so running it again gives the same files. It needs Python 3 with numpy, and ffmpeg with libvorbis.
 
 ```sh
 python3 tools/sfx/make_sfx.py assets/audio/sfx                          # everything

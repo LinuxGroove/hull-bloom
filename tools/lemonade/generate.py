@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Makes Hull Bloom's music, voice lines and sound effects with Lemonade.
+"""Makes Verdigris Protocol's music, voice lines and sound effects with Lemonade.
 
     python3 tools/lemonade/generate.py [--only music|voices|sfx] [--force] [name ...]
 
@@ -66,7 +66,7 @@ ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "tools/lemonade/audio.json"
 RECORD = ROOT / "tools/lemonade/generated.json"
 REPORT = ROOT / "assets/audio/GENERATED.md"
-CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "hull-bloom-lemonade"
+CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "verdigris-protocol-lemonade"
 
 SR = 44100
 PEAK_DB = -3.0
@@ -594,7 +594,7 @@ def render(record, manifest, version):
     lines = ["# Generated audio", "",
              "Made with [Lemonade](https://lemonade-server.ai)%s by `tools/lemonade/generate.py` from "
              "`tools/lemonade/audio.json`; `tools/lemonade/generated.json` has the full record, including "
-             "every take's numbers. Released as CC0, like the rest of Hull Bloom's own audio. Make them again with"
+             "every take's numbers. Released as CC0, like the rest of Verdigris Protocol's own audio. Make them again with"
              % (" " + version if version else ""), "",
              "```sh", "python3 tools/lemonade/generate.py --force [--only music|voices|sfx] [name ...]", "```", "",
              "Every file is 44.1 kHz Ogg Vorbis (music stereo, the rest mono), trimmed of silence and "
