@@ -20,6 +20,8 @@ var survivors_found: Array[String] = []
 var survivors_saved: Array[String] = []
 var logs: Array[String] = []
 var salvage := 0
+## The part of [member salvage] already put in Progress at a workbench.
+var banked := 0
 var kills := 0
 var burnt := 0.0
 var downs := 0
@@ -87,5 +89,5 @@ func objectives(bloom: Bloom) -> Array:
 
 ## The run as Progress keeps it.
 func result(loadout: Dictionary) -> Dictionary:
-	return {"held": held, "survivors": survivors_saved.size(), "salvage": salvage, "time": held_at if held else time,
+	return {"held": held, "survivors": survivors_saved.size(), "salvage": salvage - banked, "time": held_at if held else time,
 		"loadout": loadout, "logs": logs.duplicate(), "kills": kills}

@@ -1,7 +1,8 @@
 class_name HubStation
 extends UsableBody
-## A saved deck's workbench (upgrades from salvage) or bunk (rest and save).
-## Both only work once the deck is a safe hub.
+## A deck's workbench (upgrades from salvage) or bunk (rest and save). Both
+## work once the deck is held, the workbench only in the campaign
+## ([method DeckScene.station_closed]).
 
 signal opened(station: HubStation)
 
@@ -30,16 +31,17 @@ func _build() -> void:
 		Kit.model(self, "ess:Prop_Ammo_Small", Vector3(0.7, 0.94, 0.0), -0.3)
 		Kit.model(self, "ess:Prop_Screen", Vector3(0.05, 0.94, -0.3))
 		add_box(Vector3(0, 0.47, 0), Vector3(2.8, 0.94, 1.0))
-		add_action("interact", "Use the workbench", _use)
+		add_action("interact", "Buy upgrades with salvage", _use)
 	else:
 		display_name = "Bunk"
 		Kit.model(self, "Prop_Pod_Short", Vector3.ZERO)
 		add_box(Vector3(0, 1.0, 0), Vector3(2.0, 2.0, 2.0))
-		add_action("interact", "Rest", _use)
+		add_action("interact", "Rest and patch your suit", _use)
 
 
 func _use(pic: Node) -> void:
-	if DeckScene.current == null or not DeckScene.current.hub:
-		UsableBody.hint(pic, "Not while the Bloom is still here")
+	var why := DeckScene.current.station_closed(kind) if DeckScene.current else "Not while the Bloom is still here"
+	if why != "":
+		UsableBody.hint(pic, why)
 		return
 	opened.emit(self)

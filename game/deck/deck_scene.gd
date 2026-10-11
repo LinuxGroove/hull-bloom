@@ -525,6 +525,8 @@ func _on_held() -> void:
 	hud.say("MARI", deck.held if deck.held != "" else "Organic obstruction cleared. Deck %d is holding." % deck.number)
 	if not quiet:
 		Sfx.ui(self, "power_on", -2.0)
+	if mode == "campaign" and not get_tree().get_nodes_in_group("hub_stations").is_empty():
+		hud.toast("The workbench and the bunk work now", StationTheme.TEAL)
 	_play_music("calm")
 
 
@@ -640,8 +642,24 @@ func vent_room(id: String) -> void:
 		_on_held()
 
 
+## Why a workbench or bunk won't work, or "" when it will. Both work once
+## the deck is held; the workbench needs the campaign, whose salvage it
+## spends.
+func station_closed(kind: String) -> String:
+	if not run.held:
+		if kind == "workbench":
+			return "Hold the deck first. Then salvage buys upgrades here"
+		return "Hold the deck first. Then you can rest here"
+	if kind == "workbench" and mode != "campaign":
+		return "Upgrades are bought in the campaign"
+	return ""
+
+
 func _on_hub_opened(st: HubStation) -> void:
 	if st.kind == "workbench":
+		# What this visit picked up can be spent now.
+		Progress.add_salvage(run.salvage - run.banked)
+		run.banked = run.salvage
 		workbench.open()
 	else:
 		player.heal(player.max_health)

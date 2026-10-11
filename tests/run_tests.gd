@@ -47,7 +47,7 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_combat",
+				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_combat",
 				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
@@ -599,13 +599,42 @@ func _test_deck_scene() -> void:
 	for i in 5:
 		s.tick_bloom()
 	check(s.level.bloom.ticks == 5, "the Bloom ticks")
+	check(s.station_closed("bunk").begins_with("Hold the deck"), "the bunk waits for the deck to be held")
 	check(await clear_deck(s), "cutting the roots holds the deck")
 	check(s.run.roots_cut == s.run.roots, "every root is counted")
+	check(s.station_closed("bunk") == "", "then the bunk works")
+	check(s.station_closed("workbench") != "", "and the workbench is for the campaign")
 	s.leave()
 	check(s.run.over, "leaving ends the visit")
 	check(s.results.visible, "the results show")
 	check(s.results.line_texts().size() > 0, "with lines")
 	await close_deck(s)
+
+
+## The workbench and the bunk work once the deck is held, and the workbench
+## spends what this visit has picked up as well.
+func _test_stations() -> void:
+	Progress.new_campaign()
+	var s := await open_deck("hydroponics", "campaign")
+	check(not s.hub, "a new campaign's first deck isn't a hub")
+	check(s.station_closed("workbench").begins_with("Hold the deck"), "its workbench waits for the deck to be held")
+	var before := Progress.salvage()
+	s.add_salvage(6)
+	check(await clear_deck(s), "the deck holds")
+	check(s.station_closed("workbench") == "" and s.station_closed("bunk") == "", "then the workbench and the bunk work")
+	var wb: Array = s.get_tree().get_nodes_in_group("hub_stations").filter(_is_workbench)
+	s._on_hub_opened(wb[0])
+	check(s.workbench.visible, "the workbench opens")
+	check(Progress.salvage() == before + 6, "with this visit's salvage to spend")
+	s.workbench.close()
+	s.leave()
+	check(Progress.salvage() == before + 6, "and leaving doesn't count it twice")
+	await close_deck(s)
+	Progress.new_campaign()
+
+
+func _is_workbench(h: Node) -> bool:
+	return h is HubStation and (h as HubStation).kind == "workbench"
 
 
 func _test_combat() -> void:
