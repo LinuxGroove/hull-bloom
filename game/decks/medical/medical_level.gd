@@ -195,7 +195,6 @@ func _isolation() -> void:
 	thing("log", Vector2i(10, -3), Vector3(0, 0, -1.45), 0.0, {"id": "medical_quarantine", "style": "terminal", "title": "Quarantine order",
 		"by": "Dr Helena Sorensen, chief medical officer", "text": ORDER})
 	body(Vector2i(9, -3), Vector3(0.4, 0, 0.9), 260.0, "medic")
-	spawn("skitter", Vector2i(6, -3), Vector3(0.3, 0, 0.4), 1, {"asleep": true})
 	pickup("flare", Vector2i(5, -3), Vector3(-1.2, 0, 1.0), 2)
 	pickup("ammo:scattergun", Vector2i(11, -3), Vector3(1.2, 0, 1.0), 1)
 	thing("decal", Vector2i(9, -3), Vector3(0, 0, -1.2), 0.0, {"name": "Decal_Warning"})
@@ -215,13 +214,10 @@ func _morgue() -> void:
 	body(Vector2i(11, -1), Vector3(-1.0, 0, 0.6), 270.0, "tech")
 	body(Vector2i(9, -2), Vector3(1.0, 0, 0.8), 180.0, "botanist")
 	thing("pickup", Vector2i(11, -2), Vector3(-1.7, 0, 1.4), 0.0, {"item": "keycard:pharmacy", "count": 1})
-	spawn("pod", Vector2i(11, -2), Vector3(0.0, 0, -1.2), 1)
 	pickup("salvage", Vector2i(9, -1), Vector3(1.0, 0, 1.3), 1)
 
 
 func _quarantine() -> void:
-	thing("body", Vector2i(9, -4), Vector3(0.5, 0, 0.6), 30.0, {"job": "botanist", "swallowed": true})
-	thing("body", Vector2i(11, -4), Vector3(-0.4, 0, 0.5), 200.0, {"job": "botanist", "swallowed": true})
 	spawn("pod", Vector2i(9, -5), Vector3(0.6, 0, 0.9), 1)
 	spawn("pod", Vector2i(11, -5), Vector3(-0.6, 0, 0.9), 1)
 	pickup("salvage", Vector2i(11, -4), Vector3(1.2, 0, 1.2), 2)

@@ -19,7 +19,7 @@ static func make() -> DeckDef:
 	d.music = "medical"
 	d.arrive = "Medical. Admissions tonight: fourteen. Discharges: none. The quarantine ward is sealed and reports organic obstruction. The morgue reports more occupants than it did an hour ago. Please take a stim if you feel unwell."
 	d.held = "Organic obstruction cleared. Medical is holding. The pharmacy's stores are yours, and I have reset the morgue's count."
-	d.hatches = {"skitter": 0.7, "feeder": 0.3}
+	d.hatches = {"skitter": 0.85, "feeder": 0.15}
 	d.max_alive = 4
 	d.color = Color(0.62, 0.92, 0.88)
 	return d
