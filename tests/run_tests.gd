@@ -739,8 +739,10 @@ func _test_swap() -> void:
 	# Holding Swap opens the wheel, as the controls press it.
 	ars.select("cutter")
 	ars.heat = 0.0
+	await get_tree().process_frame
 	Input.action_press("quick_swap")
-	var waited := 0.0
+	# This frame counts too: the arsenal ticks after this, with the same delta.
+	var waited := get_process_delta_time()
 	while not ars.wheel_open and waited < 3.0:
 		await get_tree().process_frame
 		waited += get_process_delta_time()
