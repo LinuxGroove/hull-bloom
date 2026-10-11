@@ -52,7 +52,7 @@ Run the script check and the tests before every commit. A new `class_name` needs
 | `assets/` | The crew models and animation libraries, Blender-made models (`models/`), gore decals, sounds (`audio/`) |
 | `tests/run_tests.gd` | Headless test runner; add checks with `check(ok, "what")` |
 | `tools/autopilot/` | The autopilot (`tools/autopilot.tscn` runs it): `pilot.gd` plays a deck through the Tech's controls, `skill.gd` its presets, `nav_grid.gd` where the Tech can walk, `telemetry.gd` what each run records |
-| `tools/` | Script checker, screenshots, the story script (`story_script.gd`), Blender scripts, gore decals, the sound synthesizer, Lemonade prompts, `version.sh`, `release.sh` |
+| `tools/` | Script checker, screenshots, the story script (`story_script.gd`), Blender scripts, gore decals, the sound synthesizer, the icon (`make_icon.py` writes `icon.svg` and the snap's copy), Lemonade prompts, `version.sh`, `release.sh` |
 
 ## How the game is built
 
