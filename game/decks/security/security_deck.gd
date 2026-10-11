@@ -20,6 +20,6 @@ static func make() -> DeckDef:
 	d.arrive = "Security is in lockdown, by order of Chief Kessler. The security units are holding their posts. Please wear your badge. The turret mounts will take a power cell each. The armoury is locked to the chief's card."
 	d.held = "Organic obstruction cleared. Security is holding. The lockdown is lifted. The turrets have been told you are a friend."
 	d.hatches = {"skitter": 0.7, "stalker": 0.3}
-	d.max_alive = 9
+	d.max_alive = 6
 	d.color = Color(1.0, 0.35, 0.3)
 	return d
