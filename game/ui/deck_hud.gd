@@ -5,8 +5,9 @@ extends Control
 ## top, MARI's map of the deck at the top right, the suit, infection and power
 ## at the bottom left, the weapon and what you carry at the bottom right, and
 ## the crosshair, what you can do with what you look at, subtitles and crew
-## logs in the middle. Over everything, the edges go red when you're hurt and
-## the Bloom's veins creep in as it takes you.
+## logs in the middle, and the weapon wheel while Swap is held. Over
+## everything, the edges go red when you're hurt and the Bloom's veins creep
+## in as it takes you.
 
 const TOAST_TIME := 4.5
 const REPEAT_TIME := 1.5
@@ -55,6 +56,7 @@ var _log_from := Vector3.ZERO
 var _banner: Label
 var _banner_t := 0.0
 var _grab: Control
+var _wheel: WeaponWheel
 var _hurt := 0.0
 var _spores := 0.0
 var _hit_t := 0.0
@@ -88,6 +90,8 @@ func _init() -> void:
 	_build_status()
 	_build_weapon()
 	_build_middle()
+	_wheel = WeaponWheel.new()
+	add_child(_wheel)
 
 
 #region Building
@@ -208,7 +212,7 @@ func _build_weapon() -> void:
 	_hints.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hints.theme = _hint_theme()
 	col.add_child(_hints)
-	for h in [["action_primary", "FIRE"], ["swap", "SWAP"], ["throw", "THROW"], ["power_lights", "LIGHTS"], ["power_map", "POWER"], ["heal", "MEDKIT"]]:
+	for h in [["action_primary", "FIRE"], ["quick_swap", "SWAP"], ["throw", "THROW"], ["power_lights", "LIGHTS"], ["power_map", "POWER"], ["heal", "MEDKIT"]]:
 		var a := ActionPrompt.make(h[0], h[1], 22)
 		a.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_hints.add_child(a)
@@ -328,6 +332,7 @@ func setup(p_scene: Node, p_player: Tech, p_level: DeckLevel, p_run: DeckRun, p_
 	player.hurt.connect(_on_hurt)
 	player.grabbed.connect(_on_grabbed)
 	player.arsenal.hit_marker.connect(_on_hit_marker)
+	_wheel.watch(player.arsenal)
 	watch_prompts(player.player_interaction_component)
 
 
@@ -496,6 +501,11 @@ func log_open() -> bool:
 	return _log.visible
 
 
+## The weapon wheel (for tests and screenshots).
+func weapon_wheel() -> WeaponWheel:
+	return _wheel
+
+
 ## Spores in your eyes: a blur, or a tint with the Spore blur setting off.
 func spores(amount: float) -> void:
 	_spores = maxf(_spores, clampf(amount, 0.0, 1.0) * 1.6)
@@ -546,7 +556,7 @@ func _process(delta: float) -> void:
 	if _log.visible and player.global_position.distance_to(_log_from) > 1.8:
 		close_log()
 	var busy: bool = player.is_showing_ui or get_tree().paused
-	_prompts.visible = not busy and not _log.visible
+	_prompts.visible = not busy and not _log.visible and not _wheel.visible
 	_update_overlay()
 	_update_status()
 	_update_weapon()

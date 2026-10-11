@@ -48,7 +48,7 @@ func _ready() -> void:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
 				"_test_creatures", "_test_shift", "_test_unique_ids", "_test_menus", "_test_deck_scene", "_test_combat",
-				"_test_playtest"]:
+				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -670,6 +670,90 @@ func _test_combat() -> void:
 	check(s.results._sub.text.begins_with("A skitter got you"), "the down screen says what got you (%s)" % s.results._sub.text)
 	check(where != "" and ("Where: " + where) in s.results.line_texts(), "and where (%s)" % where)
 	await frames(2)
+	await close_deck(s)
+
+
+## Swap: a tap goes back to the last weapon, a hold opens the wheel, and the
+## mouse or the right stick points in it instead of turning the view.
+func _test_swap() -> void:
+	var s := await open_deck("hydroponics")
+	await put_player(s, s.level.lift_cell)
+	var ars := s.player.arsenal
+	for w in ["scattergun", "rifle"]:
+		ars.give(w)
+	ars.select("cutter")
+	ars.select("sidearm")
+	await frames(2)
+	# A tap, as the arsenal sees it: down for a moment, then up.
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "cutter", "a tap of Swap goes back to the last weapon (%s)" % ars.current)
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "sidearm", "and a second tap goes back again (%s)" % ars.current)
+	check(not ars.wheel_open, "a tap doesn't open the wheel")
+	ars.last = "rail"
+	ars.swap_button(true, 0.1)
+	ars.swap_button(false, 0.0)
+	check(ars.current == "scattergun", "with the last weapon gone, a tap steps on (%s)" % ars.current)
+	# Each weapon has its own place on the wheel.
+	var places := true
+	for w in ars.owned:
+		places = places and ars.wheel_weapon_at(ars.wheel_direction(w)) == w
+	check(places, "every weapon has its own place on the wheel")
+	# Holding Swap opens the wheel, as the controls press it.
+	ars.select("cutter")
+	ars.heat = 0.0
+	Input.action_press("quick_swap")
+	var waited := 0.0
+	while not ars.wheel_open and waited < 3.0:
+		await get_tree().process_frame
+		waited += get_process_delta_time()
+	check(ars.wheel_open, "holding Swap opens the wheel")
+	check(waited >= Arsenal.HOLD_TO_PICK * 0.9, "after the hold time (%.2f s)" % waited)
+	check(Engine.time_scale == 1.0, "time doesn't slow while it's open")
+	var wheel := s.hud.weapon_wheel()
+	check(wheel.visible and wheel.item_texts().size() == ars.owned.size(), "the HUD shows the wheel with every weapon")
+	check("1 PLASMA CUTTER" in wheel.item_texts(), "with its number and name (%s)" % [wheel.item_texts()])
+	check(ars.wheel_pick == "", "pointing at nothing yet")
+	# Fire does nothing while it's open.
+	ars.swapping = 0.0
+	Input.action_press("action_primary")
+	await frames(10)
+	check(ars.heat == 0.0 and not ars.firing, "fire does nothing while the wheel is open")
+	Input.action_release("action_primary")
+	# The mouse points in it, and the view stays put.
+	var turn := s.player.body.rotation.y
+	var pitch := s.player.head.rotation.x
+	var move := InputEventMouseMotion.new()
+	move.relative = ars.wheel_direction("rifle") * 80.0
+	s.player._input(move)
+	check(ars.wheel_pick == "rifle", "the mouse points at a weapon (%s)" % ars.wheel_pick)
+	check(is_equal_approx(s.player.body.rotation.y, turn) and is_equal_approx(s.player.head.rotation.x, pitch), "and the view doesn't turn")
+	# The right stick too.
+	var stick := InputEventJoypadMotion.new()
+	stick.axis = JOY_AXIS_RIGHT_Y
+	stick.axis_value = 1.0
+	s.player._input(stick)
+	check(ars.wheel_pick == "scattergun", "the right stick points at a weapon (%s)" % ars.wheel_pick)
+	stick.axis_value = 0.0
+	s.player._input(stick)
+	check(ars.wheel_pick == "scattergun", "and letting the stick go keeps the pick")
+	ars.point_wheel(ars.wheel_direction("sidearm"))
+	check(ars.wheel_pick == "sidearm", "pointing picks the weapon there")
+	Input.action_release("quick_swap")
+	await frames(2)
+	check(not ars.wheel_open and not wheel.visible, "letting go of Swap puts the wheel away")
+	check(ars.current == "sidearm", "and takes the weapon it points at (%s)" % ars.current)
+	check(ars.last == "cutter", "and the quick swap still goes back to the cutter")
+	# Letting go without pointing keeps what you hold.
+	ars.swap_button(true, Arsenal.HOLD_TO_PICK + 0.05)
+	check(ars.wheel_open, "a long hold opens the wheel")
+	ars.swap_button(false, 0.0)
+	check(ars.current == "sidearm", "letting go without pointing keeps the weapon")
+	# With the wheel shut the mouse turns the view again.
+	s.player._input(move)
+	check(not is_equal_approx(s.player.body.rotation.y, turn), "with the wheel shut the mouse turns the view")
 	await close_deck(s)
 
 

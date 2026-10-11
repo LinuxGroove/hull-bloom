@@ -12,7 +12,7 @@ const PAGES := [
 	["The plasma cutter", [
 		"The cutter is the only thing that burns growth back. Hold Fire and sweep it over the floor and walls; the growth chars and shrinks a level at a time.",
 		"It heats up. Let go before it overheats, or wait while it cools. Aim to focus the beam: it reaches further and takes limbs off.",
-		"Your guns are for what hatches. Swap between them, and hold Throw to pick a flare, grenade or mine.",
+		"Your guns are for what hatches. Tap Swap to go back to the last one you held, or hold it for the weapon wheel, point at a gun and let go. Hold Throw to pick a flare, grenade or mine.",
 	]],
 	["Power", [
 		"Each deck has a few power cells. Lights, sealed doors, turrets and the lift each take one, and the lift needs one before it will take you anywhere.",

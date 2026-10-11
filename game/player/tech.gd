@@ -183,6 +183,10 @@ func _physics_process(delta):
 	if grabbed_by != null:
 		_held(delta)
 		return
+	if arsenal and arsenal.wheel_open:
+		# The right stick is pointing in the weapon wheel, so the view stays put.
+		joystick_h_event = null
+		joystick_v_event = null
 	super(delta)
 	if not _tilt:
 		eyes.rotation.z = 0.0
@@ -206,6 +210,14 @@ func _held(delta: float) -> void:
 		return
 	var lift := Vector3(grabbed_by.global_position.x, 1.3, grabbed_by.global_position.z) + Vector3(0, -_feet_offset, 0)
 	global_position = global_position.lerp(lift, clampf(delta * 1.6, 0.0, 1.0))
+
+
+## While the weapon wheel is open, the mouse and the right stick point in it
+## instead of turning the view.
+func _input(event):
+	if arsenal and arsenal.wheel_input(event):
+		return
+	super(event)
 
 
 func _unhandled_input(event: InputEvent) -> void:
