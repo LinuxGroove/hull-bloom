@@ -1329,6 +1329,27 @@ def hum_loop(rng):
 # ---------------------------------------------------------------------------
 # The tech's own sounds: the cutter, a log's screen, a shot landing
 
+def cutter_start(rng):
+    """The cutter lighting: a quick rising zap over a short tone, kept short so
+    letting go of the trigger is heard at once (0.35 s)."""
+    L = 0.35
+    t = timeline(L)
+    zap = whoosh(rng, L, 700, 4200, 2.5, 1.2)
+    f = curve(t, [0, 0.08, L], [180, 420, 380])
+    ph = phase_of(f)
+    tone = (np.sin(ph) + 0.4 * np.sin(2 * ph) + 0.2 * np.sin(3.01 * ph)) * env_ar(t, 0.02, 0.12)
+    return 0.6 * zap + 0.5 * tone + 0.4 * click(rng, t, 0.0, 0.004, 1500)
+
+
+def cutter_stop(rng):
+    """The cutter going out: the plasma dropping away with a falling hiss (0.3 s)."""
+    L = 0.3
+    t = timeline(L)
+    hissing = whoosh(rng, L, 3800, 500, 1.8, 0.4) * np.exp(-t / 0.1)
+    tone = np.sin(phase_of(curve(t, [0, L], [360, 120]))) * np.exp(-t / 0.06)
+    return 0.7 * hissing + 0.4 * tone
+
+
 def read(rng):
     """A crew log coming up on a screen: a relay's tick and two short soft beeps (0.3 s)."""
     L = 0.3
@@ -1514,7 +1535,7 @@ def catalogue():
     sounds = {}
     for build in (watcher_scream, vent_crawl, taken_rise, taken_die, stalker_die, spit, skitter_leap, shove,
                   sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle,
-                  read):
+                  cutter_start, cutter_stop, read):
         sounds[build.__name__] = (build, "sfx")
     for build in (heart_beat_loop, bloom_loop, hum_loop):
         sounds[build.__name__] = (build, "loop")

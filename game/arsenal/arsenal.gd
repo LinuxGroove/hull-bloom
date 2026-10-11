@@ -23,7 +23,7 @@ signal wheel_changed
 ## a pull, or held for automatic), pellets, burst, rail (pierces).
 const WEAPONS := {
 	"cutter": {"name": "Plasma cutter", "slot": 1, "kind": "beam", "model": "cutter", "damage": 26.0, "focus_damage": 42.0,
-		"range": 3.6, "focus_range": 5.5, "heat": 17.0, "focus_heat": 23.0, "cool": 30.0, "burn": 1.15, "focus_burn": 0.6},
+		"range": 5.0, "focus_range": 7.5, "heat": 17.0, "focus_heat": 23.0, "cool": 30.0, "burn": 1.15, "focus_burn": 0.6},
 	"sidearm": {"name": "Sidearm", "slot": 2, "kind": "shot", "model": "Gun_Pistol", "damage": 14.0, "rate": 0.3, "mag": 12,
 		"carry": -1, "reload": 1.7, "spread": 0.014, "aim_spread": 0.004, "range": 60.0, "knock": 1.0, "noise": 24.0, "sound": "sidearm", "recoil": 0.6},
 	"scattergun": {"name": "Scattergun", "slot": 3, "kind": "pellets", "model": "Gun_Shotgun", "damage": 9.0, "pellets": 8, "rate": 0.85, "mag": 6,
@@ -75,6 +75,9 @@ var firing := false
 var aiming := false
 var throwable := "flare"
 var view: Viewmodel
+## Whether the cutter, held, would reach what's under the crosshair (for the
+## HUD; the beam only burns what it touches).
+var beam_reaches := false
 
 var _cool_t := 0.0
 var _shot_t := 0.0
@@ -85,8 +88,10 @@ var _swap_held := 0.0
 var _wheel_mouse := Vector2.ZERO
 var _wheel_stick := Vector2.ZERO
 var _burn_t := 0.0
+var _mark_t := 0.0
 var _beam_hit := {}
 var _beam_sound: AudioStreamPlayer
+var _beam_start: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -133,7 +138,7 @@ func stat(w: String) -> Dictionary:
 			s["focus_heat"] = s["focus_heat"] * 0.7
 			s["cool"] = s["cool"] * 1.4
 		if Progress.has_upgrade("cutter_focus"):
-			s["focus_range"] = 7.0
+			s["focus_range"] = 9.5
 			s["focus_damage"] = s["focus_damage"] * 1.3
 	return s
 
@@ -491,7 +496,9 @@ func _cool(delta: float, _spec: Dictionary) -> void:
 func _cutter(delta: float, spec: Dictionary) -> void:
 	var on := not _busy() and swapping <= 0.0 and not overheated and not wheel_open and Input.is_action_pressed("action_primary")
 	var focus := Input.is_action_pressed("action_secondary") and not _busy()
+	_mark_t -= delta
 	if not on:
+		beam_reaches = not _beam_ray(float(spec["focus_range"] if focus else spec["range"])).is_empty()
 		_stop_beam()
 		_cool_t -= delta
 		if _cool_t <= 0.0:
@@ -511,17 +518,14 @@ func _cutter(delta: float, spec: Dictionary) -> void:
 		changed.emit()
 		return
 	if _beam_sound == null:
-		Sfx.ui(self, "cutter_start", -6.0)
+		_beam_start = Sfx.ui(self, "cutter_start", -6.0)
 		_beam_sound = Sfx.ui(self, "cutter_loop", -8.0)
 	var cam := player.camera
 	var from := cam.global_position
 	var dir := -cam.global_transform.basis.z
 	var reach := float(spec["focus_range"] if focus else spec["range"])
-	var space := get_world_3d().direct_space_state
-	var q := PhysicsRayQueryParameters3D.create(from, from + dir * reach, Kit.SHOT_MASK)
-	q.collide_with_areas = true
-	q.exclude = [player.get_rid()]
-	var h := space.intersect_ray(q)
+	var h := _beam_ray(reach)
+	beam_reaches = not h.is_empty()
 	var end := from + dir * reach
 	if h:
 		end = h.position
@@ -536,14 +540,30 @@ func _cutter(delta: float, spec: Dictionary) -> void:
 			if o.get("dead") == true and not _beam_hit.has(o):
 				_beam_hit[o] = true
 				hit_marker.emit(true)
+			elif o.get("dead") != true and _mark_t <= 0.0:
+				# The beam is hurting it: a marker every so often says so.
+				_mark_t = 0.2
+				hit_marker.emit(false)
 		else:
 			_burn_growth(h.position + h.normal * 0.3, float(spec["focus_burn"] if focus else spec["burn"]) * delta)
-	view.beam(true, end, focus)
+	view.beam(true, end, focus, beam_reaches)
 	_burn_t -= delta
 	if _burn_t <= 0.0:
 		_burn_t = 0.5
 		Noises.make(self, player.global_position, 10.0, player)
 	changed.emit()
+
+
+## What the cutter's beam touches from the eye, within `reach`, or {}.
+func _beam_ray(reach: float) -> Dictionary:
+	if player == null or not is_inside_tree():
+		return {}
+	var cam := player.camera
+	var from := cam.global_position
+	var q := PhysicsRayQueryParameters3D.create(from, from - cam.global_transform.basis.z * reach, Kit.SHOT_MASK)
+	q.collide_with_areas = true
+	q.exclude = [player.get_rid()]
+	return get_world_3d().direct_space_state.intersect_ray(q)
 
 
 func _burn_growth(at: Vector3, amount: float) -> void:
@@ -557,12 +577,24 @@ func _burn_growth(at: Vector3, amount: float) -> void:
 
 func _stop_beam() -> void:
 	if _beam_sound and is_instance_valid(_beam_sound):
-		_beam_sound.stop()
-		_beam_sound.queue_free()
+		# The beam's sounds stop when it does, with a short fizzle.
+		Sfx.ui(self, "cutter_stop", -9.0)
+		_fade_out(_beam_sound)
+		if _beam_start and is_instance_valid(_beam_start):
+			_fade_out(_beam_start)
 	_beam_sound = null
+	_beam_start = null
 	_beam_hit.clear()
 	if view:
 		view.beam(false, Vector3.ZERO, false)
+
+
+## Turns a sound down over a few hundredths of a second (a hard stop clicks)
+## and frees it.
+static func _fade_out(p: AudioStreamPlayer) -> void:
+	var t := p.create_tween()
+	t.tween_property(p, "volume_db", -60.0, 0.06)
+	t.tween_callback(p.queue_free)
 
 #endregion
 
