@@ -12,6 +12,9 @@ const CELL := 0.5
 ## and a little room.
 const CLEAR := 0.4
 const SQRT2 := 1.41421356
+## The most cells a closed-off pocket the Tech may step out of can have
+## (about four square metres); anything bigger is a real dead end.
+const POCKET := 16
 
 var level: DeckLevel
 ## World x and z of cell (0, 0)'s centre.
@@ -174,10 +177,52 @@ func find_path(from: Vector3, to: Vector3, cost := {}, tile_cost := {}, blocked_
 	for key in blocked_doors:
 		for i in door_cells.get(key, PackedInt32Array()):
 			blocked[i] = true
+	var closed := {}
+	var cells := _search(start, goal, cost, tile_cost, blocked, closed)
+	if cells.is_empty() and closed.size() <= POCKET:
+		# The Tech can squeeze past a prop into a corner the grid's careful
+		# box calls closed off (behind a desk, say). Step out of the pocket
+		# to the nearest free cell beyond it and go on from there.
+		var out := _nearest_outside(start, closed, 2.0)
+		if out >= 0:
+			cells = _search(out, goal, cost, tile_cost, blocked, {})
+			if not cells.is_empty():
+				cells.push_front(start)
+	if cells.is_empty():
+		return {}
+	return _waypoints(cells, from, to)
+
+
+## The free cell nearest `from`, within `most` metres and in the same room,
+## that isn't in `inside`.
+func _nearest_outside(from: int, inside: Dictionary, most: float) -> int:
+	var fx := from % w
+	var fy := from / w
+	var room: String = level.tiles.get(DeckLevel.cell_at(world_of(from)), "")
+	var r := int(ceil(most / CELL))
+	var best := -1
+	var best_d := INF
+	for dy in range(-r, r + 1):
+		for dx in range(-r, r + 1):
+			var x := fx + dx
+			var y := fy + dy
+			if not is_free(x, y) or inside.has(y * w + x):
+				continue
+			if level.tiles.get(DeckLevel.cell_at(world(x, y)), "") != room:
+				continue
+			var d := float(dx * dx + dy * dy)
+			if d < best_d:
+				best_d = d
+				best = y * w + x
+	return best
+
+
+## A* over cells from `start` to `goal`: the cells of the way, or none.
+## Fills `closed` with every cell it looked at.
+func _search(start: int, goal: int, cost: Dictionary, tile_cost: Dictionary, blocked: Dictionary, closed: Dictionary) -> Array[int]:
 	var g := {start: 0.0}
 	var came := {start: -1}
 	var heap: Array = [[_h(start, goal), start]]
-	var closed := {}
 	var gx := goal % w
 	var gy := goal / w
 	var found := false
@@ -218,14 +263,14 @@ func find_path(from: Vector3, to: Vector3, cost := {}, tile_cost := {}, blocked_
 					g[j] = ng
 					came[j] = i
 					_push(heap, [ng + Vector2(nx - gx, ny - gy).length() * CELL, j])
-	if not found:
-		return {}
 	var cells: Array[int] = []
+	if not found:
+		return cells
 	var at := goal
 	while at != -1:
 		cells.push_front(at)
 		at = came[at]
-	return _waypoints(cells, from, to)
+	return cells
 
 
 func _h(a: int, b: int) -> float:
