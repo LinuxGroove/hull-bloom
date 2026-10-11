@@ -369,6 +369,8 @@ func _on_hint(_icon: Texture2D, text: String) -> void:
 ## The prompts showing now, as [action, text] pairs (for tests).
 func prompt_lines() -> Array:
 	var out := []
+	if not _prompts.is_visible_in_tree():
+		return out
 	for c in _prompts.get_children():
 		if c is ActionPrompt and not c.is_queued_for_deletion():
 			out.append([c.action, c.text])

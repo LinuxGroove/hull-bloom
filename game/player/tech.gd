@@ -105,6 +105,11 @@ func _ready():
 	super()
 	# Cogito's options menu, in the player's scene, turns the window's stretch off as it starts.
 	get_window().content_scale_size = Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
+	# It also loads Cogito's own key bindings over the game's, so Tab (the deck
+	# map) opened Cogito's hidden inventory, which froze the Tech and hid the
+	# prompts until Tab was pressed again. Put the game's bindings back.
+	LGInput.register_actions(GameConfig.ACTIONS, float(LGSettings.get_value("input", "stick_deadzone", 0.25)))
+	LGInput.extend_ui_actions()
 	max_health = MAX_HEALTH + (SUIT_BONUS if Progress.has_upgrade("suit") else 0.0)
 	health = max_health
 	torch = SpotLight3D.new()

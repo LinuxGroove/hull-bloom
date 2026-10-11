@@ -75,6 +75,18 @@ func physics(n: int) -> void:
 		await get_tree().physics_frame
 
 
+## Presses and lets go of a key ("Tab", "Escape"), as a player would: the
+## event goes through the input map to every node that handles it.
+func press(key: String) -> void:
+	for down in [true, false]:
+		var ev := InputEventKey.new()
+		ev.physical_keycode = OS.find_keycode_from_string(key)
+		ev.keycode = ev.physical_keycode
+		ev.pressed = down
+		Input.parse_input_event(ev)
+		await frames(2)
+
+
 ## A visit to a deck as a test run (no campaign), quiet, with the player at
 ## the lift. Free it with close_deck().
 func open_deck(id: String, mode := "test") -> DeckScene:
@@ -540,6 +552,29 @@ func _test_deck_scene() -> void:
 	check(s.player != null and s.player.is_inside_tree(), "the tech is on the deck")
 	check(s.power.free_cells() == s.deck.cells, "every cell starts free")
 	check(not s.run.held, "the deck isn't held at the start")
+	# The deck map's key opens only the map: Cogito's own bindings once put its
+	# hidden inventory on Tab too, which froze the Tech and hid the prompts.
+	check(InputMap.action_get_events("inventory").is_empty(), "Cogito's inventory has no key")
+	s.player.head.rotation.x = deg_to_rad(-60.0)
+	await physics(2)
+	var eye := s.player.eye_position()
+	var look := -s.player.camera.global_transform.basis.z
+	var tube := Pickup.make("health")
+	s.add_child(tube)
+	tube.global_position = eye + look * ((eye.y - s.player.feet_position().y - 0.2) / -look.y)
+	tube.global_position.y = s.player.feet_position().y
+	await physics(4)
+	await frames(2)
+	var take := ["interact", "TAKE A HEALTH TUBE"]
+	check(take in s.hud.prompt_lines(), "a health tube in view says how to take it")
+	await press("Tab")
+	check(s.map_panel.visible, "Tab opens the deck map")
+	await press("Escape")
+	check(not s.map_panel.visible, "and Escape closes it")
+	check(not s.player.is_showing_ui and not s.player.is_movement_paused, "and the Tech can move and look round again")
+	check(take in s.hud.prompt_lines(), "and the health tube still says how to take it")
+	tube.free()
+	s.player.head.rotation.x = 0.0
 	# Until you've used the lights, MARI says how in the first dark room.
 	LGSettings.set_value("tutorial", "lights", false, false)
 	s.hud.hush()
