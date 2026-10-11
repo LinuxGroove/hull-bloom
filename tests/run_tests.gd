@@ -602,6 +602,7 @@ func _test_deck_scene() -> void:
 	check(s.station_closed("bunk").begins_with("Hold the deck"), "the bunk waits for the deck to be held")
 	check(await clear_deck(s), "cutting the roots holds the deck")
 	check(s.run.roots_cut == s.run.roots, "every root is counted")
+	check(s.level.bloom.max_level() == 0.0, "and the last of the growth dies")
 	check(s.station_closed("bunk") == "", "then the bunk works")
 	check(s.station_closed("workbench") != "", "and the workbench is for the campaign")
 	s.leave()

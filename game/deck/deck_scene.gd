@@ -109,6 +109,7 @@ func _ready() -> void:
 				_set_lights(id, true)
 		lift.set_powered(true)
 		run.lift_powered = true
+		_dry_cocoons()
 		hud.say("MARI", "%s is safe. The workbench and the bunk are working." % deck.name)
 	elif deck.arrive != "":
 		hud.say("MARI", deck.arrive if not overgrown else "%s is overgrown. Organic obstruction everywhere. I'm sorry." % deck.name)
@@ -521,6 +522,11 @@ func add_cell() -> void:
 
 func _on_held() -> void:
 	LGPlaytest.moment("deck_held", {"deck": deck.id, "time": roundi(run.time)})
+	# The last of the growth dies with it.
+	level.bloom.wither()
+	for i in director.pods.keys():
+		director._sync_tile(i)
+	_dry_cocoons()
 	hud.banner("DECK HELD", StationTheme.TEAL, 4.0)
 	hud.say("MARI", deck.held if deck.held != "" else "Organic obstruction cleared. Deck %d is holding." % deck.number)
 	if not quiet:
@@ -528,6 +534,13 @@ func _on_held() -> void:
 	if mode == "campaign" and not get_tree().get_nodes_in_group("hub_stations").is_empty():
 		hud.toast("The workbench and the bunk work now", StationTheme.TEAL)
 	_play_music("calm")
+
+
+## On a held deck the flesh round the cocoons is dead.
+func _dry_cocoons() -> void:
+	for c in get_tree().get_nodes_in_group("cocoons"):
+		for m in c.find_children("", "MeshInstance3D", true, false):
+			(m as MeshInstance3D).material_override = Flesh.material("dead")
 
 
 func _on_heart_killed(_h: Heart) -> void:
