@@ -1327,6 +1327,18 @@ def hum_loop(rng):
 
 
 # ---------------------------------------------------------------------------
+# The tech's own sounds: the cutter, a log's screen, a shot landing
+
+def read(rng):
+    """A crew log coming up on a screen: a relay's tick and two short soft beeps (0.3 s)."""
+    L = 0.3
+    t = timeline(L)
+    beeps = np.tanh(2 * np.sin(TAU * 1320 * t)) * bump(t, 0.01, 0.07, 0.4)
+    beeps += np.tanh(2 * np.sin(TAU * 1760 * t)) * bump(t, 0.11, 0.09, 0.4)
+    return 0.5 * lowpass(beeps, 4500) + 0.3 * click(rng, t, 0.0, 0.002, 2500)
+
+
+# ---------------------------------------------------------------------------
 # Music fallbacks: stereo loops, every tone a whole number of cycles per loop
 
 def cyc(f, length):
@@ -1501,7 +1513,8 @@ MUSIC_LUFS = {"drone": -20.0, "hunted": -18.0, "title": -20.0}
 def catalogue():
     sounds = {}
     for build in (watcher_scream, vent_crawl, taken_rise, taken_die, stalker_die, spit, skitter_leap, shove,
-                  sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle):
+                  sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle,
+                  read):
         sounds[build.__name__] = (build, "sfx")
     for build in (heart_beat_loop, bloom_loop, hum_loop):
         sounds[build.__name__] = (build, "loop")

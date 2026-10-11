@@ -574,11 +574,16 @@ func say(person: String, line: String, voice := "") -> void:
 
 
 func _on_log_read(log: LogTerminal) -> void:
+	# The press that opened the log mustn't go on to close it again (see
+	# _unhandled_input).
+	if is_inside_tree():
+		get_viewport().set_input_as_handled()
 	LGPlaytest.event("log_read", {"log": log.log_id, "again": log.log_id in run.logs})
 	run.read(log.log_id)
 	Progress.read_log(log.log_id)
 	log.set_read(true)
-	hud.show_log(log.title, log.by, log.text)
+	if hud.show_log(log.title, log.by, log.text) and not quiet:
+		Sfx.at(log, "read", log.global_position, -10.0)
 
 
 func _on_survivor_found(s: Survivor) -> void:

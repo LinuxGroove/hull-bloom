@@ -479,11 +479,11 @@ func banner(text: String, color := StationTheme.TEAL, seconds := 3.0) -> void:
 
 
 ## A crew log on a screen. Reading the same one again, walking away or
-## using anything puts it away.
-func show_log(title: String, by: String, text: String) -> void:
+## using anything puts it away. Returns whether it opened.
+func show_log(title: String, by: String, text: String) -> bool:
 	if _log.visible and _log_title.text == title:
 		close_log()
-		return
+		return false
 	_log_title.text = title
 	_log_by.text = by
 	_log_by.visible = by != ""
@@ -493,6 +493,7 @@ func show_log(title: String, by: String, text: String) -> void:
 		_log_from = player.global_position
 	_log.reset_size()
 	_log.position = (size - _log.size) * 0.5
+	return true
 
 
 func close_log() -> void:
