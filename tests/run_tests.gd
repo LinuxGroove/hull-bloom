@@ -47,7 +47,7 @@ func _ready() -> void:
 	else:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
-				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_combat",
+				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
 				"_test_swap", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
@@ -269,6 +269,7 @@ func _test_run() -> void:
 	for i in b.cells.size():
 		b.growth[i] = 0.0
 	check(run.check_held(b), "held once the roots are cut and the growth is gone")
+	check(["Power the lift at its console", false] in run.objectives(b), "then the lift wants its power")
 	check(not run.check_held(b), "it only becomes held once")
 	run.read("log_a")
 	run.read("log_a")
@@ -633,13 +634,68 @@ func _test_deck_scene() -> void:
 	for i in 5:
 		s.tick_bloom()
 	check(s.level.bloom.ticks == 5, "the Bloom ticks")
+	check(s.station_closed("bunk").begins_with("Hold the deck"), "the bunk waits for the deck to be held")
 	check(await clear_deck(s), "cutting the roots holds the deck")
 	check(s.run.roots_cut == s.run.roots, "every root is counted")
+	check(s.level.bloom.max_level() == 0.0, "and the last of the growth dies")
+	check(s.station_closed("bunk") == "", "then the bunk works")
+	check(s.station_closed("workbench") != "", "and the workbench is for the campaign")
 	s.leave()
 	check(s.run.over, "leaving ends the visit")
 	check(s.results.visible, "the results show")
 	check(s.results.line_texts().size() > 0, "with lines")
 	await close_deck(s)
+
+
+## The workbench and the bunk work once the deck is held, and the workbench
+## spends what this visit has picked up as well.
+func _test_stations() -> void:
+	Progress.new_campaign()
+	var s := await open_deck("hydroponics", "campaign")
+	check(not s.hub, "a new campaign's first deck isn't a hub")
+	check(s.station_closed("workbench").begins_with("Hold the deck"), "its workbench waits for the deck to be held")
+	var before := Progress.salvage()
+	s.add_salvage(6)
+	check(await clear_deck(s), "the deck holds")
+	check(s.station_closed("workbench") == "" and s.station_closed("bunk") == "", "then the workbench and the bunk work")
+	var wb: Array = s.get_tree().get_nodes_in_group("hub_stations").filter(_is_workbench)
+	s._on_hub_opened(wb[0])
+	check(s.workbench.visible, "the workbench opens")
+	check(Progress.salvage() == before + 6, "with this visit's salvage to spend")
+	s.workbench.close()
+	s.leave()
+	check(Progress.salvage() == before + 6, "and leaving doesn't count it twice")
+	await close_deck(s)
+	Progress.new_campaign()
+
+
+## A heart hurt from out of its reach answers: it hatches spawn that come
+## for you and spits back.
+func _test_heart_answers() -> void:
+	var s := await open_deck("hydroponics")
+	await put_player(s, s.level.lift_cell)
+	var h: Heart = s.director.hearts[0]
+	var far := s.player.global_position.distance_to(h.global_position)
+	check(far > Heart.SPAWN_RANGE, "the lift is out of the heart's reach (%d m)" % far)
+	await frames(30)
+	check(not h.roused(), "the heart leaves you be out there")
+	var before := s.director.alive()
+	h.take_hit(Hit.make(Hit.Kind.BULLET, 1.0, h.global_position + Vector3(0, 1.2, 0), Vector3.FORWARD, s.player))
+	check(h.roused(), "a hit from out of its reach rouses it")
+	var spat := false
+	var hatched := false
+	# Physics ticks keep time: three seconds.
+	for i in 180:
+		await physics(1)
+		spat = spat or not get_tree().root.find_children("", "Spit", true, false).is_empty()
+		hatched = hatched or s.director.alive() > before
+	check(spat, "it spits back")
+	check(hatched, "and hatches spawn that come for you")
+	await close_deck(s)
+
+
+func _is_workbench(h: Node) -> bool:
+	return h is HubStation and (h as HubStation).kind == "workbench"
 
 
 func _test_combat() -> void:

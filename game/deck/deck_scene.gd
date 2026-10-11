@@ -108,6 +108,8 @@ func _ready() -> void:
 			if not level.rooms[id]["dark"]:
 				_set_lights(id, true)
 		lift.set_powered(true)
+		run.lift_powered = true
+		_dry_cocoons()
 		hud.say("MARI", "%s is safe. The workbench and the bunk are working." % deck.name)
 	elif deck.arrive != "":
 		hud.say("MARI", deck.arrive if not overgrown else "%s is overgrown. Organic obstruction everywhere. I'm sorry." % deck.name)
@@ -520,11 +522,25 @@ func add_cell() -> void:
 
 func _on_held() -> void:
 	LGPlaytest.moment("deck_held", {"deck": deck.id, "time": roundi(run.time)})
+	# The last of the growth dies with it.
+	level.bloom.wither()
+	for i in director.pods.keys():
+		director._sync_tile(i)
+	_dry_cocoons()
 	hud.banner("DECK HELD", StationTheme.TEAL, 4.0)
 	hud.say("MARI", deck.held if deck.held != "" else "Organic obstruction cleared. Deck %d is holding." % deck.number)
 	if not quiet:
 		Sfx.ui(self, "power_on", -2.0)
+	if mode == "campaign" and not get_tree().get_nodes_in_group("hub_stations").is_empty():
+		hud.toast("The workbench and the bunk work now", StationTheme.TEAL)
 	_play_music("calm")
+
+
+## On a held deck the flesh round the cocoons is dead.
+func _dry_cocoons() -> void:
+	for c in get_tree().get_nodes_in_group("cocoons"):
+		for m in c.find_children("", "MeshInstance3D", true, false):
+			(m as MeshInstance3D).material_override = Flesh.material("dead")
 
 
 func _on_heart_killed(_h: Heart) -> void:
@@ -574,11 +590,16 @@ func say(person: String, line: String, voice := "") -> void:
 
 
 func _on_log_read(log: LogTerminal) -> void:
+	# The press that opened the log mustn't go on to close it again (see
+	# _unhandled_input).
+	if is_inside_tree():
+		get_viewport().set_input_as_handled()
 	LGPlaytest.event("log_read", {"log": log.log_id, "again": log.log_id in run.logs})
 	run.read(log.log_id)
 	Progress.read_log(log.log_id)
 	log.set_read(true)
-	hud.show_log(log.title, log.by, log.text)
+	if hud.show_log(log.title, log.by, log.text) and not quiet:
+		Sfx.at(log, "read", log.global_position, -10.0)
 
 
 func _on_survivor_found(s: Survivor) -> void:
@@ -634,8 +655,24 @@ func vent_room(id: String) -> void:
 		_on_held()
 
 
+## Why a workbench or bunk won't work, or "" when it will. Both work once
+## the deck is held; the workbench needs the campaign, whose salvage it
+## spends.
+func station_closed(kind: String) -> String:
+	if not run.held:
+		if kind == "workbench":
+			return "Hold the deck first. Then salvage buys upgrades here"
+		return "Hold the deck first. Then you can rest here"
+	if kind == "workbench" and mode != "campaign":
+		return "Upgrades are bought in the campaign"
+	return ""
+
+
 func _on_hub_opened(st: HubStation) -> void:
 	if st.kind == "workbench":
+		# What this visit picked up can be spent now.
+		Progress.add_salvage(run.salvage - run.banked)
+		run.banked = run.salvage
 		workbench.open()
 	else:
 		player.heal(player.max_health)
@@ -662,6 +699,7 @@ func _on_lift_used() -> void:
 	if not lift.powered:
 		if hub or power.take("lift"):
 			lift.set_powered(true)
+			run.lift_powered = true
 			hud.say("MARI", "The lift has power. Use it again when you're ready to go.")
 		else:
 			hud.toast("The lift needs a free power cell", StationTheme.RED)

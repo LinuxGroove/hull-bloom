@@ -18,6 +18,8 @@ const LOOKS := {
 	"gib": {"glow": 0.15, "scale": 7.0, "breathe": 0.0},
 	"ichor": {"dark": Color(0.03, 0.03, 0.02), "mid": Color(0.1, 0.12, 0.05), "light": Color(0.22, 0.25, 0.1), "fat": Color(0.3, 0.3, 0.15), "glow": 0.2},
 	"charred": {"dark": Color(0.02, 0.01, 0.01), "mid": Color(0.06, 0.03, 0.02), "light": Color(0.14, 0.07, 0.04), "fat": Color(0.2, 0.12, 0.08), "glow": 0.3, "wet": 0.1},
+	# Flesh left on a held deck: dried out, still and dull.
+	"dead": {"dark": Color(0.04, 0.035, 0.03), "mid": Color(0.12, 0.1, 0.085), "light": Color(0.24, 0.2, 0.17), "fat": Color(0.3, 0.26, 0.21), "glow": 0.0, "wet": 0.05, "breathe": 0.0, "scale": 5.0},
 }
 
 static var _baked := {}

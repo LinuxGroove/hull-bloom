@@ -16,6 +16,12 @@ extends Node3D
 const SIDES := {"W": 0.0, "S": PI * 0.5, "E": PI, "N": -PI * 0.5}
 const STEP := {"W": Vector2i(-1, 0), "N": Vector2i(0, -1), "E": Vector2i(1, 0), "S": Vector2i(0, 1)}
 const SIDE_ORDER := ["W", "N", "E", "S"]
+## The kit's walls are this tall; the pieces above them reach the ceiling.
+const WALL_HEIGHT := 3.0
+## How far a bulkhead's frame stands out either side of its edge.
+const DOOR_FRAME_DEPTH := 0.25
+## How thick the plates over open wall ends are.
+const PLATE := 0.04
 
 ## The look of a room: kit families for the walls and their upper parts, the
 ## floor and ceiling plates, and the colour of its lights when powered.
@@ -73,6 +79,9 @@ var built := false
 var _default_style := "corridor"
 var _static: Node3D
 var _collision: Node3D
+## Vector3i(tile x, tile y, side in SIDE_ORDER) -> Vector2(how far the wall
+## piece, and the piece above it, stand out from the tile's edge).
+var _depths := {}
 
 
 ## Lay the deck out here (rooms, ways, things), then call [method finish] or
@@ -502,6 +511,7 @@ func finish() -> void:
 	r.seed = hash(deck.id if deck else "deck")
 	for c in tiles:
 		_build_tile(c, r)
+	_cap_wall_ends()
 	for key in ways:
 		var w: Dictionary = ways[key]
 		match String(w["kind"]):
@@ -564,16 +574,92 @@ func _wall(c: Vector2i, side: String, st: Dictionary, r: RandomNumberGenerator, 
 		var inset := _inset(name)
 		if inset != 0.0:
 			m.position += Vector3(cos(yaw), 0, -sin(yaw)) * inset
+	_depths[Vector3i(c.x, c.y, SIDE_ORDER.find(side))] = Vector2(_depth(piece), _depth(st["top"]))
 	var out := Vector3(STEP[side].x, 0, STEP[side].y)
 	var along := Vector3(absf(out.z), 0, absf(out.x))
-	var size := along * Kit.TILE + Vector3(0, Kit.HEIGHT, 0) + out.abs() * 0.3
-	Kit.block(_collision, p + out * (Kit.TILE * 0.5 + 0.05) + Vector3(0, Kit.HEIGHT * 0.5, 0), size, Kit.LAYER_GLASS if glass else Kit.LAYER_STATION)
+	# The box reaches far enough in that the Tech's eyes, half a body's
+	# width from it, stay out of the thickest pieces.
+	var inner := maxf(0.1, _depth(piece) - 0.2)
+	var size := along * Kit.TILE + Vector3(0, Kit.HEIGHT, 0) + out.abs() * (0.2 + inner)
+	Kit.block(_collision, p + out * (Kit.TILE * 0.5 + 0.1 - inner * 0.5) + Vector3(0, Kit.HEIGHT * 0.5, 0), size, Kit.LAYER_GLASS if glass else Kit.LAYER_STATION)
 	if glass:
 		# Glass stops bodies; the wall below the window still stops shots.
 		Kit.block(_collision, p + out * (Kit.TILE * 0.5 + 0.05) + Vector3(0, 0.5, 0), along * Kit.TILE + Vector3(0, 1.0, 0) + out.abs() * 0.3)
 
 
+## The kit's wall pieces are open at their ends, made to meet the next
+## piece. Where a wall stops (a corner that juts into a room, the side of
+## an arch or a door, a thick piece beside a thin one) you could see into
+## it and out the other side, so each open end gets a plate.
+func _cap_wall_ends() -> void:
+	for key in _depths:
+		var c := Vector2i(key.x, key.y)
+		var side: String = SIDE_ORDER[key.z]
+		var out: Vector2i = STEP[side]
+		var here: Vector2 = _depths[key]
+		for along: Vector2i in [Vector2i(out.y, out.x), Vector2i(-out.y, -out.x)]:
+			# A wall along the tile's next side covers this end.
+			if _depths.has(Vector3i(c.x, c.y, SIDE_ORDER.find(_side_of(along)))):
+				continue
+			var next := c + along
+			var there: Vector2 = _depths.get(Vector3i(next.x, next.y, key.z), Vector2.ZERO)
+			if String(ways.get(edge_key(next, next + out), {}).get("kind", "")) == "door":
+				# A bulkhead's frame reaches past its tile and hides ends
+				# as thick as itself.
+				there = Vector2(DOOR_FRAME_DEPTH, DOOR_FRAME_DEPTH)
+			for k in 2:
+				if here[k] > there[k] + 0.01:
+					_end_plate(c, out, along, here[k], WALL_HEIGHT if k == 0 else Kit.HEIGHT - WALL_HEIGHT, 0.0 if k == 0 else WALL_HEIGHT)
+
+
+func _side_of(dir: Vector2i) -> String:
+	for s in SIDE_ORDER:
+		if STEP[s] == dir:
+			return s
+	return ""
+
+
+## A plate filling a wall's end, just inside it: `depth` from the tile's
+## edge, `height` tall from `bottom`.
+func _end_plate(c: Vector2i, out: Vector2i, along: Vector2i, depth: float, height: float, bottom: float) -> void:
+	var o := Vector3(out.x, 0, out.y)
+	var a := Vector3(along.x, 0, along.y)
+	var m := MeshInstance3D.new()
+	m.name = "EndPlate"
+	m.mesh = _plate_mesh()
+	m.position = center(c) + o * (Kit.TILE * 0.5 - depth * 0.5) + a * (Kit.TILE * 0.5 - PLATE * 0.5) + Vector3(0, bottom + height * 0.5, 0)
+	m.scale = o.abs() * depth + a.abs() * PLATE + Vector3(0, height, 0)
+	_static.add_child(m)
+
+
+static var _plate: Mesh
+
+
+## A unit box in the walls' dark metal, scaled to each plate (one mesh, so
+## the plates batch together).
+static func _plate_mesh() -> Mesh:
+	if _plate == null:
+		var b := BoxMesh.new()
+		b.material = Kit.flat(Color(0.13, 0.14, 0.15), 0.55)
+		_plate = b
+	return _plate
+
+
 static var _insets := {}
+static var _depths_of := {}
+
+
+## How far a wall piece stands out from its tile's edge once it's set in.
+static func _depth(name: String) -> float:
+	if name == "":
+		return 0.0
+	if not _depths_of.has(name):
+		var n := Kit.model(Node3D.new(), name, Vector3.ZERO)
+		var box := Kit.aabb_of(n)
+		var parent := n.get_parent()
+		parent.free()
+		_depths_of[name] = maxf(0.0, box.end.x + Kit.TILE * 0.5 + _inset(name)) if box.size.y > 0.5 else 0.0
+	return _depths_of[name]
 
 
 ## How far a wall piece reaches past its tile's edge, so it can be set in:

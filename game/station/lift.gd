@@ -39,10 +39,10 @@ func _build() -> void:
 	console.display_name = "Lift"
 	add_child(console)
 	console.position = back * 1.45
-	# The screen faces into the room.
+	# The console's +z, and the kit computer's screen with it, faces into
+	# the room.
 	console.rotation.y = atan2(-back.x, -back.z)
-	var m := Kit.model(console, CONSOLE, Vector3.ZERO)
-	m.rotation.y = PI
+	Kit.model(console, CONSOLE, Vector3.ZERO)
 	console.add_box(Vector3(0, 0.8, 0), Vector3(0.8, 1.6, 0.6))
 	console.add_action("interact", "Power the lift", _use)
 	_glow = MeshInstance3D.new()

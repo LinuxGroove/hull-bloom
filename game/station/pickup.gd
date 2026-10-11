@@ -76,8 +76,12 @@ func _build() -> void:
 	else:
 		m = Kit.model(self, model_name, Vector3.ZERO, 0.0, float(spec[2]))
 	if base() in ["weapon", "keycard", "stim", "health", "grenade"]:
-		# Lying on the floor.
-		m.rotation.z = PI * 0.5
+		# Lying on the floor. The kit's guns stand upright with the barrel
+		# along x, so they're laid on their side, not stood on end.
+		if base() == "weapon":
+			m.rotation.x = PI * 0.5
+		else:
+			m.rotation.z = PI * 0.5
 		var box := Kit.aabb_of(m)
 		m.position.y = -box.position.y + 0.02
 	add_box(Vector3(0, 0.25, 0), Vector3(0.7, 0.5, 0.7))

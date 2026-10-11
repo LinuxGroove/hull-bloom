@@ -292,6 +292,13 @@ func salvage() -> int:
 	return int(_cfg.get_value("shift", "salvage", 0))
 
 
+## Salvage from a visit that's still going, to spend at its workbench.
+func add_salvage(n: int) -> void:
+	if n > 0:
+		_cfg.set_value("shift", "salvage", salvage() + n)
+		changed.emit()
+
+
 func weapons() -> Array:
 	return Array(_cfg.get_value("carry", "weapons", START_WEAPONS.duplicate()))
 

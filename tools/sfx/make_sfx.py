@@ -1327,6 +1327,53 @@ def hum_loop(rng):
 
 
 # ---------------------------------------------------------------------------
+# The tech's own sounds: the cutter, a log's screen, a shot landing
+
+def cutter_start(rng):
+    """The cutter lighting: a quick rising zap over a short tone, kept short so
+    letting go of the trigger is heard at once (0.35 s)."""
+    L = 0.35
+    t = timeline(L)
+    zap = whoosh(rng, L, 700, 4200, 2.5, 1.2)
+    f = curve(t, [0, 0.08, L], [180, 420, 380])
+    ph = phase_of(f)
+    tone = (np.sin(ph) + 0.4 * np.sin(2 * ph) + 0.2 * np.sin(3.01 * ph)) * env_ar(t, 0.02, 0.12)
+    return 0.6 * zap + 0.5 * tone + 0.4 * click(rng, t, 0.0, 0.004, 1500)
+
+
+def cutter_stop(rng):
+    """The cutter going out: the plasma dropping away with a falling hiss (0.3 s)."""
+    L = 0.3
+    t = timeline(L)
+    hissing = whoosh(rng, L, 3800, 500, 1.8, 0.4) * np.exp(-t / 0.1)
+    tone = np.sin(phase_of(curve(t, [0, L], [360, 120]))) * np.exp(-t / 0.06)
+    return 0.7 * hissing + 0.4 * tone
+
+
+def read(rng):
+    """A crew log coming up on a screen: a relay's tick and two short soft beeps (0.3 s)."""
+    L = 0.3
+    t = timeline(L)
+    beeps = np.tanh(2 * np.sin(TAU * 1320 * t)) * bump(t, 0.01, 0.07, 0.4)
+    beeps += np.tanh(2 * np.sin(TAU * 1760 * t)) * bump(t, 0.11, 0.09, 0.4)
+    return 0.5 * lowpass(beeps, 4500) + 0.3 * click(rng, t, 0.0, 0.002, 2500)
+
+
+def hit_marker(rng):
+    """A shot landing, for whoever fired it: a short dry tick (0.08 s)."""
+    t = timeline(0.08)
+    return modes(t, [2400, 3700], [1.0, 0.5], [0.012, 0.008]) + 0.5 * click(rng, t, 0.0, 0.002, 2000)
+
+
+def kill_marker(rng):
+    """A kill: a heavier double tick (0.18 s)."""
+    t = timeline(0.18)
+    a = modes(t, [1500, 2300], [1.0, 0.5], [0.02, 0.012]) + 0.4 * click(rng, t, 0.0, 0.003, 1500)
+    b = modes(t, [1100, 1800], [1.0, 0.4], [0.04, 0.02], 0.06) + 0.4 * click(rng, t, 0.06, 0.003, 1200)
+    return a + 0.9 * b
+
+
+# ---------------------------------------------------------------------------
 # Music fallbacks: stereo loops, every tone a whole number of cycles per loop
 
 def cyc(f, length):
@@ -1370,10 +1417,21 @@ def stereo_room(rng, x, seconds, wet, bright, circular=True):
     return np.stack([xs[c] + wet * convolve(xs[c], reverb_ir(rng, seconds, bright), circular) for c in range(2)])
 
 
+def pump_cycle(rng, length):
+    """A far-off pump working: a muffled thump, then its valve knocking shut."""
+    t = timeline(length)
+    beat = thump(rng, t, 0.0, 70, 38, 0.18, 0.15)
+    valve = modes(t, [310, 520, 870], [1.0, 0.5, 0.3], [0.05, 0.04, 0.03], 0.55)
+    valve += 0.15 * click(rng, t, 0.55, 0.004, 400)
+    return lowpass(beat + 0.4 * valve, 900)
+
+
 def music_drone(rng):
     """The calm decks' drone: a dark root and fifth that breathe (with a sub an octave
-    down for weight), a faint minor-second shimmer, air and a ghostly whistle in the
-    vents, and now and then the hull groaning or a girder knocking (48 s loop)."""
+    down for weight), a faint minor-second shimmer, the steady air and electric buzz of
+    the station, a pump working somewhere far off, a ghostly whistle in the vents, and
+    now and then the hull groaning or a girder knocking (48 s loop). The air stays level
+    rather than swelling, so it reads as machinery, not surf."""
     L = 48.0
     t = timeline(L)
     n = len(t)
@@ -1385,25 +1443,29 @@ def music_drone(rng):
         fifth *= np.clip(0.35 + lfo(t, L, rng, (1, 0.3), (2, 0.12)), 0, None)
         shimmer = sum(np.sin(TAU * cyc(f, L) * t + rng.uniform(0, TAU)) for f in (293.66 + 0.1 * c, 311.13 - 0.08 * c))
         shimmer *= np.clip(0.3 + lfo(t, L, rng, (2, 0.5)), 0, None) ** 2
-        air = loop_noise(rng, n, lambda f: hp_mag(f, 120) * lp_mag(f, 1200, 2) / np.sqrt(np.maximum(f, 20)))
-        air *= np.clip(0.6 + lfo(t, L, rng, (1, 0.3), (4, 0.15)), 0.05, None)
+        air = loop_noise(rng, n, lambda f: hp_mag(f, 150) * lp_mag(f, 900, 2) / np.sqrt(np.maximum(f, 20)))
+        buzz = np.tanh(2.0 * sum(w * np.sin(TAU * f * t + rng.uniform(0, TAU))
+                                 for f, w in ((100, 1.0), (200, 0.5), (300, 0.35), (400, 0.2))))
         whistle = loop_noise(rng, n, lambda f: bp_mag(f, 420, 12) + 0.7 * bp_mag(f, 935, 15))
         whistle *= np.clip(lfo(t, L, rng, (3, 1.0)), 0, None) ** 2
         chans.append(0.3 * norm(sub) + 0.6 * norm(root) + 0.3 * norm(fifth) + 0.05 * shimmer
-                     + 0.2 * air + 0.06 * whistle)
+                     + 0.07 * air + 0.025 * norm(buzz) + 0.04 * whistle)
     x = np.stack(chans)
     events = np.zeros(n)
     for at, f in ((11.0, 1.0), (33.5, 0.85)):
         place(events, 0.4 * hull_groan(rng, 3.5, f), at, wrap=True)
     place(events, 0.3 * lowpass(struck_metal(rng, 8.0, 116.0, 2.5), 1500), 24.0, wrap=True)
+    pump = pump_cycle(rng, 1.5)
+    for i in range(8):
+        place(events, 0.22 * rng.uniform(0.8, 1.0) * pump, 2.0 + i * 6.0, wrap=True)
     x += np.stack([events, np.roll(events, secs(0.013))])
     return stereo_room(rng, x, 5.0, 0.4, 2500)
 
 
 def music_hunted(rng):
     """Being hunted: a heartbeat at 80 beats a minute, a low eighth-note throb that steps
-    up a semitone every fourth bar, a thin high cluster, ticking, and air rushing in
-    swells (24 s loop; the beats sit a little after the seam)."""
+    up a semitone every fourth bar, a thin high cluster, ticking, and a steady rush of
+    air (24 s loop; the beats sit a little after the seam)."""
     L = 24.0
     beat = 0.75
     off = 0.1
@@ -1430,9 +1492,8 @@ def music_hunted(rng):
         drone = (0.5 * pad(t, L, 41.2, 3, rng, 0.5) + pad(t, L, 82.41, 8, rng, 0.75)) * (1 - 0.4 * duck)
         cluster = sum(np.sin(TAU * cyc(f, L) * t + rng.uniform(0, TAU)) for f in (659.25 + 0.2 * c, 698.46 - 0.15 * c))
         cluster *= (0.5 + 0.5 * np.sin(TAU * t / L + c)) ** 2
-        swell = loop_noise(rng, n, lambda f: hp_mag(f, 300) * lp_mag(f, 2500, 2) / np.sqrt(np.maximum(f, 20)))
-        swell *= (0.5 - 0.5 * np.cos(TAU * 2 * t / L)) ** 2
-        chans.append(0.6 * norm(throb) + 0.3 * norm(drone) + 0.05 * cluster + 0.12 * swell)
+        air = loop_noise(rng, n, lambda f: hp_mag(f, 300) * lp_mag(f, 2500, 2) / np.sqrt(np.maximum(f, 20)))
+        chans.append(0.6 * norm(throb) + 0.3 * norm(drone) + 0.05 * cluster + 0.05 * air)
     ticks = np.zeros(n)
     tick_t = timeline(0.03)
     for i in range(64):
@@ -1487,7 +1548,8 @@ MUSIC_LUFS = {"drone": -20.0, "hunted": -18.0, "title": -20.0}
 def catalogue():
     sounds = {}
     for build in (watcher_scream, vent_crawl, taken_rise, taken_die, stalker_die, spit, skitter_leap, shove,
-                  sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle):
+                  sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle,
+                  cutter_start, cutter_stop, read, hit_marker, kill_marker):
         sounds[build.__name__] = (build, "sfx")
     for build in (heart_beat_loop, bloom_loop, hum_loop):
         sounds[build.__name__] = (build, "loop")

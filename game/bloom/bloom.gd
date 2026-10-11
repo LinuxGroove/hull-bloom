@@ -361,6 +361,15 @@ func max_level() -> float:
 	return m
 
 
+## Kills what growth is left at once, as the deck is held (the view lets it
+## shrink away).
+func wither() -> void:
+	for i in cells.size():
+		growth[i] = 0.0
+	pods.clear()
+	version += 1
+
+
 ## The deck is held: every root is dead and nothing is left above level 1.
 func is_held() -> bool:
 	return roots_alive() == 0 and max_level() < 1.0

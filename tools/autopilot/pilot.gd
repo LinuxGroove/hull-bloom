@@ -30,8 +30,8 @@ const MELEE := ["skitter", "stalker", "taken", "quadorb", "raptor", "trilobite",
 const BIG := ["stalker", "taken", "quadorb", "quadshell", "raptor", "trilobite"]
 const FLIERS := ["watcher", "eyedrone", "gundrone", "feeder"]
 ## How far the cutter reaches from the eye (a little short of its real reach).
-const CUTTER_REACH := 3.3
-const FOCUS_REACH := 5.1
+const CUTTER_REACH := 4.7
+const FOCUS_REACH := 7.1
 ## The lift's console is used from the pad.
 const USE_REACH := 1.3
 

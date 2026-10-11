@@ -2,10 +2,20 @@ class_name Heart
 extends Node3D
 ## The Bloom's root on a deck: a nest with a heart in it. The deck's growth
 ## feeds from it, and it guards itself, hatching spawn and spitting while you
-## are near. Cut it out and the growth starves. The Core's Heart is the root
-## of them all.
+## are near. Hurt it from further off, or from somewhere its spit can't
+## reach, and it's roused: it hatches spawn that come for you and spits back
+## from where it was hit, which you can see. Cut it out and the growth
+## starves. The Core's Heart is the root of them all.
 
 signal killed(h: Heart)
+
+## Within these it hatches and spits on its own.
+const SPAWN_RANGE := 18.0
+const SPIT_RANGE := 14.0
+## How long it answers a hit from out of its reach.
+const ROUSED_TIME := 8.0
+## An answering spit flies faster and flatter, to reach across a room.
+const ANSWER_SPEED := 16.0
 
 var cell := Vector2i.ZERO
 var level: DeckLevel
@@ -21,6 +31,9 @@ var _spit_t := 4.0
 var _flash := 0.0
 var _scale := 1.0
 var _beat: AudioStreamPlayer3D
+var _roused := 0.0
+## Where it was last hit while roused: a spot the shooter could see.
+var _hit_at := Vector3.ZERO
 
 
 static func make(lvl: DeckLevel, at_cell: Vector2i, core := false) -> Heart:
@@ -120,7 +133,8 @@ func _process(delta: float) -> void:
 	if player == null:
 		return
 	var d := player.global_position.distance_to(global_position)
-	if d > 18.0:
+	_roused = maxf(0.0, _roused - delta)
+	if d > SPAWN_RANGE and _roused <= 0.0:
 		return
 	_spawn_t -= delta
 	if _spawn_t <= 0.0:
@@ -128,22 +142,64 @@ func _process(delta: float) -> void:
 		if DeckScene.current and DeckScene.current.director:
 			DeckScene.current.director.heart_spawn(self)
 	_spit_t -= delta
-	if _spit_t <= 0.0 and d < 14.0:
+	if _spit_t <= 0.0 and (d < SPIT_RANGE or _roused > 0.0):
 		_spit_t = randf_range(2.5, 4.5) * (0.8 if big else 1.0)
-		var s := Spit.new()
-		s.from = self
-		s.damage = 7.0 if big else 6.0
-		s.infect = 4.0 if big else 6.0
-		get_tree().current_scene.add_child(s)
-		# From under the ceiling: the Core's Heart is taller than a storey.
-		s.global_position = global_position + Vector3(0, minf(2.4 * _scale, Kit.HEIGHT - 0.8), 0)
-		var aim: Vector3 = (player.chest_position() if player.has_method("chest_position") else player.global_position) - s.global_position
+		spit_at(player)
+
+
+## Spits at the player: from its top, or, roused and with that way blocked,
+## from where it was hit.
+func spit_at(player: Node3D) -> Spit:
+	var s := Spit.new()
+	s.from = self
+	s.damage = 7.0 if big else 6.0
+	s.infect = 4.0 if big else 6.0
+	get_tree().current_scene.add_child(s)
+	var target := _chest(player)
+	var from := _mouth()
+	if _roused > 0.0 and not _clear(from, target):
+		from = _hit_at + (target - _hit_at).normalized() * 0.5
+	s.global_position = from
+	var aim := target - from
+	if _roused > 0.0:
+		# Lifted just enough to land on target.
+		s.velocity = aim.normalized() * ANSWER_SPEED + Vector3(0, 3.0 * aim.length() / ANSWER_SPEED, 0)
+	else:
 		s.velocity = aim.normalized() * 10.0 + Vector3(0, aim.length() * 0.15, 0)
+	return s
+
+
+func roused() -> bool:
+	return _roused > 0.0
+
+
+## From under the ceiling: the Core's Heart is taller than a storey.
+func _mouth() -> Vector3:
+	return global_position + Vector3(0, minf(2.4 * _scale, Kit.HEIGHT - 0.8), 0)
+
+
+static func _chest(player: Node3D) -> Vector3:
+	return player.chest_position() if player.has_method("chest_position") else player.global_position
+
+
+func _clear(a: Vector3, b: Vector3) -> bool:
+	if not is_inside_tree():
+		return false
+	var q := PhysicsRayQueryParameters3D.create(a, b, Kit.LAYER_SOLID | Kit.LAYER_GLASS)
+	return get_world_3d().direct_space_state.intersect_ray(q).is_empty()
 
 
 func take_hit(hit: Hit) -> void:
 	if dead:
 		return
+	if hit.from is Node3D and (hit.from as Node3D).is_in_group("tech"):
+		var shooter := hit.from as Node3D
+		if shooter.global_position.distance_to(global_position) >= SPIT_RANGE or not _clear(_mouth(), _chest(shooter)):
+			_hit_at = hit.point
+			if _roused <= 0.0:
+				_spit_t = minf(_spit_t, 0.6)
+				_spawn_t = minf(_spawn_t, 1.5)
+			_roused = ROUSED_TIME
 	var amount := hit.amount * (2.5 if hit.kind == Hit.Kind.BURN else 1.0)
 	health -= amount
 	_flash = 1.0

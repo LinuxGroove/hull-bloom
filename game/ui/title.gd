@@ -101,7 +101,7 @@ func button_texts() -> PackedStringArray:
 
 func show_main() -> void:
 	_clear()
-	var title := StationTheme.hud_label(NAME, 64, TITLE_COLOR)
+	var title := StationTheme.title_label(NAME, 72, TITLE_COLOR)
 	_col.add_child(title)
 	_text("Night shift on Marigold Station.", true)
 	_col.add_child(Control.new())
