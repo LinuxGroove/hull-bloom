@@ -20,6 +20,17 @@ Made for Verdigris Protocol, all CC0 like the rest:
 - The Bloom's growth, flesh and the space sky are shaders in `game/bloom/`
   and `game/world/`.
 
+## Fonts
+
+In `assets/fonts/`, each under the SIL Open Font License 1.1 (its license
+file is beside it):
+
+- [Saira Stencil](https://github.com/Omnibus-Type/Saira) and
+  [Saira](https://github.com/Omnibus-Type/Saira) by Omnibus-Type, for
+  titles and running text.
+- [Chakra Petch](https://github.com/m4rc1e/Chakra-Petch) by Cadson Demak,
+  for headings, buttons and the HUD.
+
 ## Audio
 
 - `assets/audio/sfx/` and `assets/audio/music/`: sounds and fallback music
@@ -38,9 +49,9 @@ Made for Verdigris Protocol, all CC0 like the rest:
   with Nathan Hoad's [InputHelper](https://github.com/nathanhoad/godot_input_helper)
   (MIT) and Bryce Dixon's [QuickAudio](https://github.com/BtheDestroyer/Godot_QuickAudio)
   (MIT). Cogito's assets are by Kenney, Quaternius (CC0) and Philip Drobar
-  (MIT); the freesound.org sounds kept are CC0. Its Montserrat fonts, used in
-  the menus, are by Julieta Ulanovsky and others under the SIL Open Font
-  License 1.1.
+  (MIT); the freesound.org sounds kept are CC0. Its Montserrat fonts, used for the
+  symbols the game's fonts lack, are by Julieta Ulanovsky and others under
+  the SIL Open Font License 1.1.
 - [Nakama Godot client](https://github.com/heroiclabs/nakama-godot),
   Apache-2.0, vendored in `addons/com.heroiclabs.nakama` (see `VENDORED.md`).
 - The shared LinuxGroove add-on in `addons/linuxgroove`, MIT.

@@ -6,12 +6,17 @@ extends Control
 ## at the bottom left, the weapon and what you carry at the bottom right, and
 ## the crosshair, what you can do with what you look at, subtitles and crew
 ## logs in the middle, and the weapon wheel while Swap is held. Over
-## everything, the edges go red when you're hurt and the Bloom's veins creep
-## in as it takes you.
+## everything, the view flashes red and its edges stay red a while when
+## you're hurt (with a mark pointing at what hit you, and the suit's number
+## showing what it lost), and the Bloom's veins creep in as it takes you.
+## Your own hits mark the crosshair and tick.
 
 const TOAST_TIME := 4.5
 const REPEAT_TIME := 1.5
 const HURT_FADE := 1.4
+const HURT_DIR_TIME := 1.6
+## How long the suit shows what a blow took.
+const LOSS_TIME := 1.4
 
 var scene: Node
 var player: Tech
@@ -32,6 +37,7 @@ var _map: MapView
 var _map_title: Label
 var _suit_bar: ProgressBar
 var _suit_num: Label
+var _suit_loss: Label
 var _inf_row: HBoxContainer
 var _inf_bar: ProgressBar
 var _inf_num: Label
@@ -58,6 +64,10 @@ var _banner_t := 0.0
 var _grab: Control
 var _wheel: WeaponWheel
 var _hurt := 0.0
+## A moment's red over the whole view as a blow lands.
+var _pulse := 0.0
+var _loss := 0.0
+var _loss_t := 0.0
 var _spores := 0.0
 var _hit_t := 0.0
 var _hit_kill := false
@@ -176,6 +186,8 @@ func _build_status() -> void:
 	row.add_child(_suit_bar)
 	_suit_num = StationTheme.hud_label("100", 16)
 	row.add_child(_suit_num)
+	_suit_loss = StationTheme.hud_label("", 16, StationTheme.RED)
+	row.add_child(_suit_loss)
 	_inf_row = HBoxContainer.new()
 	_inf_row.add_theme_constant_override("separation", 10)
 	v.add_child(_inf_row)
@@ -269,7 +281,7 @@ func _build_middle() -> void:
 	_subtitle_label.add_theme_font_size_override("bold_font_size", 20)
 	_subtitle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_subtitle.add_child(_subtitle_label)
-	_banner = StationTheme.hud_label("", 40, StationTheme.TEAL)
+	_banner = StationTheme.title_label("", 48, StationTheme.TEAL)
 	_banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.position += Vector2(-500, -170)
@@ -479,11 +491,11 @@ func banner(text: String, color := StationTheme.TEAL, seconds := 3.0) -> void:
 
 
 ## A crew log on a screen. Reading the same one again, walking away or
-## using anything puts it away.
-func show_log(title: String, by: String, text: String) -> void:
+## using anything puts it away. Returns whether it opened.
+func show_log(title: String, by: String, text: String) -> bool:
 	if _log.visible and _log_title.text == title:
 		close_log()
-		return
+		return false
 	_log_title.text = title
 	_log_by.text = by
 	_log_by.visible = by != ""
@@ -493,6 +505,7 @@ func show_log(title: String, by: String, text: String) -> void:
 		_log_from = player.global_position
 	_log.reset_size()
 	_log.position = (size - _log.size) * 0.5
+	return true
 
 
 func close_log() -> void:
@@ -517,14 +530,19 @@ func spores(amount: float) -> void:
 #region Every frame
 
 func _on_hurt(amount: float, from_dir: Vector3) -> void:
-	_hurt = clampf(_hurt + amount / 40.0, 0.0, 1.0)
+	_hurt = clampf(_hurt + 0.3 + amount / 30.0, 0.0, 1.0)
+	# A Feeder's drain is a trickle: no flash for each sip.
+	if from_dir != Vector3.DOWN or amount >= 3.0:
+		_pulse = clampf(0.45 + amount / 30.0, 0.0, 1.0)
+	_loss = (_loss if _loss_t > 0.0 else 0.0) + amount
+	_loss_t = LOSS_TIME
 	# `from_dir` is the way the blow travelled; the marker points back at
 	# where it came from.
 	if from_dir != Vector3.ZERO and absf(from_dir.normalized().y) < 0.9 and player:
 		var cam := get_viewport().get_camera_3d()
 		if cam:
 			var local := cam.global_transform.basis.inverse() * -from_dir
-			_hurt_dirs.append([Vector2(local.x, local.z).normalized(), 1.2])
+			_hurt_dirs.append([Vector2(local.x, local.z).normalized(), HURT_DIR_TIME])
 
 
 func _on_grabbed(on: bool) -> void:
@@ -532,12 +550,15 @@ func _on_grabbed(on: bool) -> void:
 
 
 func _on_hit_marker(kill: bool) -> void:
-	_hit_t = 0.25 if not kill else 0.45
+	_hit_t = 0.3 if not kill else 0.55
 	_hit_kill = kill
+	Sfx.ui(self, "kill_marker" if kill else "hit_marker", -6.0 if kill else -12.0)
 
 
 func _process(delta: float) -> void:
 	_hurt = maxf(0.0, _hurt - delta / HURT_FADE)
+	_pulse = maxf(0.0, _pulse - delta * 4.0)
+	_loss_t = maxf(0.0, _loss_t - delta)
 	_spores = maxf(0.0, _spores - delta * 0.5)
 	_hit_t = maxf(0.0, _hit_t - delta)
 	for h in _hurt_dirs:
@@ -576,16 +597,21 @@ func _update_overlay() -> void:
 	var inf := clampf(player.infection / 100.0, 0.0, 1.0)
 	var down := 1.0 if player.down() else 0.0
 	_overlay_mat.set_shader_parameter("hurt", hurt)
+	_overlay_mat.set_shader_parameter("pulse", _pulse)
 	_overlay_mat.set_shader_parameter("infection", inf)
 	_overlay_mat.set_shader_parameter("blur", minf(1.0, _spores) if blur_on else 0.0)
 	_overlay_mat.set_shader_parameter("tint", minf(1.0, _spores) * (0.6 if not blur_on else 0.0))
 	_overlay_mat.set_shader_parameter("down", down)
-	_overlay.visible = hurt > 0.01 or inf > 0.01 or _spores > 0.01 or down > 0.0
+	_overlay.visible = hurt > 0.01 or _pulse > 0.01 or inf > 0.01 or _spores > 0.01 or down > 0.0
 
 
 func _update_status() -> void:
 	_suit_bar.value = player.health / maxf(1.0, player.max_health)
 	_suit_num.text = str(ceili(player.health))
+	# What the last blows took, by the number, and the number flashes red.
+	_suit_loss.text = "-%d" % ceili(_loss) if _loss_t > 0.0 and _loss >= 0.5 else ""
+	_suit_loss.modulate.a = clampf(_loss_t / 0.4, 0.0, 1.0)
+	_suit_num.add_theme_color_override("font_color", StationTheme.TEXT.lerp(StationTheme.RED, clampf(_loss_t / LOSS_TIME * 1.5, 0.0, 1.0)))
 	_inf_row.visible = player.infection > 0.5 or player.immune > 0.0
 	_inf_bar.value = player.infection / 100.0
 	_inf_num.text = "STIM" if player.immune > 0.0 else str(int(player.infection))
@@ -637,7 +663,7 @@ func _update_top() -> void:
 				next = o[0]
 				break
 		if next == "":
-			next = "Get to the lift" if not objs.is_empty() else ""
+			next = "Take the lift" if not objs.is_empty() else ""
 		_objective.text = next.to_upper()
 	if level and level.bloom:
 		var cov := level.bloom.coverage()
@@ -649,18 +675,24 @@ func _update_top() -> void:
 func _draw_crosshair() -> void:
 	var c := size * 0.5
 	var col := Color(1, 1, 1, 0.8)
+	var ring := 0.45
 	if player and player.arsenal and player.arsenal.current == "cutter":
+		# The ring lights up when the beam would touch what's under it, and
+		# fades when that's out of the cutter's reach.
 		col = Color(0.55, 0.95, 1.0, 0.85)
+		ring = 0.8 if player.arsenal.beam_reaches else 0.15
 	_crosshair.draw_circle(c, 2.0, col)
-	_crosshair.draw_arc(c, 11.0, 0, TAU, 32, Color(col, 0.45), 1.5, true)
+	_crosshair.draw_arc(c, 11.0, 0, TAU, 32, Color(col, ring), 2.0 if ring > 0.5 else 1.5, true)
 	if _hit_t > 0.0:
-		var hc := Color(1.0, 0.3, 0.2) if _hit_kill else Color(1, 1, 1)
+		var hc := Color(1.0, 0.25, 0.15) if _hit_kill else Color(1, 1, 1)
 		hc.a = clampf(_hit_t * 4.0, 0.0, 1.0)
+		var long := 24.0 if _hit_kill else 19.0
 		for d in [Vector2(1, 1), Vector2(-1, 1), Vector2(1, -1), Vector2(-1, -1)]:
-			_crosshair.draw_line(c + d * 7.0, c + d * 15.0, hc, 2.5, true)
+			_crosshair.draw_line(c + d * 7.0, c + d * long, Color(0, 0, 0, hc.a * 0.6), 5.5, true)
+			_crosshair.draw_line(c + d * 7.0, c + d * long, hc, 3.0, true)
 	for h in _hurt_dirs:
 		var dir: Vector2 = h[0]
 		var ang := atan2(dir.y, dir.x)
-		_crosshair.draw_arc(c, 120.0, ang - 0.35, ang + 0.35, 16, Color(1.0, 0.15, 0.1, clampf(h[1], 0.0, 1.0) * 0.8), 6.0, true)
+		_crosshair.draw_arc(c, 150.0, ang - 0.45, ang + 0.45, 20, Color(1.0, 0.15, 0.1, clampf(h[1], 0.0, 1.0)), 10.0, true)
 
 #endregion

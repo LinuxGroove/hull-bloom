@@ -95,7 +95,7 @@ func _text(text: String, color := StationTheme.TEXT, delay := 0.0) -> Label:
 
 func show_choice() -> void:
 	_clear()
-	_col.add_child(StationTheme.hud_label("THE HEART IS BURNT", 40, StationTheme.TEAL))
+	_col.add_child(StationTheme.title_label("THE HEART IS BURNT", 48, StationTheme.TEAL))
 	_text("The growth on the Core is dying back. At Cargo's dock the shuttle is fuelled%s." % (", and the survivors are waiting by it" if Progress.total_survivors() > 0 else ""))
 	_text("MARI asks whether she should prepare it for launch.", StationTheme.DIM)
 	_col.add_child(LGUi.button("Take the shuttle home", show_ending.bind("shuttle"), WIDTH))
@@ -109,7 +109,7 @@ func show_ending(e: String) -> void:
 	LGPlaytest.moment("ending", {"ending": e, "held": Progress.held_decks().size(), "first": first})
 	Progress.set_ending(e)
 	_clear()
-	_col.add_child(StationTheme.hud_label(ENDINGS[e][0], 44, StationTheme.TEAL if e != "shuttle" else StationTheme.AMBER))
+	_col.add_child(StationTheme.title_label(ENDINGS[e][0], 52, StationTheme.TEAL if e != "shuttle" else StationTheme.AMBER))
 	var delay := 0.6
 	var lines: Array = ENDINGS[e][1].duplicate()
 	if Progress.total_survivors() == 0 and ALONE.has(e):

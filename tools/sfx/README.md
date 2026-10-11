@@ -15,11 +15,11 @@ Sounds go to the folder you give it; the music goes to `music` beside it (`asset
 All 44.1 kHz Ogg Vorbis peaking at about -3 dBFS, so how loud each one plays is set in the game. Names ending in `_loop` loop seamlessly.
 
 - **Creatures:** `watcher_scream`, `vent_crawl`, `taken_rise`, `taken_die`, `stalker_die`, `spit`, `skitter_leap`, `feeder_grab`, `pod_hatch`, `heart_die`, `robot_drop`.
-- **Gore and the player:** `sever`, `shove`, `heal`, `stim`.
+- **Gore and the player:** `sever`, `shove`, `heal`, `stim`, `cutter_start`, `cutter_stop`, `read` (a log on a screen), `hit_marker` and `kill_marker` (your shot landing).
 - **Voices:** `<kind>_<what>_1` to `_3` for each of `taken`, `skitter`, `stalker`, `feeder` and `watcher`, and each of `alert`, `idle`, `attack` and `hurt`. `Sfx` picks one of an id's numbered takes at random.
 - **Robots:** `robot_alert`, `robot_idle`.
 - **Loops:** `heart_beat_loop` (3 s), `bloom_loop` (8 s), `hum_loop` (8 s).
-- **Music** (stereo, quiet): `drone` (48 s, the calm decks), `hunted` (24 s), `title` (48 s). They play until real music exists.
+- **Music** (stereo, quiet): `drone` (48 s, the calm decks; its air stays level so it sounds like the station's machinery rather than surf), `hunted` (24 s), `title` (48 s). They play until real music exists.
 
 The robots' tones and the watchers' whines are dense, so at the same volume they sound louder than the other voices.
 

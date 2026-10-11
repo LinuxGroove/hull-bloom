@@ -71,7 +71,6 @@ func set_read(was_read: bool) -> void:
 
 
 func _read(_pic: Node) -> void:
-	Sfx.at(self, "read", global_position, -6.0)
 	Progress.read_log(log_id)
 	set_read(true)
 	read.emit(self)

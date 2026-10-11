@@ -15,7 +15,7 @@ const PAGES := [
 		"Your guns are for what hatches. Tap Swap to go back to the last one you held, or hold it for the weapon wheel, point at a gun and let go. Hold Throw to pick a flare, grenade or mine.",
 	]],
 	["Power", [
-		"Each deck has a few power cells. Lights, sealed doors, turrets and the lift each take one, and the lift needs one before it will take you anywhere.",
+		"Each deck has a few power cells. Lights, sealed doors, turrets and the lift each take one, and the lift won't take you anywhere until you've powered it at its console.",
 		"Open the deck map to see where the growth is and to switch rooms' lights. A sealed door stops the growth dead, and stops you too.",
 		"Some rooms can be opened to space. Everything inside goes, growth and all, and the room stays airless.",
 	]],

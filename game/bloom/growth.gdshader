@@ -60,6 +60,9 @@ vec2 growth_at(vec3 wp, vec3 wn) {
 	} else {
 		c = (lvl - 2.8) * 0.75 + (n - 0.5) * 0.9;
 	}
+	// Where the growth has died right back nothing's left, not even the
+	// film the noise would leave.
+	c -= (1.0 - smoothstep(0.02, 0.3, lvl)) * 2.0;
 	float lump = 0.55 + 0.45 * hb_fbm(wp * 1.5 + 3.1) + 0.15 * max(0.0, hb_noise(wp * 4.0) - 0.5);
 	float thick = (0.06 + 0.08 * lvl) * (surface == 2 ? 1.3 : 1.0);
 	float h = c > 0.0 ? thick * (0.08 + 0.92 * pow(min(c, 1.2), 0.8)) * lump : 0.0;

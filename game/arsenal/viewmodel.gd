@@ -185,20 +185,25 @@ func _build_beam() -> void:
 	add_child(_beam_sparks)
 
 
-## Shows the cutter's beam to `end`, or hides it.
-func beam(on: bool, end: Vector3, focus: bool) -> void:
+## Shows the cutter's beam out to `end`, or hides it. When it `touches`
+## nothing it's a thin, faint wisp with no sparks, so it doesn't look as if
+## it reaches whatever is under the crosshair beyond it.
+func beam(on: bool, end: Vector3, focus: bool, touches := true) -> void:
 	if _beam == null:
 		return
 	_beam.visible = on
-	_beam_sparks.emitting = on
-	_beam_light.light_energy = 1.6 if on else 0.0
+	_beam_sparks.emitting = on and touches
+	_beam_light.light_energy = 1.6 if on and touches else 0.0
 	if not on or muzzle == null:
 		return
 	var a := muzzle.global_position
 	var length := maxf(0.05, a.distance_to(end))
 	_beam.global_transform = Transform3D(Basis(Quaternion(Vector3.UP, (end - a).normalized())), (a + end) * 0.5)
-	_beam.scale = Vector3(0.5 if focus else 1.4, length, 0.5 if focus else 1.4)
+	var w := (0.5 if focus else 1.4) * (1.0 if touches else 0.45)
+	_beam.scale = Vector3(w, length, w)
 	_beam_mat.albedo_color = Color(0.55, 0.85, 1.0, 1.0) if focus else Color(0.3, 0.65, 1.0, 0.75)
+	if not touches:
+		_beam_mat.albedo_color.a *= 0.3
 	_beam_light.global_position = end
 	_beam_sparks.global_position = end
 

@@ -94,6 +94,7 @@ static func _box(parent: Node3D, at: Vector3, size: Vector3, color: Color, rough
 static func cocoon(parent: Node3D, pos: Vector3, yaw: float, seed := 0) -> Node3D:
 	var root := Node3D.new()
 	root.name = "Cocoon"
+	root.add_to_group("cocoons")
 	root.position = pos
 	root.rotation.y = yaw
 	parent.add_child(root)

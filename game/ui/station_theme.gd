@@ -2,9 +2,11 @@ class_name StationTheme
 extends RefCounted
 ## Verdigris Protocol's look for the shared theme: the station's own screens, dark
 ## glass panels with thin pale edges, teal for what's fine, amber for what
-## needs you and red for trouble. Headings use the shared add-on's fonts;
-## running text (speech, logs, menus) uses Montserrat, which comes with
-## Cogito, since it reads better in long lines.
+## needs you and red for trouble. The type is sharp sci-fi: titles in Saira
+## Stencil, cut like the markings sprayed on a hull, headings, buttons and the
+## HUD in Chakra Petch, and running text (speech, logs, menus) in Saira, which
+## reads well in long lines. Symbols they lack (▲, ■, arrows) come from
+## Montserrat, which comes with Cogito.
 
 const TEXT := Color(0.86, 0.93, 0.95)
 const DIM := Color(0.55, 0.66, 0.7)
@@ -17,9 +19,14 @@ const EDGE := Color(0.55, 0.78, 0.82, 0.4)
 ## The green of a crew log's screen.
 const SCREEN := Color(0.62, 1.0, 0.72)
 const MONTSERRAT := "res://addons/cogito/Assets/Fonts/Montserrat/"
+const FONTS := "res://assets/fonts/"
 
 static var text_font: Font
 static var bold_font: Font
+## Headings, buttons and the HUD.
+static var heading_font: Font
+## The biggest words: the game's name, a result, a banner.
+static var title_font: Font
 
 
 static func apply(root: Window, base_size := 22) -> Theme:
@@ -34,11 +41,20 @@ static func apply(root: Window, base_size := 22) -> Theme:
 static func build(base_size := 22) -> Theme:
 	var t := LGTheme.build(base_size)
 	if text_font == null:
-		text_font = load(MONTSERRAT + "Montserrat-Medium.ttf")
-		bold_font = load(MONTSERRAT + "Montserrat-Bold.ttf")
+		var symbols: Font = load(MONTSERRAT + "Montserrat-Medium.ttf")
+		text_font = _font("Saira.ttf", 500, symbols)
+		bold_font = _font("Saira.ttf", 700, symbols)
+		heading_font = _font("ChakraPetch-SemiBold.ttf", 0, symbols)
+		title_font = _font("SairaStencilOne.ttf", 0, symbols)
+	# The add-on's own screens and StationTheme's HUD labels read this.
+	LGTheme.heading_font = heading_font
 	t.default_font = text_font
 	t.set_font("normal_font", "RichTextLabel", text_font)
 	t.set_font("bold_font", "RichTextLabel", bold_font)
+	for v in ["HeaderMedium", "InkHeader", "NameLabel", "Button", "OptionButton", "MenuButton"]:
+		t.set_font("font", v, heading_font)
+	for v in ["HeaderLarge", "InkTitle"]:
+		t.set_font("font", v, title_font)
 	t.set_color("font_color", "Label", TEXT)
 	t.set_color("font_outline_color", "Label", Color(0, 0, 0, 0.9))
 	t.set_constant("outline_size", "Label", 3)
@@ -121,6 +137,17 @@ static func build(base_size := 22) -> Theme:
 	return t
 
 
+## One of the game's fonts at a weight (0 for a font with only one), with
+## Montserrat behind it for the symbols it lacks.
+static func _font(file: String, weight: int, symbols: Font) -> Font:
+	var f := FontVariation.new()
+	f.base_font = load(FONTS + file)
+	if weight > 0:
+		f.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): weight}
+	f.fallbacks = [symbols]
+	return f
+
+
 static func box(bg: Color, edge: Color, width: int, radius: int) -> StyleBoxFlat:
 	var b := StyleBoxFlat.new()
 	b.bg_color = bg
@@ -154,6 +181,16 @@ static func hud_label(text: String, size := 18, color := TEXT, heading := true) 
 	if heading and LGTheme.heading_font:
 		l.add_theme_font_override("font", LGTheme.heading_font)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return l
+
+
+## A HUD label in the title font, for the biggest words.
+static func title_label(text: String, size := 40, color := TEXT) -> Label:
+	var l := hud_label(text, size, color, false)
+	if title_font:
+		l.add_theme_font_override("font", title_font)
+		# The stencil's lines stand far apart; a title's two lines sit close.
+		l.add_theme_constant_override("line_spacing", -roundi(size * 0.3))
 	return l
 
 
