@@ -8,8 +8,8 @@ extends Node3D
 signal burst(pod: Pod)
 
 const HEALTH := 22.0
-const HATCH_MIN := 16.0
-const HATCH_MAX := 30.0
+const HATCH_MIN := 24.0
+const HATCH_MAX := 40.0
 const WAKE_RANGE := 15.0
 const SPORE_RANGE := 4.5
 
@@ -91,7 +91,7 @@ func wake() -> void:
 	if awake or dead:
 		return
 	awake = true
-	_hatch = minf(_hatch, randf_range(4.0, 10.0))
+	_hatch = minf(_hatch, randf_range(6.0, 12.0))
 
 
 ## Splits open (hatching): a squelch and a pulse.

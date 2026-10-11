@@ -7,7 +7,7 @@ extends Node3D
 
 ## A hatched creature killed on a tile still grown this much comes back.
 const REGROW_LEVEL := 2.0
-const REGROW_TIME := Vector2(22.0, 40.0)
+const REGROW_TIME := Vector2(40.0, 70.0)
 ## How far from the player things may appear unseen.
 const UNSEEN_MIN := 9.0
 const UNSEEN_MAX := 28.0
@@ -135,7 +135,7 @@ func hatch_from(pod: Pod) -> void:
 		return
 	pod.pulse()
 	var what := _pick_hatch()
-	var n := 2 if what == "skitter" and rng.randf() < 0.4 else 1
+	var n := 2 if what == "skitter" and rng.randf() < 0.2 else 1
 	for k in n:
 		var c := spawn(what, pod.global_position + Vector3(rng.randf_range(-0.6, 0.6), 0.05, rng.randf_range(-0.6, 0.6)))
 		c.spawned = true
