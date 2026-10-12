@@ -48,7 +48,7 @@ func _ready() -> void:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
 				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
-				"_test_cold", "_test_swap", "_test_playtest"]:
+				"_test_cold", "_test_swap", "_test_sticks", "_test_playtest", "_test_playtest_note_pad"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -546,6 +546,106 @@ func _test_playtest() -> void:
 	await frames(1)
 	LGPlaytestPack._remove(dir)
 
+
+## On a handheld a note is taken from the pause menu with the pad alone: the
+## on-screen keyboard types and closes while the game is paused, and nothing
+## behind the note or the keyboard moves while they're open.
+func _test_playtest_note_pad() -> void:
+	var dir := "user://test_playtest_pad"
+	LGPlaytestPack._remove(dir)
+	var p := LGPlaytest.setup(GameConfig.GAME_ID, GameConfig.PLAYTEST)
+	p.dir = dir
+	await frames(2)
+	p.begin()
+	# The deck comes after the recorder in the tree, as it does in the game.
+	var deck := Node.new()
+	get_tree().root.add_child(deck)
+	var menu := BloomPause.new()
+	deck.add_child(menu)
+	await frames(1)
+	menu.open_pause_menu()
+	await frames(2)
+	var note_button: Button = menu.find_children("*", "LGPlaytestButton", true, false).front()
+	note_button.grab_focus()
+	await pad(JOY_BUTTON_A)
+	var note: LGPlaytestNote = p.find_children("*", "LGPlaytestNote", true, false).front()
+	await frames(2)
+	check(_focus_in(note), "Note this moment opens the note, which takes the pad")
+	for i in 8:
+		await pad([JOY_BUTTON_DPAD_DOWN, JOY_BUTTON_DPAD_RIGHT, JOY_BUTTON_DPAD_LEFT, JOY_BUTTON_DPAD_UP][i % 4])
+	check(_focus_in(note), "the D-pad only moves round the note")
+	for i in 3:
+		await pad(JOY_BUTTON_DPAD_UP)
+	check(get_viewport().gui_get_focus_owner() == note.note, "up from the tags reaches the words")
+	await pad(JOY_BUTTON_A)
+	var kb := OnScreenKeyboard.current()
+	check(kb != null and _focus_in(kb), "A on the words opens the keyboard, which takes the pad")
+	await pad(JOY_BUTTON_A)
+	await pad(JOY_BUTTON_DPAD_RIGHT)
+	await pad(JOY_BUTTON_A)
+	check(note.note.text == "qw", "the keyboard types while the game is paused")
+	for i in 5:
+		await pad(JOY_BUTTON_DPAD_DOWN)
+	check(_focus_in(kb), "the D-pad only moves round the keyboard")
+	await pad(JOY_BUTTON_B)
+	check(note.note.text == "q", "B deletes a letter")
+	await pad(JOY_BUTTON_START)
+	check(OnScreenKeyboard.current() == null, "Start closes the keyboard")
+	check(menu.visible and is_instance_valid(note) and note.is_inside_tree(), "B and Start on the keyboard leave the note and the pause menu open")
+	check(get_viewport().gui_get_focus_owner() == note.note, "the pad is back on the words")
+	await pad(JOY_BUTTON_DPAD_DOWN)
+	check(_focus_in(note) and get_viewport().gui_get_focus_owner() != note.note, "and goes on down to the tags")
+	await pad(JOY_BUTTON_START)
+	check(is_instance_valid(note) and note.is_inside_tree() and menu.visible, "Start on the note leaves the pause menu open")
+	# Focus taken behind the note: the next press brings it back and does nothing else.
+	(menu.find_children("*", "Button", true, false).front() as Button).grab_focus()
+	await pad(JOY_BUTTON_A)
+	check(menu.visible and _focus_in(note), "a press with focus behind the note comes back to the note")
+	note.note.grab_focus()
+	await pad(JOY_BUTTON_A)
+	await pad(JOY_BUTTON_B)
+	await pad(JOY_BUTTON_B)
+	check(OnScreenKeyboard.current() == null and note.note.text == "", "B with nothing left to delete puts the keyboard away")
+	check(get_viewport().gui_get_focus_owner() == note.note, "back on the words")
+	await pad(JOY_BUTTON_A)
+	kb = OnScreenKeyboard.current()
+	note.cancel_note()
+	await frames(2)
+	check(not is_instance_valid(kb) and OnScreenKeyboard.current() == null, "the keyboard goes when its note does")
+	check(menu.visible and get_tree().paused and _focus_in(menu), "back on the pause menu, still paused")
+	note_button.grab_focus()
+	await pad(JOY_BUTTON_A)
+	note = p.find_children("*", "LGPlaytestNote", true, false).front()
+	await frames(2)
+	await pad(JOY_BUTTON_B)
+	check(not is_instance_valid(note) or not note.is_inside_tree(), "B puts the note away")
+	check(menu.visible and get_tree().paused and _focus_in(menu), "and leaves the pause menu open")
+	menu.close_pause_menu()
+	await frames(1)
+	check(not get_tree().paused, "the game carries on")
+	deck.queue_free()
+	p._end("quit", {})
+	p.queue_free()
+	await frames(1)
+	LGPlaytestPack._remove(dir)
+
+
+## Presses and lets go of a button on the first controller.
+func pad(button: JoyButton) -> void:
+	for down in [true, false]:
+		var ev := InputEventJoypadButton.new()
+		ev.button_index = button
+		ev.pressed = down
+		Input.parse_input_event(ev)
+		await frames(2)
+	# The input router drops a second press of the same direction this soon.
+	await get_tree().create_timer(LGInput.NAV_DEBOUNCE_MSEC / 1000.0).timeout
+
+
+func _focus_in(node: Node) -> bool:
+	var f := get_viewport().gui_get_focus_owner()
+	return f != null and is_instance_valid(node) and node.is_ancestor_of(f)
+
 #endregion
 
 #region Creatures, combat and a visit
@@ -964,6 +1064,49 @@ func _test_swap() -> void:
 	s.player._input(move)
 	check(not is_equal_approx(s.player.body.rotation.y, turn), "with the wheel shut the mouse turns the view")
 	await close_deck(s)
+
+
+## The left stick only moves you and the right stick only turns the view.
+## Mouse movement still turns it while you walk, as gyro and trackpad
+## aiming under Steam Input send it.
+func _test_sticks() -> void:
+	var s := await open_deck("hydroponics")
+	await physics(10)
+	var p := s.player
+	var turn := p.body.rotation.y
+	var pitch := p.head.rotation.x
+	var at := p.global_position
+	for axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]:
+		Input.parse_input_event(_stick(0, axis, 0.9))
+	await physics(30)
+	check(p.global_position.distance_to(at) > 0.5, "the left stick moves you")
+	check(is_equal_approx(p.body.rotation.y, turn) and is_equal_approx(p.neck.rotation.y, 0.0) and is_equal_approx(p.head.rotation.x, pitch), "and doesn't turn the view")
+	var nudge := InputEventMouseMotion.new()
+	nudge.relative = Vector2(40, 0)
+	Input.parse_input_event(nudge)
+	await physics(2)
+	check(not is_equal_approx(p.body.rotation.y, turn), "mouse movement turns the view while you walk")
+	for axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]:
+		Input.parse_input_event(_stick(0, axis, 0.0))
+	await physics(2)
+	turn = p.body.rotation.y
+	Input.parse_input_event(_stick(0, JOY_AXIS_RIGHT_X, 0.9))
+	await physics(20)
+	check(not is_equal_approx(p.body.rotation.y, turn), "the right stick turns the view")
+	Input.parse_input_event(_stick(0, JOY_AXIS_RIGHT_X, 0.0))
+	await physics(2)
+	turn = p.body.rotation.y
+	await physics(10)
+	check(is_equal_approx(p.body.rotation.y, turn), "and letting it go stops the turn")
+	await close_deck(s)
+
+
+func _stick(device: int, axis: JoyAxis, value: float) -> InputEventJoypadMotion:
+	var e := InputEventJoypadMotion.new()
+	e.device = device
+	e.axis = axis
+	e.axis_value = value
+	return e
 
 
 func _is_medkit_reminder(line: String) -> bool:
