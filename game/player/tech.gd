@@ -102,6 +102,8 @@ func _ready():
 	camera.near = 0.04
 	camera.cull_mask = 0xFFFFF
 	_reload_options()
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+	log_pads()
 	super()
 	# Cogito's options menu, in the player's scene, turns the window's stretch off as it starts.
 	get_window().content_scale_size = Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
@@ -223,6 +225,19 @@ func _input(event):
 	if arsenal and arsenal.wheel_input(event):
 		return
 	super(event)
+
+
+func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
+	log_pads()
+
+
+## Writes the connected controllers to the log, and which ones Godot knows,
+## so a report about the controls says what the game saw.
+static func log_pads() -> void:
+	var pads := []
+	for d in Input.get_connected_joypads():
+		pads.append("%d %s (%s)" % [d, Input.get_joy_name(d), "known" if Input.is_joy_known(d) else "raw"])
+	print("Controllers: ", ", ".join(pads) if not pads.is_empty() else "none")
 
 
 func _unhandled_input(event: InputEvent) -> void:
