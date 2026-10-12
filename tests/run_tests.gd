@@ -48,7 +48,7 @@ func _ready() -> void:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
 				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
-				"_test_swap", "_test_playtest"]:
+				"_test_swap", "_test_sticks", "_test_playtest"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -883,6 +883,49 @@ func _test_swap() -> void:
 	s.player._input(move)
 	check(not is_equal_approx(s.player.body.rotation.y, turn), "with the wheel shut the mouse turns the view")
 	await close_deck(s)
+
+
+## The left stick only moves you and the right stick only turns the view.
+## Mouse movement still turns it while you walk, as gyro and trackpad
+## aiming under Steam Input send it.
+func _test_sticks() -> void:
+	var s := await open_deck("hydroponics")
+	await physics(10)
+	var p := s.player
+	var turn := p.body.rotation.y
+	var pitch := p.head.rotation.x
+	var at := p.global_position
+	for axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]:
+		Input.parse_input_event(_stick(0, axis, 0.9))
+	await physics(30)
+	check(p.global_position.distance_to(at) > 0.5, "the left stick moves you")
+	check(is_equal_approx(p.body.rotation.y, turn) and is_equal_approx(p.neck.rotation.y, 0.0) and is_equal_approx(p.head.rotation.x, pitch), "and doesn't turn the view")
+	var nudge := InputEventMouseMotion.new()
+	nudge.relative = Vector2(40, 0)
+	Input.parse_input_event(nudge)
+	await physics(2)
+	check(not is_equal_approx(p.body.rotation.y, turn), "mouse movement turns the view while you walk")
+	for axis in [JOY_AXIS_LEFT_X, JOY_AXIS_LEFT_Y]:
+		Input.parse_input_event(_stick(0, axis, 0.0))
+	await physics(2)
+	turn = p.body.rotation.y
+	Input.parse_input_event(_stick(0, JOY_AXIS_RIGHT_X, 0.9))
+	await physics(20)
+	check(not is_equal_approx(p.body.rotation.y, turn), "the right stick turns the view")
+	Input.parse_input_event(_stick(0, JOY_AXIS_RIGHT_X, 0.0))
+	await physics(2)
+	turn = p.body.rotation.y
+	await physics(10)
+	check(is_equal_approx(p.body.rotation.y, turn), "and letting it go stops the turn")
+	await close_deck(s)
+
+
+func _stick(device: int, axis: JoyAxis, value: float) -> InputEventJoypadMotion:
+	var e := InputEventJoypadMotion.new()
+	e.device = device
+	e.axis = axis
+	e.axis_value = value
+	return e
 
 
 func _is_medkit_reminder(line: String) -> bool:
