@@ -70,7 +70,7 @@ func _endings(t: Node) -> void:
 			var d := Progress._deck(m)
 			d["state"] = "lost"
 			Progress._set_deck(m, d)
-	t.check(EndingScreen.which() == "burn", "no shuttle: you stay")
+	t.check(EndingScreen.which() == "stay", "no shuttle: you stay")
 	if Decks.has("cargo"):
 		var d := Progress._deck("cargo")
 		d["state"] = "saved"
@@ -85,9 +85,9 @@ func _endings(t: Node) -> void:
 	t.add_child(e)
 	await t.frames(3)
 	t.check(Progress.ending() != "" or "Take the shuttle home" in e.button_texts(), "the ending is chosen or offered")
-	e.show_ending("burn")
+	e.show_ending("stay")
 	await t.frames(1)
-	t.check(Progress.ending() == "burn" and "burn" in Progress.endings_seen(), "the ending is kept")
+	t.check(Progress.ending() == "stay" and "stay" in Progress.endings_seen(), "the ending is kept")
 	t.check(ShiftNight.unlocked(), "and Shift mode opens")
 	e.queue_free()
 	await t.frames(2)

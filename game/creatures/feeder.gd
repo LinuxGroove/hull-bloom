@@ -1,7 +1,7 @@
 class_name Feeder
 extends Creature
 ## Hangs from the ceiling trailing tendrils. Walk under one and it lifts you
-## and drains you until you shove free, cut the tendril, or kill it.
+## and drains you until you shove free, cut the tendril, freeze it or kill it.
 
 const GRAB_RANGE := 2.0
 const DRAIN := 9.0
@@ -32,7 +32,7 @@ func configure() -> void:
 	flies = true
 	gib_count = 7
 	gib_look = "feeder"
-	resist = {Hit.Kind.BURN: 1.3}
+	resist = {Hit.Kind.FREEZE: 1.3}
 
 
 func build() -> void:
@@ -162,7 +162,7 @@ func release(hurt := true) -> void:
 func limb_hit(hit: Hit) -> void:
 	if hit.limb != "tendril" or not grabbing:
 		return
-	_tendril_hp -= hit.amount * (2.5 if hit.kind == Hit.Kind.BURN else 1.0)
+	_tendril_hp -= hit.amount * (2.5 if hit.kind == Hit.Kind.FREEZE else 1.0)
 	if _tendril_hp <= 0.0:
 		Gore.spray(self, _grab_box.global_position, Vector3.DOWN, 1.2, bleeds)
 		release(true)
@@ -181,6 +181,12 @@ func take_hit(hit: Hit) -> void:
 func die(hit: Hit) -> void:
 	release(false)
 	super(hit)
+
+
+## Frozen solid, it can't hold on.
+func freeze_solid() -> void:
+	release(true)
+	super()
 
 
 func death(hit: Hit) -> void:

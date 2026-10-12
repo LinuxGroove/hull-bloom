@@ -13,8 +13,8 @@ in game-ideas.
 You're the night shift engineer on Marigold, a farming station where
 something came up through the soil in Hydroponics. Now a red, wet growth
 called the Bloom spreads through the decks room by room, taking the crew as
-it goes. Burn it back with a plasma cutter, cut the power it feeds on, seal
-doors, light flares, and dig out the Heart that roots each deck.
+it goes. Freeze it back with a cryo sprayer, cut the power it feeds on,
+seal doors, light flares, and dig out the Heart that roots each deck.
 
 - **Eight decks round a ring.** Hydroponics first, then Crew, Medical, Labs,
   Security, Engineering and Cargo in any order, then the Core. Every hour

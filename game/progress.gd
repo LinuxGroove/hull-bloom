@@ -11,23 +11,27 @@ extends Node
 signal changed
 
 const PATH := "user://progress.cfg"
-## What a fresh shift carries: the cutter and the sidearm.
-const START_WEAPONS := ["cutter", "sidearm"]
+## What a fresh shift carries: the cryo sprayer and the rivet gun.
+const START_WEAPONS := ["sprayer", "rivet_gun"]
 const START_ITEMS := {"flare": 3, "grenade": 0, "mine": 0, "medkit": 1, "stim": 0}
 ## Spare cells from Engineering, each worth an hour to the deck it powers.
 const SPARE_CELLS := 3
 ## Workbench upgrades: id -> [name, what it does, salvage].
 const UPGRADES := {
-	"cutter_cool": ["Cutter heat sink", "The cutter heats up a third slower.", 6],
-	"cutter_focus": ["Focusing lens", "Aiming the cutter reaches further and takes limbs off faster.", 8],
+	"sprayer_heater": ["Nozzle heater", "The sprayer ices up a third slower.", 6],
+	"sprayer_nozzle": ["Long nozzle", "Aiming the sprayer reaches further and freezes things faster.", 8],
 	"suit": ["Suit plating", "Your suit takes a quarter more before it gives out.", 8],
 	"pockets": ["Webbing", "Carry one more of every throwable and health pack.", 6],
-	"sidearm_red": ["Heavy sidearm", "Hits harder and holds more.", 4],
+	"rivet_gun_red": ["Heavy rivet gun", "Hits harder and holds more.", 4],
 	"scattergun_red": ["Heavy scattergun", "Hits harder and holds more.", 8],
 	"rifle_red": ["Heavy pulse rifle", "Hits harder and holds more.", 10],
 	"smg_red": ["Heavy burst SMG", "Hits harder and holds more.", 8],
 	"rail_red": ["Heavy rail rifle", "Hits harder and holds more.", 10],
 }
+## Older saves' names for what's since changed: the plasma cutter and the
+## sidearm (and their upgrades), and the ending where the Heart was burnt.
+const RENAMED := {"cutter": "sprayer", "sidearm": "rivet_gun", "cutter_cool": "sprayer_heater",
+	"cutter_focus": "sprayer_nozzle", "sidearm_red": "rivet_gun_red", "burn": "stay"}
 
 var _cfg := ConfigFile.new()
 ## Tests and tools set this so they never touch the player's real file.
@@ -42,6 +46,42 @@ func load_progress() -> void:
 	_cfg = ConfigFile.new()
 	if not in_memory:
 		_cfg.load(PATH)
+		if _migrate():
+			_save()
+
+
+## Renames what an older save calls by its old names; true if it changed
+## anything.
+func _migrate() -> bool:
+	var changed_any := false
+	var w := Array(_cfg.get_value("carry", "weapons", []))
+	var a := Dictionary(_cfg.get_value("carry", "ammo", {}))
+	for old in RENAMED:
+		var now: String = RENAMED[old]
+		if old in w:
+			w[w.find(old)] = now
+			_cfg.set_value("carry", "weapons", w)
+			changed_any = true
+		if a.has(old):
+			a[now] = a[old]
+			a.erase(old)
+			_cfg.set_value("carry", "ammo", a)
+			changed_any = true
+		if _cfg.has_section_key("upgrades", old):
+			_cfg.set_value("upgrades", now, _cfg.get_value("upgrades", old))
+			_cfg.erase_section_key("upgrades", old)
+			changed_any = true
+	if RENAMED.has(ending()):
+		_cfg.set_value("shift", "ending", RENAMED[ending()])
+		changed_any = true
+	var seen := endings_seen()
+	for i in seen.size():
+		if RENAMED.has(seen[i]):
+			seen[i] = RENAMED[seen[i]]
+			changed_any = true
+	if changed_any:
+		_cfg.set_value("record", "endings", seen)
+	return changed_any
 
 
 func reset() -> void:
@@ -269,7 +309,7 @@ func ending() -> String:
 	return String(_cfg.get_value("shift", "ending", ""))
 
 
-## "burn" (the Heart burnt, staying aboard) or "shuttle" (leaving with the
+## "stay" (the Heart stopped, staying aboard) or "shuttle" (leaving with the
 ## survivors) or "both".
 func set_ending(e: String) -> void:
 	_cfg.set_value("shift", "ending", e)

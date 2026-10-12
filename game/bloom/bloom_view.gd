@@ -107,14 +107,14 @@ func _process(delta: float) -> void:
 		_refresh_lumps()
 
 
-## Writes the shown levels and the scorch into the map, and points the
+## Writes the shown levels and the frost into the map, and points the
 ## shaders at it.
 func _upload() -> void:
 	if _img == null:
 		return
 	for i in bloom.cells.size():
 		var c: Vector2i = bloom.cells[i] - rect.position
-		_img.set_pixel(c.x, c.y, Color(shown[i] / Bloom.MAX, bloom.scorch[i], 0.0))
+		_img.set_pixel(c.x, c.y, Color(shown[i] / Bloom.MAX, bloom.frost[i], 0.0))
 	_tex.update(_img)
 	RenderingServer.global_shader_parameter_set("bloom_map", _tex)
 	var r := Vector4(rect.position.x * Kit.TILE - Kit.TILE * 0.5, rect.position.y * Kit.TILE - Kit.TILE * 0.5, rect.size.x * Kit.TILE, rect.size.y * Kit.TILE)

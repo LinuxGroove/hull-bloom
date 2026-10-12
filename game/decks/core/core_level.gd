@@ -33,9 +33,9 @@ const OKAFOR_LOG := """Day 21. Station rules: every off-world sample goes to the
 
 The rest has had three weeks down here, at the end of every feed on the station. Water, nutrients, air, power. It never needed to find a way out. We built it a hundred.
 
-MARI says the chamber is reading a pulse. I'm going in. I need to see what it is before anyone burns it.
+MARI says the chamber is reading a pulse. I'm going in. I need to see what it is before anyone freezes it.
 
-If I'm not back through this door in an hour, burn it anyway."""
+If I'm not back through this door in an hour, freeze it anyway."""
 
 
 func build() -> void:

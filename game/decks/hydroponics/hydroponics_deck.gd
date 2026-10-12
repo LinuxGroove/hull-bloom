@@ -1,6 +1,6 @@
 extends RefCounted
-## Deck 1, Hydroponics: where it started. The cutter, pods, sealing doors and
-## the first root, in the seed vault behind the lab.
+## Deck 1, Hydroponics: where it started. The sprayer, pods, sealing doors
+## and the first root, in the seed vault behind the lab.
 
 
 static func make() -> DeckDef:
@@ -8,7 +8,7 @@ static func make() -> DeckDef:
 	d.number = 1
 	d.name = "Hydroponics"
 	d.blurb = "Where it started: the seed lab, and the vault behind it."
-	d.news = ["The plasma cutter", "Pods", "Sealing doors", "The first root"]
+	d.news = ["The cryo sprayer", "Pods", "Sealing doors", "The first root"]
 	d.cells = 4
 	d.hours = 0
 	d.spread = 0.75

@@ -10,7 +10,7 @@ extends RefCounted
 const DECKS := 3
 ## The online boards: [id, title] (declared on the game server).
 const BOARDS := [["shift_daily", "Tonight's station"], ["shift_best", "Best nights"]]
-const START_KIT := {"weapons": ["cutter", "sidearm", "scattergun"], "items": {"flare": 3, "grenade": 1, "mine": 0, "medkit": 1, "stim": 1}, "ammo": {"scattergun": 18}}
+const START_KIT := {"weapons": ["sprayer", "rivet_gun", "scattergun"], "items": {"flare": 3, "grenade": 1, "mine": 0, "medkit": 1, "stim": 1}, "ammo": {"scattergun": 18}}
 const HELD := 1000
 const SURVIVOR := 250
 const KILL := 5

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c525aif82hxv7"
-path="res://.godot/imported/cutter.gltf-807b9d4803c602c74cca14d75309efa8.scn"
+uid="uid://dqwdtdva7aug3"
+path="res://.godot/imported/rivet.gltf-891ffbffd900a351fe582a27a5100a26.scn"
 
 [deps]
 
-source_file="res://assets/models/cutter/cutter.gltf"
-dest_files=["res://.godot/imported/cutter.gltf-807b9d4803c602c74cca14d75309efa8.scn"]
+source_file="res://assets/models/rivet_gun/rivet.gltf"
+dest_files=["res://.godot/imported/rivet.gltf-891ffbffd900a351fe582a27a5100a26.scn"]
 
 [params]
 

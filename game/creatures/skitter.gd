@@ -31,7 +31,8 @@ func configure() -> void:
 	height = 0.7
 	gib_count = 3
 	gib_look = "skitter"
-	resist = {Hit.Kind.BURN: 1.6}
+	resist = {Hit.Kind.FREEZE: 1.6}
+	pinnable = true
 
 
 func build() -> void:
@@ -62,7 +63,7 @@ func think(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	super(delta)
-	if _leaping and is_instance_valid(target) and not dead:
+	if _leaping and is_instance_valid(target) and not dead and frozen <= 0.0:
 		if not _leap_hit and global_position.distance_to(target.global_position + Vector3(0, 0.8, 0)) < 1.2 and in_reach():
 			_leap_hit = true
 			strike()

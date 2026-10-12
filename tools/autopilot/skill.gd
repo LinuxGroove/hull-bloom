@@ -24,7 +24,7 @@ const PRESETS := {
 		"flare": 0.1, "seal": 0.0, "lights": 0.0, "vent": 0.0, "grenade": 0.3, "mine": 0.0,
 		"heal_at": 25.0, "heal_waits": false, "heal_forget": 0.35, "stim_at": 88.0,
 		"tactical_reload": false, "weapon_sense": 0.35, "backs_off": 0.3,
-		"shoot_pods": 0.2, "burn_pods": 0.0, "curiosity": 0.7, "explore": 0.3, "scout": 0.4, "push": 0.25, "shove": 0.2, "careful": 0.2, "wait_survivors": 15.0,
+		"shoot_pods": 0.2, "freeze_pods": 0.0, "curiosity": 0.7, "explore": 0.3, "scout": 0.4, "push": 0.25, "shove": 0.2, "careful": 0.2, "wait_survivors": 15.0,
 		"fire_tolerance": 1.6, "sprint": 0.8,
 	},
 	"average": {
@@ -33,7 +33,7 @@ const PRESETS := {
 		"flare": 0.4, "seal": 0.2, "lights": 0.3, "vent": 0.4, "grenade": 0.7, "mine": 0.3,
 		"heal_at": 40.0, "heal_waits": true, "heal_forget": 0.1, "stim_at": 70.0,
 		"tactical_reload": true, "weapon_sense": 0.75, "backs_off": 0.65,
-		"shoot_pods": 0.6, "burn_pods": 0.3, "curiosity": 0.5, "explore": 0.6, "scout": 0.6, "push": 0.6, "shove": 0.5, "careful": 0.6, "wait_survivors": 30.0,
+		"shoot_pods": 0.6, "freeze_pods": 0.3, "curiosity": 0.5, "explore": 0.6, "scout": 0.6, "push": 0.6, "shove": 0.5, "careful": 0.6, "wait_survivors": 30.0,
 		"fire_tolerance": 1.2, "sprint": 0.5,
 	},
 	"expert": {
@@ -42,7 +42,7 @@ const PRESETS := {
 		"flare": 0.8, "seal": 0.6, "lights": 0.7, "vent": 0.9, "grenade": 0.95, "mine": 0.7,
 		"heal_at": 45.0, "heal_waits": true, "heal_forget": 0.0, "stim_at": 55.0,
 		"tactical_reload": true, "weapon_sense": 0.95, "backs_off": 0.9,
-		"shoot_pods": 0.9, "burn_pods": 0.7, "curiosity": 0.35, "explore": 0.8, "scout": 0.9, "push": 0.9, "shove": 0.8, "careful": 0.95, "wait_survivors": 45.0,
+		"shoot_pods": 0.9, "freeze_pods": 0.7, "curiosity": 0.35, "explore": 0.8, "scout": 0.9, "push": 0.9, "shove": 0.8, "careful": 0.95, "wait_survivors": 45.0,
 		"fire_tolerance": 1.0, "sprint": 0.3,
 	},
 }

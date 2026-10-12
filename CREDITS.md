@@ -13,8 +13,9 @@ Made by Drew, Kaden, and Ken VanDine, the LinuxGroove team.
 
 Made for Verdigris Protocol, all CC0 like the rest:
 
-- `assets/models/cutter/`: the plasma cutter, modelled by a script
-  (`tools/blender/cutter.py`).
+- `assets/models/sprayer/`: the cryo sprayer, and `assets/models/rivet_gun/`:
+  the rivet gun and its rivets, modelled by scripts (`tools/blender/sprayer.py`
+  and `tools/blender/rivet_gun.py`) on the MegaKit's trim sheets.
 - `assets/gore/`: the blood splats, pools and drag marks, drawn by a script
   (`tools/gore/make_gore.py`).
 - The Bloom's growth, flesh and the space sky are shaders in `game/bloom/`

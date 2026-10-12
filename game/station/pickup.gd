@@ -65,7 +65,7 @@ func _build() -> void:
 	var spec: Array = ITEMS.get(base(), ITEMS["ammo"])
 	var model_name: String = spec[1]
 	if base() == "weapon":
-		model_name = "ess:" + String(Arsenal.WEAPONS.get(detail(), {}).get("model", "Gun_Pistol"))
+		model_name = String(Arsenal.WEAPONS.get(detail(), {}).get("model", "ess:Gun_Pistol"))
 	var m: Node3D
 	if base() == "cell":
 		m = _cell_model()
@@ -77,8 +77,9 @@ func _build() -> void:
 		m = Kit.model(self, model_name, Vector3.ZERO, 0.0, float(spec[2]))
 	if base() in ["weapon", "keycard", "stim", "health", "grenade"]:
 		# Lying on the floor. The kit's guns stand upright with the barrel
-		# along x, so they're laid on their side, not stood on end.
-		if base() == "weapon":
+		# along x (the game's own tools, along z), so they're laid on their
+		# side, not stood on end.
+		if base() == "weapon" and Arsenal.kit_gun(detail()):
 			m.rotation.x = PI * 0.5
 		else:
 			m.rotation.z = PI * 0.5

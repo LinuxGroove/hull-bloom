@@ -314,7 +314,7 @@ func gifts() -> Array:
 func hold(s: DeckScene, ticks := 300) -> bool:
 	for h in s.director.hearts.duplicate():
 		if is_instance_valid(h) and not h.dead:
-			h.take_hit(Hit.make(Hit.Kind.BURN, 100000.0, h.global_position, Vector3.FORWARD, s.player))
+			h.take_hit(Hit.make(Hit.Kind.FREEZE, 100000.0, h.global_position, Vector3.FORWARD, s.player))
 	await frames(2)
 	for i in ticks:
 		s.tick_bloom()
@@ -524,7 +524,7 @@ func _s_title() -> void:
 	title.show_main()
 	await frames(2)
 	# Shift mode once an ending has been seen.
-	Progress.set_ending("burn")
+	Progress.set_ending("stay")
 	title.show_main()
 	await frames(2)
 	ok(find_btn(title, "Carry on") != null and find_btn(title, "Carry on").text.contains("shift is over"), "Carry on says the shift is over")
@@ -1153,13 +1153,13 @@ func _s_screens() -> void:
 	ok(s.player.max_health == suit_before + Tech.SUIT_BONUS, "and gives the suit its plating")
 	var again := find_btn(s.workbench, "Suit plating")
 	ok(again != null and again.disabled and again.text.contains("fitted"), "a fitted upgrade is greyed and says fitted")
-	var st0: Dictionary = s.player.arsenal.stat("sidearm")
-	await click(find_btn(s.workbench, "Heavy sidearm"))
-	var st1: Dictionary = s.player.arsenal.stat("sidearm")
-	ok(float(st1["damage"]) > float(st0["damage"]), "Heavy sidearm hits harder (%s to %s)" % [st0["damage"], st1["damage"]])
-	var cool0: Dictionary = s.player.arsenal.stat("cutter")
-	await click(find_btn(s.workbench, "Cutter heat sink"))
-	ok(float(s.player.arsenal.stat("cutter")["heat"]) < float(cool0["heat"]), "Cutter heat sink cools the cutter")
+	var st0: Dictionary = s.player.arsenal.stat("rivet_gun")
+	await click(find_btn(s.workbench, "Heavy rivet gun"))
+	var st1: Dictionary = s.player.arsenal.stat("rivet_gun")
+	ok(float(st1["damage"]) > float(st0["damage"]), "Heavy rivet gun hits harder (%s to %s)" % [st0["damage"], st1["damage"]])
+	var ice0: Dictionary = s.player.arsenal.stat("sprayer")
+	await click(find_btn(s.workbench, "Nozzle heater"))
+	ok(float(s.player.arsenal.stat("sprayer")["ice"]) < float(ice0["ice"]), "Nozzle heater keeps the sprayer from icing up")
 	# Too dear: salvage 0 leaves everything greyed.
 	Progress._cfg.set_value("shift", "salvage", 0)
 	s.workbench._refresh()
@@ -1261,10 +1261,10 @@ func _s_ending() -> void:
 	cg["state"] = "lost"
 	Progress._set_deck("cargo", cg)
 	Progress._cfg.set_value("shift", "ending", "")
-	ok(EndingScreen.which() == "burn", "without the shuttle the ending is to stay")
+	ok(EndingScreen.which() == "stay", "without the shuttle the ending is to stay")
 	var scr := await go("res://game/ui/ending.tscn")
 	await wait(0.3)
-	ok(Progress.ending() == "burn", "and it is kept at once")
+	ok(Progress.ending() == "stay", "and it is kept at once")
 	Progress.reset()
 
 #endregion
@@ -1360,7 +1360,7 @@ func _s_offline() -> void:
 	ok(has_btn(title, "New night shift"), "and works")
 	# A whole Shift night with online on and no server: play goes on.
 	var daily := ShiftNight.daily_seed()
-	Progress.set_ending("burn")
+	Progress.set_ending("stay")
 	mark()
 	ShiftNight.start(daily)
 	await changed()
@@ -1431,7 +1431,7 @@ func _s_gore() -> void:
 			continue
 		var limb: String = Stalker.CLAWS.keys()[0]
 		var bone: int = st.skeleton.find_bone(Stalker.CLAWS[limb])
-		var hit := Hit.make(Hit.Kind.BURN, 400.0, st.global_position + Vector3(0, 1, 0), Vector3.FORWARD, s.player)
+		var hit := Hit.make(Hit.Kind.FREEZE, 400.0, st.global_position + Vector3(0, 1, 0), Vector3.FORWARD, s.player)
 		hit.limb = limb
 		hit.sever = 5.0
 		st.limb_hit(hit)

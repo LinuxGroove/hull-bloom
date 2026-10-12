@@ -3,7 +3,7 @@ extends Node3D
 ## Decides what's alive on a deck: the creatures the level places, the hearts
 ## at its roots, the pods the Bloom sprouts and what they hatch, the dead who
 ## get up again on grown tiles, and the spawn that come back when you kill
-## them without burning their tile. Everything it makes is its child.
+## them without freezing back their tile. Everything it makes is its child.
 
 ## A hatched creature killed on a tile still grown this much comes back.
 const REGROW_LEVEL := 2.0
@@ -220,7 +220,7 @@ func _on_died(c: Creature) -> void:
 #region Pods
 
 ## Matches the pods standing on a tile to the Bloom's count there: new ones
-## grow, burnt ones wither.
+## grow, frozen-off ones wither.
 func _sync_tile(i: int) -> void:
 	var want := int(bloom.pods.get(i, 0))
 	var have: Array = pods.get(i, [])

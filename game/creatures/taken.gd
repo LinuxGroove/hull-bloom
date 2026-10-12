@@ -2,10 +2,10 @@ class_name Taken
 extends Creature
 ## The crew, taken by the Bloom: still in their coveralls, still walking
 ## fragments of their old routines, the growth bursting out of their backs.
-## They come apart. The cutter's focused beam, the scattergun up close, the
-## rail and blasts take limbs off: without arms they can only bite, without a
-## leg they crawl, and without a head they keep coming, blind. Only the body
-## going down stops them.
+## They come apart. The sprayer's focused jet freezes limbs until they snap,
+## and the scattergun up close, the rail and blasts take them off too:
+## without arms they can only bite, without a leg they crawl, and without a
+## head they keep coming, blind. Only the body going down stops them.
 
 ## Limb -> its first bone.
 const LIMBS := {"arm_l": "upperarm_l", "arm_r": "upperarm_r", "leg_l": "thigh_l", "leg_r": "thigh_r", "head": "Head"}
@@ -181,7 +181,7 @@ func limb_hit(hit: Hit) -> void:
 		return
 	var cut := hit.amount * hit.sever
 	match hit.kind:
-		Hit.Kind.BURN:
+		Hit.Kind.FREEZE:
 			cut *= 1.6
 		Hit.Kind.PELLET, Hit.Kind.RAIL, Hit.Kind.BLAST:
 			cut *= 1.3

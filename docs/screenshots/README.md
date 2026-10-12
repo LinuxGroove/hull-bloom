@@ -143,7 +143,7 @@ Every deck's views and the menus, made by `tools/screenshot.tscn -- --all=docs/s
 - [Pause](menus/pause.png)
 - [Results](menus/results.png)
 - [Ending Choice](menus/ending_choice.png)
-- [Ending Burn](menus/ending_burn.png)
+- [Ending Stay](menus/ending_stay.png)
 - [Ending Both](menus/ending_both.png)
 - [Shift Mode](menus/shift_mode.png)
 - [Shift Spine](menus/shift_spine.png)

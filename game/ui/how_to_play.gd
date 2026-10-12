@@ -9,10 +9,10 @@ const PAGES := [
 		"Thick growth sprouts pods, and pods hatch things. Shooting what hatches only buys time: the pods keep coming while the growth is there.",
 		"A body left on thick growth gets up again.",
 	]],
-	["The plasma cutter", [
-		"The cutter is the only thing that burns growth back. Hold Fire and sweep it over the floor and walls; the growth chars and shrinks a level at a time.",
-		"It heats up. Let go before it overheats, or wait while it cools. Aim to focus the beam: it reaches further and takes limbs off.",
-		"Your guns are for what hatches. Tap Swap to go back to the last one you held, or hold it for the weapon wheel, point at a gun and let go. Hold Throw to pick a flare, grenade or mine.",
+	["The cryo sprayer", [
+		"The sprayer is the only thing that clears growth. Hold Fire and sweep it over the floor and walls: frozen growth dies back a level at a time and stops spreading until it thaws. A shot shatters frozen growth.",
+		"The nozzle ices up as you spray. Let go before it ices shut, or wait while it thaws. Aim to narrow the spray into a jet that reaches further. Spray anything long enough and it freezes solid, and a shot breaks it.",
+		"Your guns are for what hatches. The rivet gun never runs out, and its rivets pin small things to the wall; the others need rounds. Tap Swap to go back to the last one you held, or hold it for the weapon wheel, point at one and let go. Hold Throw to pick a flare, grenade or mine.",
 	]],
 	["Power", [
 		"Each deck has a few power cells. Lights, sealed doors, turrets and the lift each take one, and the lift won't take you anywhere until you've powered it at its console.",
@@ -20,7 +20,7 @@ const PAGES := [
 		"Some rooms can be opened to space. Everything inside goes, growth and all, and the room stays airless.",
 	]],
 	["Holding a deck", [
-		"Every deck's growth feeds from a root. Find it, burn it out, and the growth stops feeding. What's left dies back on its own in a minute or so; burn it to hurry it along.",
+		"Every deck's growth feeds from a root. Find it and kill it, and the growth stops feeding. What's left dies back on its own in a minute or so; freeze it to hurry it along.",
 		"A deck is held when its root is gone and nothing thick is left. Survivors you find follow you; bring them to the lift.",
 		"A held deck is safe: its workbench turns salvage into upgrades, and its bunk heals you.",
 	]],

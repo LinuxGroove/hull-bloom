@@ -12,8 +12,8 @@ extends Node
 ## (see skill.gd) sets its aim, reactions, how often it wanders off, and how
 ## well it uses the tools.
 ##
-## It goes for the deck's goal: cut out the roots (the cutter on the Heart,
-## or venting its room), burn back what's left until the deck holds, then
+## It goes for the deck's goal: cut out the roots (the sprayer on the Heart,
+## or venting its room), freeze back what's left until the deck holds, then
 ## take the lift, stopping for survivors, logs and supplies it sees on the way.
 
 signal acted(kind: String, data: Dictionary)
@@ -29,8 +29,8 @@ const NOTICE_NEAR := 3.5
 const MELEE := ["skitter", "stalker", "taken", "quadorb", "raptor", "trilobite", "quadshell"]
 const BIG := ["stalker", "taken", "quadorb", "quadshell", "raptor", "trilobite"]
 const FLIERS := ["watcher", "eyedrone", "gundrone", "feeder"]
-## How far the cutter reaches from the eye (a little short of its real reach).
-const CUTTER_REACH := 4.7
+## How far the sprayer reaches from the eye (a little short of its real reach).
+const SPRAYER_REACH := 4.7
 const FOCUS_REACH := 7.1
 ## The lift's console is used from the pad.
 const USE_REACH := 1.3
@@ -43,7 +43,7 @@ var rng := RandomNumberGenerator.new()
 var grid: NavGrid
 ## Game seconds since it took over.
 var time := 0.0
-## What it's doing, for the telemetry: "heart", "burn", "fight", "door"...
+## What it's doing, for the telemetry: "heart", "clear", "fight", "door"...
 var mode := "start"
 ## The deck's goal right now and where it is, for telemetry's progress.
 var goal_name := ""
@@ -282,7 +282,7 @@ func _update_goal() -> void:
 		goal_name = "heart"
 		goal_point = h.global_position if h else Vector3.INF
 	else:
-		goal_name = "burn"
+		goal_name = "clear"
 		var t := _thickest_tile()
 		goal_point = DeckLevel.center(t) if t != Vector2i(9999, 9999) else Vector3.INF
 
@@ -445,10 +445,10 @@ func _break_free() -> void:
 	var p := box.global_position if box and _roll("tendril:%d" % f.get_instance_id(), float(skill["weapon_sense"])) else aim_point(f)
 	_look = p
 	_aiming_at_target = true
-	var near := _eye().distance_to(p) < CUTTER_REACH
-	_select("cutter" if near and not player.arsenal.overheated else ("sidearm" if "sidearm" in player.arsenal.owned else "cutter"))
+	var near := _eye().distance_to(p) < SPRAYER_REACH
+	_select("sprayer" if near and not player.arsenal.iced else ("rivet_gun" if "rivet_gun" in player.arsenal.owned else "sprayer"))
 	if _forward().angle_to(p - _eye()) < 0.3 and player.arsenal.swapping <= 0.0:
-		if player.arsenal.current == "cutter" or bool(player.arsenal.stat(player.arsenal.current).get("auto", false)):
+		if player.arsenal.current == "sprayer" or bool(player.arsenal.stat(player.arsenal.current).get("auto", false)):
 			_fire = true
 		else:
 			_fire_tap = true
@@ -623,8 +623,8 @@ func _engage(n: Node3D) -> void:
 	var off := _forward().angle_to(to)
 	var shot := _clear_shot(p, n)
 	var reach := 60.0
-	if w == "cutter":
-		reach = CUTTER_REACH
+	if w == "sprayer":
+		reach = SPRAYER_REACH
 	elif w == "scattergun":
 		reach = 14.0
 	if shot:
@@ -636,11 +636,11 @@ func _engage(n: Node3D) -> void:
 	if not _eng.has("shot_t"):
 		_eng["shot_t"] = time
 	if shot and off < tol and d <= reach and ars.reloading <= 0.0 and ars.swapping <= 0.0:
-		if w == "cutter" or bool(ars.stat(w).get("auto", false)):
+		if w == "sprayer" or bool(ars.stat(w).get("auto", false)):
 			_fire = true
 		else:
 			_fire_tap = true
-		_focus = w != "cutter" and d > 8.0 and float(skill["weapon_sense"]) > 0.5
+		_focus = w != "sprayer" and d > 8.0 and float(skill["weapon_sense"]) > 0.5
 	# Feet: back off from claws, close in when there's no shot.
 	var flat := Vector3(player.global_position.x - n.global_position.x, 0, player.global_position.z - n.global_position.z)
 	var kind := kind_of(n)
@@ -704,32 +704,32 @@ func _pick_weapon(n: Node3D, d: float, fresh: bool) -> String:
 	var ars := player.arsenal
 	var current := ars.current
 	if fresh and not _roll("sense:%d" % n.get_instance_id(), float(skill["weapon_sense"])):
-		if current != "cutter" or d < CUTTER_REACH:
+		if current != "sprayer" or d < SPRAYER_REACH:
 			if _has_rounds(current):
 				return current
 	var kind := kind_of(n)
 	var order: Array = []
 	match kind:
 		"pod":
-			order = ["sidearm", "rifle", "smg", "rail"]
+			order = ["rivet_gun", "rifle", "smg", "rail"]
 		"skitter":
-			# The beam is quick death to spawn close in, while it's cool.
-			var beam := d < CUTTER_REACH and not ars.overheated and ars.heat < (75.0 if current == "cutter" else 45.0)
+			# The spray is quick death to spawn close in, while it's clear.
+			var beam := d < SPRAYER_REACH and not ars.iced and ars.ice < (75.0 if current == "sprayer" else 45.0)
 			if current == "scattergun" and d < 8.0 and _has_rounds(current):
 				return current
-			order = (["cutter"] if beam else []) + (["scattergun"] if d < 8.0 else []) + ["smg", "rifle", "sidearm"]
+			order = (["sprayer"] if beam else []) + (["scattergun"] if d < 8.0 else []) + ["smg", "rifle", "rivet_gun"]
 		"watcher", "eyedrone", "gundrone", "feeder":
-			order = ["rifle", "sidearm", "smg", "rail"] + (["scattergun"] if d < 6.0 else [])
+			order = ["rifle", "rivet_gun", "smg", "rail"] + (["scattergun"] if d < 6.0 else [])
 		_:
-			order = ["rail"] + (["scattergun"] if d < 9.0 else []) + ["rifle", "smg", "sidearm"]
+			order = ["rail"] + (["scattergun"] if d < 9.0 else []) + ["rifle", "smg", "rivet_gun"]
 	for w in order:
 		if w in ars.owned and _has_rounds(w):
 			return w
-	return "sidearm" if "sidearm" in ars.owned else "cutter"
+	return "rivet_gun" if "rivet_gun" in ars.owned else "sprayer"
 
 
 func _has_rounds(w: String) -> bool:
-	if w == "cutter":
+	if w == "sprayer":
 		return true
 	var ars := player.arsenal
 	if int(ars.stat(w).get("carry", 0)) < 0:
@@ -767,7 +767,7 @@ func _new_aim_target(n: Node) -> void:
 func _reload_when_quiet() -> void:
 	var ars := player.arsenal
 	var w := ars.current
-	if w == "cutter" or ars.reloading > 0.0 or not skill["tactical_reload"]:
+	if w == "sprayer" or ars.reloading > 0.0 or not skill["tactical_reload"]:
 		return
 	var spec := ars.stat(w)
 	if int(ars.mag.get(w, 0)) < int(spec["mag"]) * 0.6 and (int(spec["carry"]) < 0 or int(ars.reserve.get(w, 0)) > 0):
@@ -815,8 +815,8 @@ func _use_tools() -> bool:
 			if _roll("lights:" + room, float(skill["lights"])):
 				_press_event("power_lights")
 				acted.emit("lights", {"room": room})
-	if ars.current != "cutter" and _known.is_empty() and ars.reloading <= 0.0 and _task.get("kind", "") in ["heart", "burn"] and _task.get("in_reach", false):
-		_select("cutter")
+	if ars.current != "sprayer" and _known.is_empty() and ars.reloading <= 0.0 and _task.get("kind", "") in ["heart", "clear"] and _task.get("in_reach", false):
+		_select("sprayer")
 	return false
 
 
@@ -940,8 +940,8 @@ func _pick_task() -> Dictionary:
 		return {}
 	# The Heart's dead but the growth is still thick enough to hatch: a
 	# careful player who's hurt or crowded falls back somewhere quiet while
-	# it dies back, then burns the rest.
-	if _roll("careful:burn", float(skill["careful"])) and level.bloom.max_level() >= Director.REGROW_LEVEL \
+	# it dies back, then freezes the rest.
+	if _roll("careful:clear", float(skill["careful"])) and level.bloom.max_level() >= Director.REGROW_LEVEL \
 			and (player.health < 60.0 or _known.size() >= 3 or _task.get("regroup", false)):
 		var room := _safe_room()
 		if room != "":
@@ -950,9 +950,9 @@ func _pick_task() -> Dictionary:
 				if not seal.is_empty():
 					return seal
 			return {"kind": "explore", "key": "regroup:" + room, "point": _room_point(room), "regroup": true}
-	var t := _burn_choice()
+	var t := _clear_choice()
 	if t != Vector2i(9999, 9999):
-		return {"kind": "burn", "key": "burn:%s" % t, "tile": t}
+		return {"kind": "clear", "key": "clear:%s" % t, "tile": t}
 	# Nothing left it can reach: look round while the rest dies back.
 	var r2 := _unvisited_room()
 	if r2 == "":
@@ -1064,9 +1064,9 @@ func _thickest_tile() -> Vector2i:
 	return best
 
 
-## The next tile to burn: near, thick, and somewhere it can stand.
-func _burn_choice() -> Vector2i:
-	if _task.get("kind", "") == "burn" and level.bloom.level_at(_task["tile"]) >= 0.95 and not _skip.has(str(_task["tile"])):
+## The next tile to freeze: near, thick, and somewhere it can stand.
+func _clear_choice() -> Vector2i:
+	if _task.get("kind", "") == "clear" and level.bloom.level_at(_task["tile"]) >= 0.95 and not _skip.has(str(_task["tile"])):
 		return _task["tile"]
 	var b := level.bloom
 	var best := Vector2i(9999, 9999)
@@ -1079,8 +1079,8 @@ func _burn_choice() -> Vector2i:
 		if _skip.has(str(c)):
 			continue
 		var s := DeckLevel.center(c).distance_to(here) - b.growth[i] * 2.0
-		# Careful players burn inward from the edge of it.
-		if _roll("careful:burn", float(skill["careful"])) and _edge_of(c) == Vector2i(9999, 9999):
+		# Careful players freeze inward from the edge of it.
+		if _roll("careful:clear", float(skill["careful"])) and _edge_of(c) == Vector2i(9999, 9999):
 			s += 20.0
 		if s < best_s:
 			best_s = s
@@ -1218,8 +1218,8 @@ func _work() -> void:
 	match String(_task["kind"]):
 		"heart":
 			_work_heart()
-		"burn":
-			_work_burn()
+		"clear":
+			_work_clear()
 		"leave":
 			_work_leave()
 		"pickup":
@@ -1263,19 +1263,19 @@ func _work_heart() -> void:
 		_new_aim_target(h)
 		var off := _forward().angle_to(p - eye)
 		var tol := atan2(0.9, d + 1.0) * float(skill["fire_tolerance"])
-		if ars.overheated or (ars.current != "cutter" and ars.heat > Arsenal.COOL_AT):
-			# The cutter's cooling: a gun meanwhile, if it thinks of it.
+		if ars.iced or (ars.current != "sprayer" and ars.ice > Arsenal.THAW_AT):
+			# The sprayer's thawing: a gun meanwhile, if it thinks of it.
 			if float(skill["weapon_sense"]) > 0.5:
-				_select("sidearm" if "sidearm" in ars.owned else ars.owned[0])
-				if ars.current != "cutter" and off < tol and ars.swapping <= 0.0:
+				_select("rivet_gun" if "rivet_gun" in ars.owned else ars.owned[0])
+				if ars.current != "sprayer" and off < tol and ars.swapping <= 0.0:
 					_fire_tap = not bool(ars.stat(ars.current).get("auto", false))
 					_fire = not _fire_tap
 			return
-		_select("cutter")
-		if ars.current == "cutter" and off < tol:
+		_select("sprayer")
+		if ars.current == "sprayer" and off < tol:
 			_fire = true
 			_focus = true
-		# Step in closer than the beam's edge.
+		# Step in closer than the spray's edge.
 		if d > reach - 1.2:
 			_go(_stand_near(h.global_position, _heart_stand(h)), "heart", 3.0)
 			_walk_path = true
@@ -1321,15 +1321,15 @@ func _stand_near(p: Vector3, dist: float) -> Vector3:
 	return best
 
 
-func _work_burn() -> void:
+func _work_clear() -> void:
 	var t: Vector2i = _task["tile"]
 	if level.bloom.level_at(t) < 0.95:
 		_done()
 		return
-	_set_mode("burn")
+	_set_mode("clear")
 	var ars := player.arsenal
 	var eye := _eye()
-	# A spot on the tile's floor in reach of the beam.
+	# A spot on the tile's floor in reach of the spray.
 	var c := DeckLevel.center(t)
 	var flat := Vector3(eye.x, 0, eye.z)
 	var to := c - flat
@@ -1339,7 +1339,7 @@ func _work_burn() -> void:
 		if DeckLevel.cell_at(aim) != t:
 			aim = c - to.normalized() * 1.7
 	aim.y = 0.05
-	var in_reach := eye.distance_to(aim) < CUTTER_REACH and DeckLevel.cell_at(aim) == t
+	var in_reach := eye.distance_to(aim) < SPRAYER_REACH and DeckLevel.cell_at(aim) == t
 	if in_reach:
 		var q := PhysicsRayQueryParameters3D.create(eye, aim, Kit.SHOT_MASK)
 		q.exclude = [player.get_rid()]
@@ -1348,8 +1348,8 @@ func _work_burn() -> void:
 	_task["in_reach"] = in_reach
 	if in_reach:
 		_look = aim
-		_select("cutter")
-		if ars.current == "cutter" and not ars.overheated and _forward().angle_to(aim - eye) < 0.25:
+		_select("sprayer")
+		if ars.current == "sprayer" and not ars.iced and _forward().angle_to(aim - eye) < 0.25:
 			_fire = true
 		return
 	if time - float(_task["since"]) > 40.0:
@@ -1359,12 +1359,12 @@ func _work_burn() -> void:
 	if stand == Vector3.INF:
 		_done(str(t))
 		return
-	_go(stand, "burn:%s" % t, 0.6)
+	_go(stand, "clear:%s" % t, 0.6)
 	_walk_path = true
 
 
 ## A neighbouring tile with thinner growth that opens onto this one, to
-## burn it from without standing in it, or (9999, 9999).
+## freeze it from without standing in it, or (9999, 9999).
 func _edge_of(t: Vector2i) -> Vector2i:
 	var g0 := level.bloom.level_at(t)
 	var best := Vector2i(9999, 9999)
@@ -1401,13 +1401,13 @@ func _edge_stand(t: Vector2i, nb: Vector2i) -> Vector3:
 	return out
 
 
-## Where to stand to burn a tile: beside it on thinner growth if it's
+## Where to stand to freeze a tile: beside it on thinner growth if it's
 ## careful, else in it.
 func _stand_on(t: Vector2i) -> Vector3:
-	var key := "burnstand:%s" % t
+	var key := "clearstand:%s" % t
 	if _decided.has(key):
 		return _decided[key]
-	if _roll("careful:burn", float(skill["careful"])):
+	if _roll("careful:clear", float(skill["careful"])):
 		var nb := _edge_of(t)
 		if nb != Vector2i(9999, 9999):
 			_decided[key] = _edge_stand(t, nb)

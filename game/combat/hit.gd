@@ -1,10 +1,10 @@
 class_name Hit
 extends RefCounted
-## One blow: a bullet, a burn from the cutter, a blast, a claw. Anything that
+## One blow: a bullet, a rivet, the sprayer's cold, a blast, a claw. Anything that
 ## can be hurt has `take_hit(hit: Hit)`; creatures, the player, pods and the
 ## hearts all take the same thing.
 
-enum Kind {BULLET, PELLET, BURN, BLAST, CLAW, SHOVE, RAIL, SPIT}
+enum Kind {BULLET, PELLET, FREEZE, BLAST, CLAW, SHOVE, RAIL, SPIT, RIVET}
 
 var kind := Kind.BULLET
 var amount := 10.0
@@ -18,7 +18,7 @@ var from: Node = null
 var limb := ""
 ## How hard it pushes (metres a second).
 var knock := 0.0
-## How much more a limb comes off from this (the focused cutter, the rail).
+## How much more a limb comes off from this (the rail, the scattergun up close).
 var sever := 1.0
 
 

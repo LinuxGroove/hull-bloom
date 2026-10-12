@@ -156,12 +156,14 @@ static func bake(mesh: Mesh, skin: Skin, skel: Skeleton3D) -> Mesh:
 		arrays[Mesh.ARRAY_CUSTOM1] = c1
 		var flags: int = (fmt & Mesh.ARRAY_FLAG_USE_8_BONE_WEIGHTS) | (Mesh.ARRAY_CUSTOM_RGB_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM0_SHIFT) | (Mesh.ARRAY_CUSTOM_RGBA_FLOAT << Mesh.ARRAY_FORMAT_CUSTOM1_SHIFT)
 		out.add_surface_from_arrays(mesh.surface_get_primitive_type(s), arrays, [], {}, flags)
+	# The rest pose is in CUSTOM0, as Flesh.bake leaves it (the frost reads it).
+	out.set_meta("rest_baked", true)
 	_baked[mesh] = out
 	return out
 
 
 ## Sets an instance uniform on the body: "dead", "blood", "bloom", "hurt",
-## "charred", each 0 to 1.
+## "frost", each 0 to 1.
 func set_instance(key: String, value: float) -> void:
 	for m in meshes:
 		if m.material_override is ShaderMaterial:

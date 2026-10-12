@@ -12,13 +12,13 @@ const ENDINGS := {
 		"Marigold turns below you, lights on in the decks you held and dark in the ones you didn't. Something on the dark decks is still growing. It has nothing left to feed it. Probably.",
 		"Your suit radio picks up MARI one last time: \"Organic obstruction reported. Night shift, please investigate.\"",
 	]],
-	"burn": ["THE NIGHT SHIFT", [
-		"You stay. With the Heart burnt out, the growth has nothing feeding it, and it dies back a deck at a time while you burn what's left.",
+	"stay": ["THE NIGHT SHIFT", [
+		"You stay. With the Heart stopped, the growth has nothing feeding it, and it dies back a deck at a time while you freeze what's left.",
 		"It takes weeks. Some doors you never open again, and MARI stops asking you to.",
-		"Forty days later a relief ship docks. You meet its crew at the lift with the cutter on your back. MARI logs the time, and notes the obstruction as cleared.",
+		"Forty days later a relief ship docks. You meet its crew at the lift with the sprayer on your back. MARI logs the time, and notes the obstruction as cleared.",
 	]],
 	"both": ["MARIGOLD HOLDS", [
-		"Every deck held. The shuttle takes the survivors home, and you stay to burn out the last of it.",
+		"Every deck held. The shuttle takes the survivors home, and you stay to freeze out the last of it.",
 		"The grow rooms are planted again by the time the relief ship docks. Somebody starts a rota for the night shift. Your name is at the top.",
 		"MARI's report to the colonies is three words long: \"Obstruction cleared. Investigating.\"",
 	]],
@@ -27,7 +27,7 @@ const ENDINGS := {
 ## The first lines instead, when nobody came out with you.
 const ALONE := {
 	"shuttle": "You take the shuttle. Every seat but yours is empty, and the quiet is worse than the decks were.",
-	"both": "Every deck held. The shuttle goes home empty but for MARI's logs, and you stay to burn out the last of it.",
+	"both": "Every deck held. The shuttle goes home empty but for MARI's logs, and you stay to freeze out the last of it.",
 }
 
 var backdrop: MenuBackdrop
@@ -70,7 +70,7 @@ static func which() -> String:
 			all_held = false
 	if shuttle and all_held:
 		return "both"
-	return "" if shuttle else "burn"
+	return "" if shuttle else "stay"
 
 
 func _clear() -> void:
@@ -95,11 +95,11 @@ func _text(text: String, color := StationTheme.TEXT, delay := 0.0) -> Label:
 
 func show_choice() -> void:
 	_clear()
-	_col.add_child(StationTheme.title_label("THE HEART IS BURNT", 48, StationTheme.TEAL))
+	_col.add_child(StationTheme.title_label("THE HEART HAS STOPPED", 48, StationTheme.TEAL))
 	_text("The growth on the Core is dying back. At Cargo's dock the shuttle is fuelled%s." % (", and the survivors are waiting by it" if Progress.total_survivors() > 0 else ""))
 	_text("MARI asks whether she should prepare it for launch.", StationTheme.DIM)
 	_col.add_child(LGUi.button("Take the shuttle home", show_ending.bind("shuttle"), WIDTH))
-	_col.add_child(LGUi.button("Stay with Marigold", show_ending.bind("burn"), WIDTH))
+	_col.add_child(LGUi.button("Stay with Marigold", show_ending.bind("stay"), WIDTH))
 	LGUi.focus_first(_col)
 
 

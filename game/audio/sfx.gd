@@ -2,7 +2,7 @@ class_name Sfx
 extends RefCounted
 ## Plays sounds in the station: one-shots at a place, and loops on a node.
 ##
-## Sounds go by id ("door_open", "cutter_loop"). An id plays
+## Sounds go by id ("door_open", "sprayer_loop"). An id plays
 ## assets/audio/sfx/<id>.ogg (or one of its takes, <id>_1.ogg ...) when there is one (made by tools/sfx/make_sfx.py
 ## or on Ken's Lemonade machine, see tools/lemonade/), else one of the Kenney
 ## sounds [constant KENNEY] lists for it, picked at random. Ids ending in
@@ -30,7 +30,6 @@ const KENNEY := {
 	"read": ["computerNoise_000", "computerNoise_001"],
 	"ui_select": ["select_001"],
 	"ui_back": ["back_001"],
-	"sidearm": ["laserSmall_000", "laserSmall_001"],
 	"scattergun": ["laserLarge_000", "laserLarge_002"],
 	"rifle": ["laserRetro_000", "laserRetro_002"],
 	"smg": ["laserSmall_002", "laserSmall_003", "laserSmall_004"],
@@ -39,9 +38,6 @@ const KENNEY := {
 	"dry_fire": ["click_001"],
 	"reload": ["platesSlide2", "platesSlide3"],
 	"swap": ["platesHit1"],
-	"cutter_start": ["thrusterFire_000"],
-	"cutter_loop": ["spaceEngineSmall_001"],
-	"cutter_hot": ["error_006"],
 	"hit_metal": ["impactMetal_000", "impactMetal_001", "impactMetal_002"],
 	"hit_flesh": ["impactPunch_medium_000", "impactPunch_medium_001", "impactSoft_medium_000"],
 	"hit_player": ["impactPunch_heavy_000", "impactPunch_heavy_001"],

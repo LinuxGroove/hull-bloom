@@ -15,7 +15,7 @@ godot --headless --path . tools/function_sweep.tscn [-- --only=pause,saves]   # 
 godot --path . -- --deck=hydroponics [--campaign]                   # straight onto a deck
 godot --path . -- --shift[=seed]                                    # straight into a Shift night
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --all=docs/screenshots [group=labs|menus]
-VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=labs [--view=name] [--hud] [--overgrown] [--burnt]
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1280x800x24" godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=labs [--view=name] [--hud] [--overgrown] [--frozen]
 VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --resolution 1920x1080 tools/function_shots.tscn -- --out=/tmp/shots [--scale3d=0.5] [--settle=10]   # the title, ring map, HUD, weapon wheel, pause menu and deck map at a window size
 python3 tools/sfx/make_sfx.py assets/audio/sfx                      # the synthesized sounds
 godot --headless --path . -s tools/story_script.gd -- --out=/tmp/story.md   # every player-facing line, in the order a player meets it

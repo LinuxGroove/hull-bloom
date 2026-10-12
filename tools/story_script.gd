@@ -282,7 +282,7 @@ func _every_deck() -> void:
 	_source("res://game/ui/deck_hud.gd", "next = ")
 	_h(2, "The HUD")
 	_source("res://game/ui/deck_hud.gd", "hud_label\\(|ActionPrompt\\.make|\\.text = |parts\\.append|for . in \\[\\[")
-	_source("res://game/arsenal/arsenal.gd", "return \"|OVERHEATED")
+	_source("res://game/arsenal/arsenal.gd", "return \"|ICED UP")
 	var names := PackedStringArray()
 	for w in load("res://game/arsenal/arsenal.gd").WEAPONS.values():
 		names.append(String(w["name"]))
@@ -510,7 +510,7 @@ func _shift() -> void:
 	_h(1, "Shift mode")
 	var night_script: GDScript = load("res://game/shift/shift_night.gd")
 	var level_script: GDScript = load("res://game/shift/shift_level.gd")
-	_progress.set_ending("burn")
+	_progress.set_ending("stay")
 	var title: Node = load("res://game/ui/title.tscn").instantiate()
 	_stage.add_child(title)
 	await process_frame
