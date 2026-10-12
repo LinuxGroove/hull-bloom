@@ -8,6 +8,11 @@ extends CharacterBody3D
 ##
 ## Shots hit its hitboxes ([method add_hitbox]), which carry the limb they
 ## cover; its walking capsule only blocks.
+##
+## The sprayer chills it ([method chill_by]): a chilled creature slows and
+## frosts over, and at full chill it freezes solid for a moment, when shots
+## hurt it more and break its limbs. Killed frozen, it shatters; killed by a
+## rivet, something small is pinned to the wall behind it.
 
 signal died(c: Creature)
 
@@ -16,6 +21,20 @@ enum State {ASLEEP, IDLE, WANDER, HUNT, ATTACK, HURT, DEAD}
 ## How brightly a flesh creature's outline shows, so it can be picked out
 ## from the growth around it (the flesh shader's `edge`).
 const EDGE := 0.35
+## Seconds a creature stays frozen solid.
+const FROZEN_TIME := 2.5
+## Chill lost a second once the spray is off it.
+const THAW_RATE := 0.35
+## How much slower it moves at full chill.
+const CHILL_SLOW := 0.65
+## How much more hits hurt something frozen solid, and how much more easily
+## its limbs break.
+const FROZEN_HURT := 2.0
+const FROZEN_SEVER := 2.5
+## Killed this chilled (or frozen), it shatters.
+const SHATTER_CHILL := 0.5
+## How far behind it a rivet can pin something.
+const PIN_REACH := 3.5
 
 ## Which creature it is ("skitter", "taken", "quadshell").
 var kind := "creature"
@@ -48,6 +67,12 @@ var robot := false
 var resist := {}
 ## Salvage it leaves, for the workbench.
 var salvage := 0
+## How quickly the sprayer chills it, on top of its size.
+var chill_rate := 1.0
+## Whether it shatters when it dies frozen (machines just stop).
+var shatters := true
+## Whether a rivet kill pins it to the wall (small things only).
+var pinnable := false
 
 var state := State.IDLE
 var health := 40.0
@@ -68,6 +93,10 @@ var time := 0.0
 var dead := false
 ## Spawned by a pod or the director, rather than placed by the level.
 var spawned := false
+## How cold the sprayer has made it, 0 to 1.
+var chill := 0.0
+## Seconds left frozen solid.
+var frozen := 0.0
 
 var _replan := 0.0
 var _sense := 0.0
@@ -87,6 +116,8 @@ var _grav := 14.0
 var _voice_t := randf_range(3.0, 9.0)
 var _alerted_at := -100.0
 var _hurt_said := -100.0
+var _chilled_at := -100.0
+var _frost_shown := 0.0
 
 
 func _init() -> void:
@@ -154,6 +185,16 @@ func _physics_process(delta: float) -> void:
 		if _venting <= 0.0:
 			_leave_vent()
 		return
+	if frozen > 0.0:
+		frozen -= delta
+		velocity.x = 0.0
+		velocity.z = 0.0
+		_move(delta)
+		if frozen <= 0.0:
+			_thaw()
+		return
+	if chill > 0.0 and time - _chilled_at > 0.3:
+		_set_chill(chill - THAW_RATE * delta)
 	if stunned > 0.0:
 		stunned -= delta
 	_sense -= delta
@@ -433,7 +474,7 @@ func steer(to: Vector3, speed: float, delta: float) -> void:
 		if dist < min_d and dist > 0.01:
 			dir += away / dist * (min_d - dist) * 1.5
 	dir = dir.normalized()
-	var mult := 1.0 if stunned <= 0.0 else 0.3
+	var mult := (1.0 if stunned <= 0.0 else 0.3) * (1.0 - CHILL_SLOW * chill)
 	velocity.x = move_toward(velocity.x, dir.x * speed * mult, delta * 20)
 	velocity.z = move_toward(velocity.z, dir.z * speed * mult, delta * 20)
 	face(global_position + dir, delta * turn_rate)
@@ -577,6 +618,10 @@ func take_hit(hit: Hit) -> void:
 	var amount := hit.amount * float(resist.get(hit.kind, 1.0))
 	if hit.by_player() and DeckScene.current:
 		amount *= DeckScene.current.player_damage()
+	var brittle := frozen > 0.0 and hit.kind != Hit.Kind.FREEZE
+	if brittle:
+		amount *= FROZEN_HURT
+		hit.sever *= FROZEN_SEVER
 	health -= amount
 	_flash = 1.0
 	_set_flash(1.0)
@@ -584,7 +629,10 @@ func take_hit(hit: Hit) -> void:
 		var k := hit.dir
 		k.y = 0
 		_knock += k.normalized() * hit.knock
-	if hit.kind != Hit.Kind.BURN or randf() < 0.2:
+	if brittle:
+		Effects.ice_chips(self, hit.point, -hit.dir, clampf(hit.amount / 20.0, 0.4, 1.2))
+		Sfx.at(self, "ice_crack", hit.point, -6.0)
+	elif hit.kind != Hit.Kind.FREEZE:
 		bleed(hit)
 	limb_hit(hit)
 	if state in [State.ASLEEP, State.IDLE, State.WANDER]:
@@ -594,10 +642,10 @@ func take_hit(hit: Hit) -> void:
 	if health <= 0.0:
 		die(hit)
 		return
-	if time - _hurt_said > 0.7 and hit.kind != Hit.Kind.BURN:
+	if time - _hurt_said > 0.7 and hit.kind != Hit.Kind.FREEZE and frozen <= 0.0:
 		_hurt_said = time
 		say("hurt", -3.0)
-	if amount >= max_health * 0.3 and state != State.ATTACK:
+	if amount >= max_health * 0.3 and state != State.ATTACK and frozen <= 0.0:
 		stunned = 0.35
 		state = State.HURT
 		hurt_anim()
@@ -631,7 +679,13 @@ func die(hit: Hit) -> void:
 	remove_from_group("creatures")
 	_set_edge(0.0)
 	died.emit(self)
-	death(hit)
+	if hit.kind == Hit.Kind.RIVET and pin(hit):
+		return
+	# With the Gore setting off, frozen things die as they would anyway.
+	if shatters and Gore.shown() and (frozen > 0.0 or chill >= SHATTER_CHILL):
+		shatter(hit)
+	else:
+		death(hit)
 
 
 ## What dying looks like; the default bursts into gibs.
@@ -653,12 +707,107 @@ func _set_edge(v: float) -> void:
 			m.set_instance_shader_parameter("edge", v)
 
 
-## Burns from the cutter char it for good.
-func char_by(amount: float) -> void:
-	for m in meshes:
-		if is_instance_valid(m) and m.material_override is ShaderMaterial:
-			var c = m.get_instance_shader_parameter("charred")
-			m.set_instance_shader_parameter("charred", minf(1.0, (c if c != null else 0.0) + amount))
+#endregion
+
+#region The cold
+
+## The sprayer's cold: chills it by `amount` (the bigger it is, the less),
+## and at full chill freezes it solid.
+func chill_by(amount: float) -> void:
+	if dead or frozen > 0.0:
+		return
+	_chilled_at = time
+	_set_chill(chill + amount * chill_rate / sqrt(maxf(max_health, 1.0) / 40.0))
+	if chill >= 1.0:
+		freeze_solid()
+
+
+## Frozen solid: it stops where it is, mid-stride, for [constant FROZEN_TIME].
+func freeze_solid() -> void:
+	if dead:
+		return
+	frozen = FROZEN_TIME
+	_set_chill(1.0)
+	_striking = -1.0
+	hold_pose(true)
+	Sfx.at(self, "freeze", global_position + Vector3(0, height * 0.5, 0), -4.0)
+	LGPlaytest.event("frozen", {"kind": kind})
+
+
+func _thaw() -> void:
+	frozen = 0.0
+	_set_chill(0.6)
+	_chilled_at = time
+	hold_pose(false)
+	stunned = 0.3
+	Sfx.at(self, "ice_crack", global_position + Vector3(0, height * 0.5, 0), -10.0)
+
+
+## Stops (or lets go of) its animation, for being frozen; kinds that pose
+## themselves some other way override it.
+func hold_pose(on: bool) -> void:
+	if anim:
+		anim.speed_scale = 0.0 if on else 1.0
+
+
+func _set_chill(v: float) -> void:
+	chill = clampf(v, 0.0, 1.0)
+	# The frost shown only moves in steps, so it isn't set every frame.
+	if absf(chill - _frost_shown) >= 0.05 or (chill == 0.0) != (_frost_shown == 0.0):
+		_frost_shown = chill
+		for m in meshes:
+			if not is_instance_valid(m):
+				continue
+			if m.material_overlay == null and chill > 0.0:
+				m.material_overlay = Flesh.frost_material(m.mesh != null and m.mesh.has_meta("rest_baked"))
+			m.set_instance_shader_parameter("frost", chill)
+
+
+## Killed while frozen: it bursts into ice and frozen chunks.
+func shatter(hit: Hit) -> void:
+	var at := global_position + Vector3(0, height * 0.5, 0)
+	Sfx.at(self, "shatter", at)
+	Effects.ice_burst(self, at, maxf(radius, height * 0.4))
+	Gore.gibs(self, at, gib_count, "frozen", 3.0 + hit.knock, "frost")
+	queue_free()
+
+
+## A rivet kill: thrown back and pinned to the wall behind it. False, and it
+## dies as it would anyway, when it isn't small enough, the gore setting is
+## off, or there's no wall near enough behind it.
+func pin(hit: Hit) -> bool:
+	if not pinnable or model == null or not Gore.shown() or not is_inside_tree():
+		return false
+	# Straight back from the shot, so a shot from above finds the wall and
+	# not the floor.
+	var dir := Vector3(hit.dir.x, 0.0, hit.dir.z)
+	if dir.length() < 0.3:
+		return false
+	dir = dir.normalized()
+	var from := global_position + Vector3(0, height * 0.5, 0)
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * PIN_REACH, Kit.LAYER_STATION | Kit.LAYER_DOORS)
+	var h := get_world_3d().direct_space_state.intersect_ray(q)
+	if h.is_empty():
+		return false
+	var body := Node3D.new()
+	body.name = "Pinned_" + kind
+	get_tree().current_scene.add_child(body)
+	body.global_position = global_position
+	model.reparent(body)
+	if anim:
+		anim.speed_scale = 0.0
+	var to: Vector3 = h.position + h.normal * radius * 0.6 - Vector3(0, height * 0.5, 0)
+	# The rivet's head shows on the front of the body once it's against the wall.
+	Effects.rivet(body, h.position + h.normal * radius * 1.1 - (to - body.global_position), -dir, dir, body)
+	var t := body.create_tween()
+	t.tween_property(body, "global_position", to, 0.07)
+	Sfx.at(body, "pin", h.position)
+	Gore.splat(body, h.position, h.normal, 0.9, bleeds)
+	Gore.spray(body, from, dir, 0.8, bleeds)
+	Gore.keep(body)
+	LGPlaytest.event("pinned", {"kind": kind})
+	queue_free()
+	return true
 
 #endregion
 
@@ -749,8 +898,10 @@ func hurt_anim() -> void:
 
 
 func _play(clip: String, speed: float) -> void:
-	if anim == null:
+	if anim == null or frozen > 0.0:
 		return
+	# The cold slows everything it does.
+	speed *= 1.0 - 0.5 * chill
 	if not anim.has_animation(clip):
 		if clip in ["Walk", "Run"] and anim.has_animation("Alien_Idle"):
 			clip = "Alien_Idle"

@@ -38,7 +38,7 @@ const JOBS := """Hydroponics lift is eating cells again. Nadia says it's the cou
 
 Cargo wants the shuttle's fuel lines checked before the next supply run. Done, signed off. Arlo
 
-Whoever keeps borrowing the good cutter from this bench: it is not yours. Put it back. I. Varga"""
+Whoever keeps borrowing the good rivet gun from this bench: it is not yours. Put it back. I. Varga"""
 
 
 func build() -> void:

@@ -10,6 +10,9 @@ extends RefCounted
 const MAX_DECALS := 90
 const MAX_GIBS := 32
 const GIB_LIFE := 14.0
+## Creatures pinned to the walls by rivets stay longer than gibs.
+const MAX_KEPT := 12
+const KEPT_LIFE := 40.0
 const DIR := "res://assets/gore/"
 
 ## Splash colours by what's bleeding.
@@ -18,10 +21,13 @@ const COLORS := {
 	"ichor": Color(0.07, 0.06, 0.03),
 	"bloom": Color(0.24, 0.03, 0.08),
 	"oil": Color(0.03, 0.03, 0.035),
+	# Meltwater and frost from a shattered creature.
+	"frost": Color(0.7, 0.82, 0.9, 0.75),
 }
 
 static var _decals: Array = []
 static var _gibs: Array = []
+static var _kept: Array = []
 static var _tex := {}
 static var _drop_mat: StandardMaterial3D
 
@@ -44,6 +50,8 @@ static func color(kind: String) -> Color:
 		return Color(0, 0, 0, 0)
 	if kind == "blood" and not full():
 		kind = "ichor"
+	if kind == "frost":
+		return COLORS["frost"]
 	return COLORS.get(kind, COLORS["blood"])
 
 
@@ -135,13 +143,15 @@ static func spray(world: Node, pos: Vector3, dir: Vector3, amount := 1.0, kind :
 				splat(world, hit.position, hit.normal, randf_range(0.5, 1.2) * clampf(amount, 0.6, 1.6), kind)
 
 
-## Chunks of flesh thrown from `pos`.
+## Chunks of flesh thrown from `pos` (frozen chunks keep their look at
+## every setting that shows them).
 static func gibs(world: Node, pos: Vector3, count := 4, look := "gib", impulse := 4.0, kind := "blood") -> void:
 	if not shown() or world == null or not world.is_inside_tree():
 		return
 	if not full():
 		count = maxi(1, count / 2)
-		look = "ichor"
+		if look != "frozen":
+			look = "ichor"
 	for i in count:
 		var body := RigidBody3D.new()
 		body.collision_layer = Kit.LAYER_GIBS
@@ -189,8 +199,23 @@ static func _track_gib(body: Node3D) -> void:
 ## Untyped: the gib may have gone with its deck before its timer runs out.
 static func _expire(body) -> void:
 	_gibs.erase(body)
+	_kept.erase(body)
 	if is_instance_valid(body):
 		body.queue_free()
+
+
+## Keeps a body that isn't a gib (a creature pinned to the wall) for a
+## while, then lets it go; the oldest go first.
+static func keep(body: Node) -> void:
+	if body == null or not body.is_inside_tree():
+		return
+	_kept.append(body)
+	var t := body.get_tree().create_timer(KEPT_LIFE)
+	t.timeout.connect(_expire.bind(body))
+	while _kept.size() > MAX_KEPT:
+		var old = _kept.pop_front()
+		if is_instance_valid(old):
+			old.queue_free()
 
 
 ## Cuts a limb off a skinned body: hides it on the body (see [LimbHider])
@@ -301,8 +326,9 @@ static func clear() -> void:
 	for d in _decals:
 		if is_instance_valid(d):
 			d.queue_free()
-	for g in _gibs:
+	for g in _gibs + _kept:
 		if is_instance_valid(g):
 			g.queue_free()
 	_decals.clear()
 	_gibs.clear()
+	_kept.clear()

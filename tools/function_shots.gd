@@ -89,7 +89,7 @@ func _deck() -> void:
 	var ars := scene.player.arsenal
 	for w in Arsenal.WEAPONS:
 		ars.give(w)
-	ars.select("cutter")
+	ars.select("sprayer")
 	ars.open_wheel()
 	ars.point_wheel(ars.wheel_direction("scattergun"))
 	await _frames(maxi(3, _settle / 2))

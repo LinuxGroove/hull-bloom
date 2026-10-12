@@ -2,7 +2,7 @@ class_name Stalker
 extends Creature
 ## A skitter grown to three metres. It hunts by sound: it barely sees, but it
 ## hears gunfire across the deck and footsteps through a wall. Its big claws
-## come off to the focused cutter or a rail round.
+## snap off in the sprayer's focused jet, or to a rail round.
 
 const CLAWS := {"claw_l": "ClawBig_1.L", "claw_r": "ClawBig_1.R"}
 
@@ -48,7 +48,7 @@ func hear(pos: Vector3, loudness: float, from: Node) -> void:
 func limb_hit(hit: Hit) -> void:
 	if not _claw_hp.has(hit.limb):
 		return
-	var cut := hit.amount * hit.sever * (2.0 if hit.kind in [Hit.Kind.BURN, Hit.Kind.RAIL] else 0.6)
+	var cut := hit.amount * hit.sever * (2.0 if hit.kind in [Hit.Kind.FREEZE, Hit.Kind.RAIL] else 0.6)
 	_claw_hp[hit.limb] -= cut
 	if _claw_hp[hit.limb] <= 0.0 and skeleton and hider:
 		_claw_hp.erase(hit.limb)

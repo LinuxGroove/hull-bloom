@@ -4,7 +4,7 @@ extends Node
 ##   godot --headless --path . tools/autopilot.tscn -- --deck=hydroponics --skill=average --seed=1 --runs=3 --minutes=20 --out=/tmp/ap.json
 ##   godot --headless --path . tools/autopilot.tscn -- --campaign --skill=expert --seed=1 --out=/tmp/campaign.json
 ## --skill is novice, average or expert (tools/autopilot/skill.gd). --kit=start
-## starts every deck with the first kit (the cutter and sidearm); the default
+## starts every deck with the first kit (the sprayer and rivet gun); the default
 ## for decks after Hydroponics adds the scattergun Hydroponics gives you, and
 ## --kit=late adds the rifle and SMG from Security's armoury, for the Core.
 ## --campaign plays Hydroponics, the middle decks in an order from the seed,
@@ -32,14 +32,14 @@ const TRIES := 3
 const MUST_TRIES := 8
 ## What a Tech carries onto a deck after Hydroponics: the scattergun found
 ## there and some of its rounds.
-const AFTER_HYDROPONICS := {"weapons": ["cutter", "sidearm", "scattergun"],
+const AFTER_HYDROPONICS := {"weapons": ["sprayer", "rivet_gun", "scattergun"],
 	"items": {"flare": 3, "grenade": 0, "mine": 0, "medkit": 1, "stim": 0}, "ammo": {"scattergun": 18}}
 ## What a Tech might carry onto the Core or a deck late in the ring: the rifle
 ## and SMG from Security's armoury, and a few things to throw.
-const LATE := {"weapons": ["cutter", "sidearm", "scattergun", "rifle", "smg"],
+const LATE := {"weapons": ["sprayer", "rivet_gun", "scattergun", "rifle", "smg"],
 	"items": {"flare": 3, "grenade": 1, "mine": 0, "medkit": 2, "stim": 0}, "ammo": {"scattergun": 24, "rifle": 120, "smg": 128}}
 ## Upgrades the campaign buys at a held deck's workbench, in order.
-const BUY_ORDER := ["cutter_cool", "suit", "pockets", "scattergun_red", "cutter_focus", "rifle_red", "smg_red", "sidearm_red", "rail_red"]
+const BUY_ORDER := ["sprayer_heater", "suit", "pockets", "scattergun_red", "sprayer_nozzle", "rifle_red", "smg_red", "rivet_gun_red", "rail_red"]
 
 
 ## Warnings and errors from Godot and the game while a run plays.
@@ -275,7 +275,7 @@ func _head(deck_id: String, skill_name: String, seed_n: int, s: DeckScene, outco
 func _ammo(p: Tech) -> Dictionary:
 	var out := {}
 	for w in p.arsenal.owned:
-		if w != "cutter" and int(p.arsenal.stat(w).get("carry", 0)) >= 0:
+		if w != "sprayer" and int(p.arsenal.stat(w).get("carry", 0)) >= 0:
 			out[w] = int(p.arsenal.mag.get(w, 0)) + int(p.arsenal.reserve.get(w, 0))
 	return out
 

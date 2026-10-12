@@ -48,7 +48,7 @@ func _ready() -> void:
 		for t in ["_test_bloom", "_test_bloom_doors_and_light", "_test_bloom_roots", "_test_power", "_test_run",
 				"_test_progress", "_test_progress_hours", "_test_gore_lock", "_test_settings_panel", "_test_launch_ping",
 				"_test_creatures", "_test_vents", "_test_shift", "_test_unique_ids", "_test_menus", "_test_text_entry_pad_enter", "_test_deck_scene", "_test_stations", "_test_heart_answers", "_test_combat",
-				"_test_swap", "_test_sticks", "_test_playtest", "_test_playtest_note_pad"]:
+				"_test_cold", "_test_swap", "_test_sticks", "_test_playtest", "_test_playtest_note_pad"]:
 			printerr("- " + t)
 			await call(t)
 		if not core:
@@ -120,7 +120,7 @@ func put_player(s: DeckScene, cell: Vector2i, offset := Vector3.ZERO) -> void:
 func clear_deck(s: DeckScene, ticks := 200) -> bool:
 	for h in s.director.hearts.duplicate():
 		if is_instance_valid(h) and not h.dead:
-			h.take_hit(Hit.make(Hit.Kind.BURN, 100000.0, h.global_position, Vector3.FORWARD, s.player))
+			h.take_hit(Hit.make(Hit.Kind.FREEZE, 100000.0, h.global_position, Vector3.FORWARD, s.player))
 	await frames(2)
 	for i in ticks:
 		s.tick_bloom()
@@ -156,11 +156,19 @@ func _test_bloom() -> void:
 	a1.advance(40)
 	a2.advance(40)
 	check(a1.growth == a2.growth, "the same seed grows the same way")
-	# Burning.
-	var gone := b.burn(Vector2i(3, 0), 1.5)
-	check(is_equal_approx(gone, 1.5), "burning takes growth off")
-	check(b.scorch[b.index[Vector2i(3, 0)]] > 0.9, "and scorches the tile")
-	check(b.burn(Vector2i(20, 0), 1.0) == 0.0, "burning off the grid does nothing")
+	# Freezing.
+	var gone := b.freeze(Vector2i(3, 0), 1.5)
+	check(is_equal_approx(gone, 1.5), "freezing takes growth off")
+	check(b.is_frozen(Vector2i(3, 0)), "and frosts the tile")
+	check(b.freeze(Vector2i(20, 0), 1.0) == 0.0, "freezing off the grid does nothing")
+	var frozen_at := b.level_at(Vector2i(3, 0))
+	b.advance(1)
+	check(b.level_at(Vector2i(3, 0)) <= frozen_at, "frozen growth doesn't grow (%.2f to %.2f)" % [frozen_at, b.level_at(Vector2i(3, 0))])
+	var before_shot := b.level_at(Vector2i(3, 0))
+	check(b.shatter(Vector2i(3, 0), 0.5) > 0.0 and b.level_at(Vector2i(3, 0)) < before_shot, "a shot breaks frozen growth off")
+	check(b.shatter(Vector2i(6, 0), 0.5) == 0.0, "but not growth that isn't frozen")
+	b.advance(int(ceil(1.0 / Bloom.THAW)) + 1)
+	check(not b.is_frozen(Vector2i(3, 0)), "and the frost thaws")
 	# Venting.
 	b.vent_room("r5")
 	check(b.level_at(Vector2i(5, 0)) == 0.0, "venting a room clears it")
@@ -274,8 +282,8 @@ func _test_run() -> void:
 	run.read("log_a")
 	run.read("log_a")
 	check(run.logs.size() == 1, "a log counts once")
-	var r := run.result({"weapons": ["cutter"]})
-	check(r["held"] and r["loadout"]["weapons"] == ["cutter"], "the result carries what you hold")
+	var r := run.result({"weapons": ["sprayer"]})
+	check(r["held"] and r["loadout"]["weapons"] == ["sprayer"], "the result carries what you hold")
 	lvl.free()
 
 
@@ -302,10 +310,24 @@ func _test_progress() -> void:
 	check(not Progress.buy("suit"), "only once")
 	check(Progress.salvage() == 12, "it costs salvage")
 	# Endings.
-	Progress.set_ending("burn")
-	check(Progress.ending() == "burn" and "burn" in Progress.endings_seen(), "an ending is kept")
+	Progress.set_ending("stay")
+	check(Progress.ending() == "stay" and "stay" in Progress.endings_seen(), "an ending is kept")
 	Progress.new_campaign()
-	check(Progress.ending() == "" and "burn" in Progress.endings_seen(), "a new shift forgets the ending but not that you saw it")
+	check(Progress.ending() == "" and "stay" in Progress.endings_seen(), "a new shift forgets the ending but not that you saw it")
+	# A save from before the cryo sprayer: the cutter, the sidearm and their
+	# upgrades become the sprayer, the rivet gun and theirs.
+	Progress._cfg.set_value("carry", "weapons", ["cutter", "sidearm", "scattergun"])
+	Progress._cfg.set_value("carry", "ammo", {"scattergun": 12, "sidearm": 0})
+	Progress._cfg.set_value("upgrades", "cutter_cool", true)
+	Progress._cfg.set_value("upgrades", "sidearm_red", true)
+	Progress._cfg.set_value("shift", "ending", "burn")
+	Progress._cfg.set_value("record", "endings", PackedStringArray(["burn", "shuttle"]))
+	check(Progress._migrate(), "an old save is brought up to date")
+	check(Progress.weapons() == ["sprayer", "rivet_gun", "scattergun"], "its weapons (%s)" % [Progress.weapons()])
+	check(Progress.ammo().get("scattergun") == 12 and Progress.ammo().has("rivet_gun") and not Progress.ammo().has("sidearm"), "its ammo")
+	check(Progress.has_upgrade("sprayer_heater") and Progress.has_upgrade("rivet_gun_red") and not Progress.has_upgrade("cutter_cool"), "its upgrades")
+	check(Progress.ending() == "stay" and Array(Progress.endings_seen()) == ["stay", "shuttle"], "and its endings")
+	check(not Progress._migrate(), "and once is enough")
 
 
 func _test_progress_hours() -> void:
@@ -812,17 +834,17 @@ func _test_combat() -> void:
 	await frames(2)
 	check(not is_instance_valid(sk) or sk.dead, "the skitter dies")
 	check(s.run.kills == before + 1, "a kill is counted")
-	# The cutter heats as it fires and cools when you stop.
+	# The sprayer ices up as it sprays and thaws when you stop.
 	var ars := s.player.arsenal
-	ars.select("cutter")
+	ars.select("sprayer")
 	await frames(30)
 	Input.action_press("action_primary")
 	await frames(30)
-	check(ars.heat > 0.0, "the cutter heats as it fires")
+	check(ars.ice > 0.0, "the sprayer ices up as it sprays")
 	Input.action_release("action_primary")
-	var hot := ars.heat
+	var icy := ars.ice
 	await frames(60)
-	check(ars.heat < hot, "and cools")
+	check(ars.ice < icy, "and thaws")
 	# A health tube with the suit whole stays put, and says why.
 	check(not s.player.take_pickup("health", 1), "a whole suit leaves a health tube")
 	check("Suit's whole. Leave it for later" in s.hud.toast_lines(), "and says why")
@@ -899,6 +921,65 @@ func _test_combat() -> void:
 	await close_deck(s)
 
 
+## The sprayer's cold: a chilled creature freezes solid and stays put, shots
+## hurt it more and it shatters when it dies, it thaws in time, and a rivet
+## pins a small one to the wall behind it.
+func _test_cold() -> void:
+	var s := await open_deck("hydroponics")
+	await put_player(s, s.level.lift_cell)
+	var forward := -s.player.camera.global_transform.basis.z
+	var at := s.player.global_position + Vector3(forward.x, 0, forward.z).normalized() * 3.0
+	var sk := s.director.spawn("skitter", at, true)
+	await physics(4)
+	sk.chill_by(0.2)
+	check(sk.chill > 0.0 and sk.frozen == 0.0, "a little cold chills a skitter")
+	sk.chill_by(5.0)
+	check(sk.frozen > 0.0 and sk.chill == 1.0, "enough freezes it solid")
+	var still := sk.global_position
+	sk.state = Creature.State.HUNT
+	await physics(30)
+	check(Vector2(sk.global_position.x - still.x, sk.global_position.z - still.z).length() < 0.05, "frozen, it stays put")
+	var hp: float = sk.health
+	sk.take_hit(Hit.make(Hit.Kind.BULLET, 2.0, sk.global_position, forward, s.player))
+	var hurt := 2.0 * s.player_damage()
+	check(hp - sk.health >= hurt * Creature.FROZEN_HURT * 0.99, "and shots hurt it more (%.1f, not %.1f)" % [hp - sk.health, hurt])
+	var kills := s.run.kills
+	sk.take_hit(Hit.make(Hit.Kind.BULLET, 1000.0, sk.global_position, forward, s.player))
+	await frames(2)
+	var frozen_gibs := Gore._gibs.filter(func(g): return is_instance_valid(g) and (g.get_child(0) as MeshInstance3D).material_override == Flesh.material("frozen"))
+	check(not is_instance_valid(sk) and not frozen_gibs.is_empty(), "killed frozen, it shatters")
+	check(s.run.kills == kills + 1, "and the kill counts")
+	# It thaws.
+	var sk2 := s.director.spawn("skitter", at, true)
+	await physics(4)
+	sk2.freeze_solid()
+	await physics(int(Creature.FROZEN_TIME * 60.0) + 20)
+	check(is_instance_valid(sk2) and sk2.frozen == 0.0 and not sk2.dead, "a frozen skitter thaws")
+	sk2.queue_free()
+	# A rivet pins a skitter to the wall behind it: one a metre from a wall,
+	# shot towards it.
+	var space := s.player.get_world_3d().direct_space_state
+	var from := s.player.global_position + Vector3(0, 0.4, 0)
+	var toward := Vector3.ZERO
+	var wall := Vector3.ZERO
+	for k in 16:
+		var d := Vector3.FORWARD.rotated(Vector3.UP, TAU * k / 16.0)
+		var h := space.intersect_ray(PhysicsRayQueryParameters3D.create(from, from + d * 8.0, Kit.LAYER_STATION | Kit.LAYER_DOORS))
+		if not h.is_empty() and from.distance_to(h.position) > 2.0:
+			toward = d
+			wall = h.position
+			break
+	check(toward != Vector3.ZERO, "there's a wall to pin it to")
+	var sk3 := s.director.spawn("skitter", Vector3(wall.x, s.player.global_position.y, wall.z) - toward * 1.0, true)
+	await physics(4)
+	var centre: Vector3 = sk3.global_position + Vector3(0, sk3.height * 0.5, 0)
+	sk3.take_hit(Hit.make(Hit.Kind.RIVET, 1000.0, centre, toward, s.player))
+	await frames(2)
+	var pinned := get_tree().current_scene.find_child("Pinned_skitter*", false, false)
+	check(not is_instance_valid(sk3) and pinned != null, "a rivet kill pins it to the wall")
+	await close_deck(s)
+
+
 ## Swap: a tap goes back to the last weapon, a hold opens the wheel, and the
 ## mouse or the right stick points in it instead of turning the view.
 func _test_swap() -> void:
@@ -907,16 +988,16 @@ func _test_swap() -> void:
 	var ars := s.player.arsenal
 	for w in ["scattergun", "rifle"]:
 		ars.give(w)
-	ars.select("cutter")
-	ars.select("sidearm")
+	ars.select("sprayer")
+	ars.select("rivet_gun")
 	await frames(2)
 	# A tap, as the arsenal sees it: down for a moment, then up.
 	ars.swap_button(true, 0.1)
 	ars.swap_button(false, 0.0)
-	check(ars.current == "cutter", "a tap of Swap goes back to the last weapon (%s)" % ars.current)
+	check(ars.current == "sprayer", "a tap of Swap goes back to the last weapon (%s)" % ars.current)
 	ars.swap_button(true, 0.1)
 	ars.swap_button(false, 0.0)
-	check(ars.current == "sidearm", "and a second tap goes back again (%s)" % ars.current)
+	check(ars.current == "rivet_gun", "and a second tap goes back again (%s)" % ars.current)
 	check(not ars.wheel_open, "a tap doesn't open the wheel")
 	ars.last = "rail"
 	ars.swap_button(true, 0.1)
@@ -928,8 +1009,8 @@ func _test_swap() -> void:
 		places = places and ars.wheel_weapon_at(ars.wheel_direction(w)) == w
 	check(places, "every weapon has its own place on the wheel")
 	# Holding Swap opens the wheel, as the controls press it.
-	ars.select("cutter")
-	ars.heat = 0.0
+	ars.select("sprayer")
+	ars.ice = 0.0
 	await get_tree().process_frame
 	Input.action_press("quick_swap")
 	# This frame counts too: the arsenal ticks after this, with the same delta.
@@ -942,13 +1023,13 @@ func _test_swap() -> void:
 	check(Engine.time_scale == 1.0, "time doesn't slow while it's open")
 	var wheel := s.hud.weapon_wheel()
 	check(wheel.visible and wheel.item_texts().size() == ars.owned.size(), "the HUD shows the wheel with every weapon")
-	check("1 PLASMA CUTTER" in wheel.item_texts(), "with its number and name (%s)" % [wheel.item_texts()])
+	check("1 CRYO SPRAYER" in wheel.item_texts(), "with its number and name (%s)" % [wheel.item_texts()])
 	check(ars.wheel_pick == "", "pointing at nothing yet")
 	# Fire does nothing while it's open.
 	ars.swapping = 0.0
 	Input.action_press("action_primary")
 	await frames(10)
-	check(ars.heat == 0.0 and not ars.firing, "fire does nothing while the wheel is open")
+	check(ars.ice == 0.0 and not ars.firing, "fire does nothing while the wheel is open")
 	Input.action_release("action_primary")
 	# The mouse points in it, and the view stays put.
 	var turn := s.player.body.rotation.y
@@ -967,18 +1048,18 @@ func _test_swap() -> void:
 	stick.axis_value = 0.0
 	s.player._input(stick)
 	check(ars.wheel_pick == "scattergun", "and letting the stick go keeps the pick")
-	ars.point_wheel(ars.wheel_direction("sidearm"))
-	check(ars.wheel_pick == "sidearm", "pointing picks the weapon there")
+	ars.point_wheel(ars.wheel_direction("rivet_gun"))
+	check(ars.wheel_pick == "rivet_gun", "pointing picks the weapon there")
 	Input.action_release("quick_swap")
 	await frames(2)
 	check(not ars.wheel_open and not wheel.visible, "letting go of Swap puts the wheel away")
-	check(ars.current == "sidearm", "and takes the weapon it points at (%s)" % ars.current)
-	check(ars.last == "cutter", "and the quick swap still goes back to the cutter")
+	check(ars.current == "rivet_gun", "and takes the weapon it points at (%s)" % ars.current)
+	check(ars.last == "sprayer", "and the quick swap still goes back to the sprayer")
 	# Letting go without pointing keeps what you hold.
 	ars.swap_button(true, Arsenal.HOLD_TO_PICK + 0.05)
 	check(ars.wheel_open, "a long hold opens the wheel")
 	ars.swap_button(false, 0.0)
-	check(ars.current == "sidearm", "letting go without pointing keeps the weapon")
+	check(ars.current == "rivet_gun", "letting go without pointing keeps the weapon")
 	# With the wheel shut the mouse turns the view again.
 	s.player._input(move)
 	check(not is_equal_approx(s.player.body.rotation.y, turn), "with the wheel shut the mouse turns the view")

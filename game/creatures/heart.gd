@@ -29,6 +29,8 @@ var _time := 0.0
 var _spawn_t := 6.0
 var _spit_t := 4.0
 var _flash := 0.0
+## How much frost is on it from the sprayer, 0 to 1.
+var _frost := 0.0
 var _scale := 1.0
 var _beat: AudioStreamPlayer3D
 var _roused := 0.0
@@ -129,6 +131,8 @@ func _process(delta: float) -> void:
 		_flash = maxf(0.0, _flash - delta * 3.0)
 		for m in meshes:
 			m.set_instance_shader_parameter("hurt", _flash)
+	if _frost > 0.0:
+		_set_frost(_frost - delta * 0.12)
 	var player := get_tree().get_first_node_in_group("tech") as Node3D
 	if player == null:
 		return
@@ -200,10 +204,12 @@ func take_hit(hit: Hit) -> void:
 				_spit_t = minf(_spit_t, 0.6)
 				_spawn_t = minf(_spawn_t, 1.5)
 			_roused = ROUSED_TIME
-	var amount := hit.amount * (2.5 if hit.kind == Hit.Kind.BURN else 1.0)
+	var amount := hit.amount * (2.5 if hit.kind == Hit.Kind.FREEZE else 1.0)
 	health -= amount
 	_flash = 1.0
-	if randf() < 0.4:
+	if hit.kind == Hit.Kind.FREEZE:
+		_set_frost(_frost + amount / 90.0)
+	elif randf() < 0.4:
 		Gore.spray(self, hit.point, hit.dir, 1.0, "bloom")
 	if health <= 0.0:
 		die()
@@ -219,9 +225,21 @@ func die() -> void:
 	Gore.gibs(self, global_position + Vector3(0, 1.5 * _scale, 0), 12, "heart", 6.0, "bloom")
 	Gore.pool(self, global_position + Vector3(0, 0.02, 0), 4.0 * _scale, "bloom")
 	for m in meshes:
-		m.material_override = Flesh.material("charred", m.skin != null)
+		m.material_override = Flesh.material("frozen", m.skin != null)
+	_set_frost(1.0)
 	if level and level.bloom:
 		level.bloom.kill_root(cell)
 	var t := create_tween()
 	t.tween_property(model, "scale", Vector3(1.1, 0.5, 1.1) * _scale, 2.5).set_ease(Tween.EASE_OUT)
 	killed.emit(self)
+
+
+func _set_frost(v: float) -> void:
+	var was := _frost
+	_frost = clampf(v, 0.0, 1.0)
+	if absf(_frost - was) < 0.001 and _frost > 0.0:
+		return
+	for m in meshes:
+		if m.material_overlay == null and _frost > 0.0:
+			m.material_overlay = Flesh.frost_material(m.mesh != null and m.mesh.has_meta("rest_baked"))
+		m.set_instance_shader_parameter("frost", _frost)

@@ -24,7 +24,7 @@ const LINES := [
 	"Is it gone? Is it actually gone? I'll follow you. Don't go fast.",
 	"I sealed myself in here hours ago. I could hear it on the other side of the door.",
 	"You're real. Okay. Okay. Get me to the lift.",
-	"I've got a cutter burn on my hand and I'm not even sorry. Let's go.",
+	"I froze my own hand with a sprayer getting out of there, and I'm not even sorry. Let's go.",
 ]
 const LOGS := [
 	["Shift note", "Whoever's on after me: the floor in %s is warm again. Not the heating. I checked the heating.\n\nI've closed the door. Leave it closed."],

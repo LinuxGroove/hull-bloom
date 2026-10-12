@@ -3,7 +3,7 @@ extends Node3D
 ## A pod: one of the Bloom's eye-covered chrysalises, sprouted from a fully
 ## grown tile on the floor or a wall. Awake, it hatches skitters every so
 ## often. Shot, it bursts in a spray of spores that blurs your eyes for a
-## moment. It withers when its tile is burnt back.
+## moment. It withers when its tile is frozen back.
 
 signal burst(pod: Pod)
 
@@ -105,7 +105,7 @@ func pulse() -> void:
 func take_hit(hit: Hit) -> void:
 	if dead:
 		return
-	health -= hit.amount * (1.5 if hit.kind == Hit.Kind.BURN else 1.0)
+	health -= hit.amount * (1.5 if hit.kind == Hit.Kind.FREEZE else 1.0)
 	wake()
 	if health <= 0.0:
 		pop(true)

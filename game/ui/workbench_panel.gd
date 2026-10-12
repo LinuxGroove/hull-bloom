@@ -1,7 +1,7 @@
 class_name WorkbenchPanel
 extends Control
 ## A saved deck's workbench: salvage from the decks buys upgrades for the
-## cutter, the suit and the guns (the red guns of the kit).
+## sprayer, the suit and the guns (the red guns of the kit).
 
 signal closed
 

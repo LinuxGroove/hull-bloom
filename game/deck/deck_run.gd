@@ -9,7 +9,7 @@ var deck: DeckDef
 var time := 0.0
 var roots := 0
 var roots_cut := 0
-## Held once every root is cut and the growth is burnt below level 1; it
+## Held once every root is cut and the growth is below level 1; it
 ## stays held from then on.
 var held := false
 var held_at := -1.0
@@ -23,7 +23,8 @@ var salvage := 0
 ## The part of [member salvage] already put in Progress at a workbench.
 var banked := 0
 var kills := 0
-var burnt := 0.0
+## Levels of growth frozen and shattered off.
+var cleared := 0.0
 var downs := 0
 ## Set when the run ends.
 var over := false

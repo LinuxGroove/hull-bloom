@@ -3,8 +3,8 @@ extends Creature
 ## Station security with the Bloom in its joints: the Essentials Kit's robots.
 ## Half still follow their programs. Drones float and shoot, the quads charge,
 ## Raptors guard what they always guarded, Trilobites drop from the ceiling.
-## They bleed oil, shrug off the cutter, and lose legs to heavy hits and keep
-## crawling.
+## They bleed oil, shrug off the sprayer's cold (but still freeze, in the
+## end), and lose legs to heavy hits and keep crawling.
 
 ## Each robot's numbers: model, height, health, speeds, damage, reach, what
 ## it shoots (damage, seconds between, range; 0 for none), flies, legs.
@@ -40,6 +40,9 @@ func configure() -> void:
 		return
 	robot = true
 	bleeds = "oil"
+	# Cold slows them less, and they don't shatter.
+	chill_rate = 0.6
+	shatters = false
 	max_health = float(spec["hp"])
 	walk_speed = float(spec["walk"])
 	run_speed = float(spec["run"])
@@ -54,7 +57,7 @@ func configure() -> void:
 	hearing = 0.9
 	attack_time = 1.1
 	strike_at = 0.3
-	resist = {Hit.Kind.BURN: 0.45, Hit.Kind.CLAW: 0.5, Hit.Kind.PELLET: 0.8, Hit.Kind.RAIL: 1.3}
+	resist = {Hit.Kind.FREEZE: 0.45, Hit.Kind.CLAW: 0.5, Hit.Kind.PELLET: 0.8, Hit.Kind.RAIL: 1.3}
 	salvage = int(max_health / 40.0) + 1
 	gib_count = 0
 	if spec.get("guard", false):

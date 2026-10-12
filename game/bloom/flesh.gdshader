@@ -22,10 +22,10 @@ uniform float wet = 0.9;
 uniform float breathe = 0.02;
 uniform bool use_rest = false;
 
-// Per creature: how hurt it looks for a moment, how charred by the cutter,
-// and how strongly its outline shows against the growth it hunts in.
+// Per creature: how hurt it looks for a moment, and how strongly its outline
+// shows against the growth it hunts in. (Frost is drawn over it by
+// frost.gdshader.)
 instance uniform float hurt = 0.0;
-instance uniform float charred = 0.0;
 instance uniform float edge = 0.0;
 uniform vec3 edge_color : source_color = vec3(1.0, 0.78, 0.66);
 
@@ -41,7 +41,6 @@ void fragment() {
 	vec3 q = rest * scale;
 	float vein;
 	vec3 meat = hb_meat(q, dark, mid, light, fat, vein_color, vein);
-	meat = mix(meat, vec3(0.02, 0.012, 0.01), clamp(charred, 0.0, 1.0) * smoothstep(0.3, 0.7, hb_noise(q * 3.0)));
 	ALBEDO = mix(meat, vec3(1.0, 0.85, 0.8), clamp(hurt, 0.0, 1.0) * 0.5);
 	ROUGHNESS = mix(0.18, 0.62, smoothstep(0.3, 0.8, hb_fbm(rest * 5.0 + 2.0))) * mix(1.0, 0.6, wet);
 	SPECULAR = 0.6;
@@ -50,6 +49,6 @@ void fragment() {
 	RIM = 0.25;
 	RIM_TINT = 0.6;
 	float pulse = 0.75 + 0.25 * sin(TIME * 1.3 + hb_noise(rest * 0.7) * 6.0) * calm_walls;
-	EMISSION = glow_color * vein * glow * pulse * (1.0 - clamp(charred, 0.0, 1.0));
+	EMISSION = glow_color * vein * glow * pulse;
 	EMISSION += edge_color * pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0) * edge;
 }

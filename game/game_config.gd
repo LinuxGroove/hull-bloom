@@ -87,7 +87,7 @@ const ACTIONS := {
 	# Use what you're looking at (hold to carry); reload when there's nothing.
 	"interact": ["key:F", "joy:x"],
 	"interact2": [],
-	# Fire (the cutter: burn) and aim (the cutter: a focused beam for limbs).
+	# Fire (the sprayer: freeze) and aim (the sprayer: a narrow jet that reaches further).
 	"action_primary": ["mouse:left", "axis:rt+"],
 	"action_secondary": ["mouse:right", "axis:lt+"],
 	# On a pad, X reloads when there's nothing in view to use.

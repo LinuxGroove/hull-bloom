@@ -64,7 +64,7 @@ func _endings(dir: String) -> void:
 	await _frames(30)
 	screen.show_choice()
 	await _save(dir, "ending_choice")
-	for e in ["burn", "both"]:
+	for e in ["stay", "both"]:
 		screen.show_ending(e)
 		await _frames(2)
 		_finish_fades()

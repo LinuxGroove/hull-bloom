@@ -634,9 +634,9 @@ func _update_weapon() -> void:
 	var spec: Dictionary = Arsenal.WEAPONS.get(a.current, {})
 	_weapon_name.text = String(spec.get("name", a.current)).to_upper()
 	_weapon_ammo.text = a.ammo_text().to_upper()
-	if a.current == "cutter":
-		_weapon_bar.value = a.heat / Arsenal.OVERHEAT
-		_weapon_bar.add_theme_stylebox_override("fill", StationTheme.box(StationTheme.RED if a.overheated else StationTheme.TEAL.lerp(StationTheme.AMBER, a.heat / Arsenal.OVERHEAT), Color(0, 0, 0, 0), 0, 2))
+	if a.current == "sprayer":
+		_weapon_bar.value = a.ice / Arsenal.ICED
+		_weapon_bar.add_theme_stylebox_override("fill", StationTheme.box(StationTheme.RED if a.iced else StationTheme.TEAL.lerp(StationTheme.AMBER, a.ice / Arsenal.ICED), Color(0, 0, 0, 0), 0, 2))
 	else:
 		var st := a.stat(a.current)
 		_weapon_bar.value = float(a.mag.get(a.current, 0)) / maxf(1.0, float(st.get("mag", 1)))
@@ -676,11 +676,11 @@ func _draw_crosshair() -> void:
 	var c := size * 0.5
 	var col := Color(1, 1, 1, 0.8)
 	var ring := 0.45
-	if player and player.arsenal and player.arsenal.current == "cutter":
-		# The ring lights up when the beam would touch what's under it, and
-		# fades when that's out of the cutter's reach.
+	if player and player.arsenal and player.arsenal.current == "sprayer":
+		# The ring lights up when the spray would touch what's under it, and
+		# fades when that's out of the sprayer's reach.
 		col = Color(0.55, 0.95, 1.0, 0.85)
-		ring = 0.8 if player.arsenal.beam_reaches else 0.15
+		ring = 0.8 if player.arsenal.spray_reaches else 0.15
 	_crosshair.draw_circle(c, 2.0, col)
 	_crosshair.draw_arc(c, 11.0, 0, TAU, 32, Color(col, ring), 2.0 if ring > 0.5 else 1.5, true)
 	if _hit_t > 0.0:

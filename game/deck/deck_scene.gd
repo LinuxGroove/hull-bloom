@@ -548,7 +548,7 @@ func _on_heart_killed(_h: Heart) -> void:
 	LGPlaytest.moment("root_cut", {"cut": run.roots_cut, "of": run.roots, "time": roundi(run.time)})
 	hud.banner(deck.cut_banner if deck.cut_banner != "" else "ROOT CUT", StationTheme.AMBER, 3.0)
 	if run.roots_cut >= run.roots:
-		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. The deck holds once it's gone; the cutter speeds that up.")
+		hud.say("MARI", deck.cut_line if deck.cut_line != "" else "The obstruction's stopped growing. What's left of it is dying back. The deck holds once it's gone; the sprayer speeds that up.")
 
 
 func _on_creature_died(c: Creature) -> void:
@@ -558,9 +558,10 @@ func _on_creature_died(c: Creature) -> void:
 	LGPlaytest.event("killed", {"kind": c.kind, "room": _room_at(c.global_position)})
 
 
-## The cutter burnt a tile: pods there may wither.
-func on_burn(cell: Vector2i, amount: float) -> void:
-	run.burnt += amount
+## The sprayer froze growth off a tile, or a shot shattered some: pods
+## there may wither.
+func on_cleared(cell: Vector2i, amount: float) -> void:
+	run.cleared += amount
 	var i: int = level.bloom.index.get(cell, -1)
 	if i >= 0:
 		director._sync_tile(i)
@@ -870,7 +871,7 @@ func _ammo_left() -> Dictionary:
 	var a: Arsenal = player.arsenal
 	var out := {}
 	for w in a.owned:
-		if w != "cutter":
+		if w != "sprayer":
 			out[w] = int(a.mag.get(w, 0)) + int(a.reserve.get(w, 0))
 	return out
 

@@ -50,7 +50,7 @@ func run(t: Node) -> void:
 	var b := lvl.make_bloom()
 	t.check(b.coverage() >= 0.4 and b.coverage() <= 0.6, "core: the heaviest start, but not all of it (%.0f%%)" % (b.coverage() * 100.0))
 	lvl.free()
-	# A campaign visit: the Heart is the Core's, and killing it and burning
+	# A campaign visit: the Heart is the Core's, and killing it and freezing
 	# out what's left holds the deck and offers the ending.
 	Progress.new_campaign()
 	var cd: Dictionary = Progress._deck("core")
@@ -71,7 +71,7 @@ func run(t: Node) -> void:
 		await t.frames(2)
 		var spits := s.get_tree().current_scene.get_children().filter(_is_spit)
 		t.check(not spits.is_empty() and spits.all(_under_ceiling), "core: the Heart's spit flies under the ceiling (%d)" % spits.size())
-	t.check(await t.clear_deck(s, 300), "core: killing the Heart and burning out the rest holds the deck")
+	t.check(await t.clear_deck(s, 300), "core: killing the Heart and freezing out the rest holds the deck")
 	t.check(s.run.roots_cut == 1, "core: the Heart counts as its root")
 	s.leave()
 	t.check("See how it ends" in s.results.button_texts(), "core: holding it offers the ending")

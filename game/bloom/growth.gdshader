@@ -1,9 +1,10 @@
 // The Bloom's growth on the station's floors, walls and ceilings. Each sheet
 // is a flat, finely divided plane; this shader reads the deck's growth levels
-// from the bloom_map (one texel a tile, red the level / 4, green how freshly
-// it was burnt) and swells the sheet into wet, veined flesh where the Bloom
-// has reached, thicker the more it has grown. Floors grow first, then the
-// walls from the floor up, then the ceilings.
+// from the bloom_map (one texel a tile, red the level / 4, green how frozen
+// it is) and swells the sheet into wet, veined flesh where the Bloom has
+// reached, thicker the more it has grown. Floors grow first, then the walls
+// from the floor up, then the ceilings. Frozen growth is crusted white with
+// frost and holds its breath.
 shader_type spatial;
 render_mode blend_mix, cull_back, diffuse_burley, specular_schlick_ggx;
 
@@ -27,7 +28,9 @@ uniform float bumps = 0.6;
 varying float cover;
 varying float height_t;
 varying vec3 wpos;
-varying float scorch;
+varying float frost;
+uniform vec3 ice_color : source_color = vec3(0.8, 0.9, 0.96);
+uniform vec3 ice_deep : source_color = vec3(0.42, 0.62, 0.78);
 
 float level_at(vec2 p) {
 	vec2 uv = (p - bloom_rect.xy) / bloom_rect.zw;
@@ -41,8 +44,12 @@ float level_at(vec2 p) {
 	return mix(smooth_l, near_l, 0.55) * 4.0;
 }
 
-float scorch_at(vec2 p) {
-	return texture(bloom_map, (p - bloom_rect.xy) / bloom_rect.zw).g;
+// Frost keeps to the tiles that were frozen, with the same ragged edge.
+float frost_at(vec2 p) {
+	vec2 warp = vec2(hb_noise(vec3(p * 0.45, 1.7)), hb_noise(vec3(p * 0.45, 5.3))) - 0.5;
+	vec2 tex_size = vec2(textureSize(bloom_map, 0));
+	vec2 nuv = (floor((p + warp * 2.2 - bloom_rect.xy) / bloom_rect.zw * tex_size) + 0.5) / tex_size;
+	return mix(texture(bloom_map, (p - bloom_rect.xy) / bloom_rect.zw).g, texture(bloom_map, nuv).g, 0.8);
 }
 
 // How covered a point is (below 0: bare) and how thick the growth is there.
@@ -81,7 +88,9 @@ void vertex() {
 	float e = 0.09;
 	float hx = growth_at(wp + wt * e, wn).y;
 	float hy = growth_at(wp + wb * e, wn).y;
-	float breath = 1.0 + 0.06 * calm_walls * sin(TIME * 1.1 + hb_noise(wp * 0.6) * 6.2831);
+	float f = frost_at(wp.xz + wn.xz * 1.6);
+	// Frozen growth holds still.
+	float breath = 1.0 + 0.06 * calm_walls * (1.0 - clamp(f * 2.0, 0.0, 1.0)) * sin(TIME * 1.1 + hb_noise(wp * 0.6) * 6.2831);
 	float h = g.y * breath;
 	VERTEX += NORMAL * h;
 	// The slope of the swelling gives the normal.
@@ -90,7 +99,7 @@ void vertex() {
 	cover = g.x;
 	height_t = clamp(h / (0.06 + 0.08 * 4.0), 0.0, 1.0);
 	wpos = wp;
-	scorch = scorch_at(wp.xz + wn.xz * 1.6);
+	frost = f;
 }
 
 // The fine wet texture of the flesh, as a height for bump mapping.
@@ -109,9 +118,11 @@ void fragment() {
 	vec3 c = mix(edge_color, meat, smoothstep(0.0, 0.3, t) * 0.8 + 0.2);
 	float rim_vein = smoothstep(0.86, 0.98, hb_ridge(wpos * 1.1));
 	c = mix(c, vein_color * 1.4, rim_vein * 0.75);
-	// Freshly burnt growth is charred black and dull.
-	float char_amt = clamp(scorch * 1.4, 0.0, 1.0) * smoothstep(0.25, 0.65, hb_noise(wpos * 3.0));
-	c = mix(c, vec3(0.025, 0.015, 0.012), char_amt);
+	// Frozen growth is crusted white, thickest on the bumps, with blue ice in
+	// the hollows; the crust breaks up into patches as it thaws.
+	float crystals = hb_noise(wpos * 9.0) * 0.6 + hb_noise(wpos * 23.0) * 0.4;
+	float ice = clamp(frost * 1.5, 0.0, 1.0) * smoothstep(0.65 - frost * 0.6, 0.85 - frost * 0.5, hb_noise(wpos * 2.6) * 0.6 + crystals * 0.4 + t * 0.3);
+	c = mix(c, mix(ice_deep, ice_color, smoothstep(0.35, 0.75, crystals)), ice * 0.92);
 	ALBEDO = c;
 	// Bumps from the skin's height, in view space.
 	float hgt = skin(wpos);
@@ -121,17 +132,18 @@ void fragment() {
 	vec3 r2 = cross(NORMAL, dpdx);
 	float det = dot(dpdx, r1);
 	vec3 grad = sign(det) * (dFdx(hgt) * r1 + dFdy(hgt) * r2);
-	NORMAL = normalize(abs(det) * NORMAL - grad * bumps * 0.03 * (1.0 - char_amt * 0.7));
-	ROUGHNESS = mix(0.12, 0.45, hb_noise(wpos * 6.0)) + char_amt * 0.45;
+	NORMAL = normalize(abs(det) * NORMAL - grad * bumps * 0.03 * (1.0 + ice * 1.5));
+	ROUGHNESS = mix(mix(0.12, 0.45, hb_noise(wpos * 6.0)), mix(0.25, 0.75, crystals), ice);
 	SPECULAR = 0.6;
-	CLEARCOAT = 1.0 - char_amt;
+	CLEARCOAT = 1.0 - ice * 0.5;
 	CLEARCOAT_ROUGHNESS = 0.08;
-	SSS_STRENGTH = 0.5 * (1.0 - char_amt);
+	SSS_STRENGTH = 0.5 * (1.0 - ice);
 	// A few swollen nodules glow from inside, slowly.
 	float pulse = 0.75 + 0.25 * sin(TIME * 1.1 + hb_noise(wpos * 0.5) * 6.0) * calm_walls;
 	float node = smoothstep(0.9, 0.97, hb_noise(wpos * 3.2 + 11.0)) * smoothstep(0.5, 0.95, t);
-	// Embers in thin cracks through the char, drifting slowly as it cools.
-	float crack = smoothstep(0.9, 0.98, hb_ridge(wpos * 5.0)) * smoothstep(0.4, 0.8, hb_noise(wpos * 2.0 + vec3(0.0, TIME * 0.4, 0.0)));
-	EMISSION = glow_color * node * 0.6 * glow * pulse * (1.0 - char_amt)
-		+ vec3(1.0, 0.32, 0.05) * char_amt * scorch * 0.35 * crack;
+	// Glints in the frost, and cold light in the cracks of the ice.
+	float glint = smoothstep(0.93, 0.99, hb_noise(wpos * 31.0)) * ice;
+	float crack = smoothstep(0.9, 0.98, hb_ridge(wpos * 5.0)) * ice;
+	EMISSION = glow_color * node * 0.6 * glow * pulse * (1.0 - ice)
+		+ vec3(0.55, 0.8, 1.0) * (glint * 0.5 + crack * 0.12) * frost;
 }

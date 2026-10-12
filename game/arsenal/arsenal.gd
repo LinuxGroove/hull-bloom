@@ -1,12 +1,14 @@
 class_name Arsenal
 extends Node3D
-## What the tech carries in their hands: the plasma cutter and the guns, the
-## rounds for them, and the flares, grenades and mines to throw. Lives on the
-## camera; [Viewmodel] draws it.
+## What the tech carries in their hands: the cryo sprayer, the rivet gun and
+## the guns, the rounds for them, and the flares, grenades and mines to
+## throw. Lives on the camera; [Viewmodel] draws it.
 ##
-## The cutter is the only thing that burns the Bloom back: its beam burns the
-## tile it touches down a level at a time and builds heat. The guns kill what
-## hatches.
+## The sprayer is the only thing that clears the Bloom: its cone of coolant
+## freezes the growth it touches, which dies back and stops growing while
+## it's frozen, and chills whatever it catches until it freezes solid. Its
+## nozzle ices up as it sprays. Shots shatter frozen growth and frozen
+## creatures. The rivet gun never runs out; the other guns need rounds.
 ##
 ## Swap (Q, RB) works like Throw: a tap goes back to the weapon you had
 ## before, and a hold opens the weapon wheel, where the right stick or the
@@ -19,25 +21,29 @@ signal fired(weapon: String)
 ## The weapon wheel opened, closed or points at another weapon.
 signal wheel_changed
 
-## Every weapon, in slot order. Kinds: beam (the cutter), shot (one round
-## a pull, or held for automatic), pellets, burst, rail (pierces).
+## Every weapon, in slot order. Kinds: spray (the sprayer), rivet (one
+## heavy rivet a pull), shot (one round a pull, or held for automatic),
+## pellets, burst, rail (pierces). `model` is a [Kit] model; guns with a red
+## upgrade have a "_Red" one too. Aiming the sprayer narrows its cone to a
+## jet that reaches further (the `focus_` numbers).
 const WEAPONS := {
-	"cutter": {"name": "Plasma cutter", "slot": 1, "kind": "beam", "model": "cutter", "damage": 26.0, "focus_damage": 42.0,
-		"range": 5.0, "focus_range": 7.5, "heat": 17.0, "focus_heat": 23.0, "cool": 30.0, "burn": 1.15, "focus_burn": 0.6},
-	"sidearm": {"name": "Sidearm", "slot": 2, "kind": "shot", "model": "Gun_Pistol", "damage": 14.0, "rate": 0.3, "mag": 12,
-		"carry": -1, "reload": 1.7, "spread": 0.014, "aim_spread": 0.004, "range": 60.0, "knock": 1.0, "noise": 24.0, "sound": "sidearm", "recoil": 0.6},
-	"scattergun": {"name": "Scattergun", "slot": 3, "kind": "pellets", "model": "Gun_Shotgun", "damage": 9.0, "pellets": 8, "rate": 0.85, "mag": 6,
+	"sprayer": {"name": "Cryo sprayer", "slot": 1, "kind": "spray", "model": "sprayer", "damage": 26.0, "focus_damage": 42.0,
+		"range": 5.0, "focus_range": 7.5, "cone": 0.14, "focus_cone": 0.035, "ice": 17.0, "focus_ice": 23.0, "thaw": 30.0,
+		"freeze": 1.15, "focus_freeze": 0.6, "chill": 0.9, "focus_chill": 1.3},
+	"rivet_gun": {"name": "Rivet gun", "slot": 2, "kind": "rivet", "model": "rivet_gun", "damage": 24.0, "rate": 0.55, "mag": 8,
+		"carry": -1, "reload": 1.9, "spread": 0.01, "aim_spread": 0.003, "range": 40.0, "knock": 3.0, "noise": 18.0, "sound": "rivet_gun", "recoil": 0.9},
+	"scattergun": {"name": "Scattergun", "slot": 3, "kind": "pellets", "model": "ess:Gun_Shotgun", "damage": 9.0, "pellets": 8, "rate": 0.85, "mag": 6,
 		"carry": 36, "reload": 2.1, "spread": 0.085, "aim_spread": 0.06, "range": 22.0, "knock": 3.0, "sever": 1.4, "noise": 32.0, "sound": "scattergun", "recoil": 1.6},
-	"rifle": {"name": "Pulse rifle", "slot": 4, "kind": "shot", "model": "Gun_Rifle", "damage": 15.0, "rate": 0.11, "auto": true, "mag": 30,
+	"rifle": {"name": "Pulse rifle", "slot": 4, "kind": "shot", "model": "ess:Gun_Rifle", "damage": 15.0, "rate": 0.11, "auto": true, "mag": 30,
 		"carry": 180, "reload": 1.9, "spread": 0.022, "aim_spread": 0.007, "range": 60.0, "knock": 0.7, "noise": 28.0, "sound": "rifle", "recoil": 0.45},
-	"smg": {"name": "Burst SMG", "slot": 5, "kind": "burst", "model": "Gun_SMG", "damage": 9.0, "burst": 4, "burst_gap": 0.06, "rate": 0.36, "mag": 32,
+	"smg": {"name": "Burst SMG", "slot": 5, "kind": "burst", "model": "ess:Gun_SMG", "damage": 9.0, "burst": 4, "burst_gap": 0.06, "rate": 0.36, "mag": 32,
 		"carry": 192, "reload": 1.5, "spread": 0.04, "aim_spread": 0.02, "range": 40.0, "knock": 0.5, "noise": 26.0, "sound": "smg", "recoil": 0.35},
-	"rail": {"name": "Rail rifle", "slot": 6, "kind": "rail", "model": "Gun_Sniper", "damage": 120.0, "rate": 1.4, "mag": 4,
+	"rail": {"name": "Rail rifle", "slot": 6, "kind": "rail", "model": "ess:Gun_Sniper", "damage": 120.0, "rate": 1.4, "mag": 4,
 		"carry": 20, "reload": 2.4, "spread": 0.0, "aim_spread": 0.0, "range": 90.0, "knock": 4.0, "sever": 3.0, "noise": 30.0, "sound": "rail", "recoil": 2.0, "zoom": 38.0},
 }
 ## What the red version from the workbench changes.
 const RED := {
-	"sidearm": {"damage": 20.0, "reload": 1.2},
+	"rivet_gun": {"damage": 34.0, "reload": 1.3, "mag": 10},
 	"scattergun": {"pellets": 10, "spread": 0.07},
 	"rifle": {"damage": 19.0, "mag": 40},
 	"smg": {"burst": 5, "mag": 40},
@@ -46,8 +52,15 @@ const RED := {
 const THROWABLES := ["flare", "grenade", "mine"]
 const THROW_SPEED := 11.0
 const HOLD_TO_PICK := 0.35
-const OVERHEAT := 100.0
-const COOL_AT := 35.0
+## The sprayer's nozzle is iced shut at this much ice, and clear again below
+## [constant THAW_AT].
+const ICED := 100.0
+const THAW_AT := 35.0
+## Rays in the sprayer's cone: one down the middle and a ring round it.
+const SPRAY_RAYS := 6
+## Levels of frozen growth a shot breaks off for each point of its damage
+## (up to [constant Bloom.SHATTER_MAX] a shot).
+const SHATTER_PER_DAMAGE := 0.025
 ## How far the right stick leans before the wheel points with it.
 const WHEEL_STICK := 0.5
 ## How far the mouse travels (in pixels) before the wheel points with it, and
@@ -57,7 +70,7 @@ const WHEEL_MOUSE_MAX := 100.0
 
 var player: Tech
 var owned: Array[String] = []
-var current := "cutter"
+var current := "sprayer"
 ## The weapon held before this one, for a tap of Swap.
 var last := ""
 ## Whether the weapon wheel is open (Swap held), and the weapon it points at
@@ -67,19 +80,21 @@ var wheel_pick := ""
 ## Rounds in each gun's magazine, and carried for it.
 var mag := {}
 var reserve := {}
-var heat := 0.0
-var overheated := false
+## Ice on the sprayer's nozzle, 0 to [constant ICED]; iced shut until it
+## thaws back to [constant THAW_AT].
+var ice := 0.0
+var iced := false
 var reloading := 0.0
 var swapping := 0.0
 var firing := false
 var aiming := false
 var throwable := "flare"
 var view: Viewmodel
-## Whether the cutter, held, would reach what's under the crosshair (for the
-## HUD; the beam only burns what it touches).
-var beam_reaches := false
+## Whether the sprayer, held, would reach what's under the crosshair (for
+## the HUD; the spray only freezes what it touches).
+var spray_reaches := false
 
-var _cool_t := 0.0
+var _thaw_t := 0.0
 var _shot_t := 0.0
 var _burst_left := 0
 var _burst_t := 0.0
@@ -87,11 +102,11 @@ var _throw_held := 0.0
 var _swap_held := 0.0
 var _wheel_mouse := Vector2.ZERO
 var _wheel_stick := Vector2.ZERO
-var _burn_t := 0.0
+var _noise_t := 0.0
 var _mark_t := 0.0
-var _beam_hit := {}
-var _beam_sound: AudioStreamPlayer
-var _beam_start: AudioStreamPlayer
+var _spray_hit := {}
+var _spray_sound: AudioStreamPlayer
+var _spray_start: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -110,17 +125,17 @@ func setup(weapons: Array, carried: Dictionary) -> void:
 		if w in weapons:
 			owned.append(w)
 	if owned.is_empty():
-		owned.append("cutter")
+		owned.append("sprayer")
 	for w in WEAPONS:
 		var spec := stat(w)
 		mag[w] = int(spec.get("mag", 0))
 		reserve[w] = int(carried.get(w, int(spec.get("mag", 0)) * 2)) if int(spec.get("carry", 0)) > 0 else 0
-	current = owned[0] if not "cutter" in owned else "cutter"
+	current = owned[0] if not "sprayer" in owned else "sprayer"
 	last = ""
 	close_wheel(false)
 	_swap_held = 0.0
-	heat = 0.0
-	overheated = false
+	ice = 0.0
+	iced = false
 	if view:
 		view.show_weapon(current)
 	changed.emit()
@@ -132,15 +147,32 @@ func stat(w: String) -> Dictionary:
 	if RED.has(w) and Progress.has_upgrade(w + "_red"):
 		s.merge(RED[w], true)
 		s["red"] = true
-	if w == "cutter":
-		if Progress.has_upgrade("cutter_cool"):
-			s["heat"] = s["heat"] * 0.7
-			s["focus_heat"] = s["focus_heat"] * 0.7
-			s["cool"] = s["cool"] * 1.4
-		if Progress.has_upgrade("cutter_focus"):
+	if w == "sprayer":
+		if Progress.has_upgrade("sprayer_heater"):
+			s["ice"] = s["ice"] * 0.7
+			s["focus_ice"] = s["focus_ice"] * 0.7
+			s["thaw"] = s["thaw"] * 1.4
+		if Progress.has_upgrade("sprayer_nozzle"):
 			s["focus_range"] = 9.5
 			s["focus_damage"] = s["focus_damage"] * 1.3
+			s["focus_chill"] = s["focus_chill"] * 1.3
 	return s
+
+
+## The [Kit] model a weapon is drawn with, red if it's been upgraded.
+func model_name(w: String) -> String:
+	var s := stat(w)
+	var m := String(s.get("model", ""))
+	if not s.get("red", false):
+		return m
+	# The kit names its red guns "_Red"; the game's own tools, "_red".
+	return m + ("_Red" if m.begins_with("ess:") else "_red")
+
+
+## Whether a weapon is one of the Essentials Kit's guns, which face +x in
+## their files; the tools made for the game face forward (-z).
+static func kit_gun(w: String) -> bool:
+	return String(WEAPONS.get(w, {}).get("model", "")).begins_with("ess:")
 
 
 func give(w: String) -> bool:
@@ -179,7 +211,7 @@ func take_reserve(w: String, want: int) -> int:
 func select(w: String) -> void:
 	if not w in owned or w == current:
 		return
-	_stop_beam()
+	_stop_spray()
 	last = current
 	current = w
 	LGPlaytest.event("weapon", {"weapon": w})
@@ -230,7 +262,7 @@ func open_wheel() -> void:
 	wheel_pick = ""
 	_wheel_mouse = Vector2.ZERO
 	_wheel_stick = Vector2.ZERO
-	_stop_beam()
+	_stop_spray()
 	Sfx.ui(self, "ui_select", -12.0)
 	LGPlaytest.event("weapon_wheel", {"weapons": owned.size()})
 	wheel_changed.emit()
@@ -312,10 +344,10 @@ func _tick(delta: float) -> void:
 		swapping -= delta
 	_shot_t -= delta
 	var spec := stat(current)
-	if current == "cutter":
-		_cutter(delta, spec)
+	if current == "sprayer":
+		_sprayer(delta, spec)
 	else:
-		_cool(delta, spec)
+		_thaw(delta)
 	if reloading > 0.0:
 		reloading -= delta
 		if reloading <= 0.0:
@@ -323,7 +355,7 @@ func _tick(delta: float) -> void:
 	if _busy():
 		firing = false
 		aiming = false
-		_stop_beam()
+		_stop_spray()
 		close_wheel(false)
 		_swap_held = 0.0
 		return
@@ -331,7 +363,7 @@ func _tick(delta: float) -> void:
 	# Fire does nothing while the wheel is open.
 	var pull := Input.is_action_pressed("action_primary") and not wheel_open
 	var tap := Input.is_action_just_pressed("action_primary") and not wheel_open
-	if current != "cutter" and swapping <= 0.0 and reloading <= 0.0:
+	if current != "sprayer" and swapping <= 0.0 and reloading <= 0.0:
 		if _burst_left > 0:
 			_burst_t -= delta
 			if _burst_t <= 0.0:
@@ -379,7 +411,7 @@ func _tick(delta: float) -> void:
 
 func reload() -> void:
 	var spec := stat(current)
-	if current == "cutter" or reloading > 0.0:
+	if current == "sprayer" or reloading > 0.0:
 		return
 	var m := int(spec["mag"])
 	if int(mag[current]) >= m:
@@ -435,14 +467,27 @@ func _shoot(spec: Dictionary) -> void:
 					killed = true
 			else:
 				Effects.impact(self, h.position, h.normal)
+				_shatter_growth(h.position, h.normal, float(spec["damage"]))
+				if spec["kind"] == "rivet":
+					Effects.rivet(self, h.position, h.normal, dir, h.collider as Node)
 		var end: Vector3 = r[-1].position if not r.is_empty() else from + dir * float(spec["range"])
 		if i < 3:
-			Effects.tracer(self, view.muzzle_position(), end, Color(1.0, 0.85, 0.55) if spec["kind"] != "rail" else Color(0.5, 0.85, 1.0), 0.015 if spec["kind"] != "rail" else 0.05, 0.05 if spec["kind"] != "rail" else 0.25)
+			match String(spec["kind"]):
+				"rail":
+					Effects.tracer(self, view.muzzle_position(), end, Color(0.5, 0.85, 1.0), 0.05, 0.25)
+				"rivet":
+					Effects.tracer(self, view.muzzle_position(), end, Color(0.75, 0.78, 0.8), 0.01, 0.04)
+				_:
+					Effects.tracer(self, view.muzzle_position(), end, Color(1.0, 0.85, 0.55), 0.015, 0.05)
 	if any_hit:
 		hit_marker.emit(killed)
 	Sfx.ui(self, String(spec["sound"]), -3.0)
 	Noises.make(self, player.global_position, float(spec["noise"]), player)
-	Effects.flash(self, view.muzzle_position(), Color(1.0, 0.75, 0.4) if spec["kind"] != "rail" else Color(0.5, 0.8, 1.0), 1.6, 5.0)
+	# The rivet gun is driven by air: no flash, a puff.
+	if spec["kind"] == "rivet":
+		Effects.puff(self, view.muzzle_position(), -cam.global_transform.basis.z)
+	else:
+		Effects.flash(self, view.muzzle_position(), Color(1.0, 0.75, 0.4) if spec["kind"] != "rail" else Color(0.5, 0.8, 1.0), 1.6, 5.0)
 	view.recoil(float(spec["recoil"]))
 	player._buzz(0.25 * float(spec["recoil"]), 0.08)
 	fired.emit(current)
@@ -457,6 +502,8 @@ func _kind(spec: Dictionary) -> Hit.Kind:
 			return Hit.Kind.PELLET
 		"rail":
 			return Hit.Kind.RAIL
+		"rivet":
+			return Hit.Kind.RIVET
 	return Hit.Kind.BULLET
 
 
@@ -482,111 +529,162 @@ func _ray(from: Vector3, dir: Vector3, length: float, pierce: bool) -> Array:
 
 #endregion
 
-#region The cutter
+#region The sprayer
 
-## The cutter cools while it's put away.
-func _cool(delta: float, _spec: Dictionary) -> void:
-	var cool := float(stat("cutter")["cool"])
-	heat = maxf(0.0, heat - cool * delta)
-	if overheated and heat <= COOL_AT:
-		overheated = false
+## The nozzle thaws while the sprayer's put away.
+func _thaw(delta: float) -> void:
+	ice = maxf(0.0, ice - float(stat("sprayer")["thaw"]) * delta)
+	if iced and ice <= THAW_AT:
+		iced = false
 		changed.emit()
 
 
-func _cutter(delta: float, spec: Dictionary) -> void:
-	var on := not _busy() and swapping <= 0.0 and not overheated and not wheel_open and Input.is_action_pressed("action_primary")
+func _sprayer(delta: float, spec: Dictionary) -> void:
+	var on := not _busy() and swapping <= 0.0 and not iced and not wheel_open and Input.is_action_pressed("action_primary")
 	var focus := Input.is_action_pressed("action_secondary") and not _busy()
+	var reach := float(spec["focus_range"] if focus else spec["range"])
+	var cone := float(spec["focus_cone"] if focus else spec["cone"])
 	_mark_t -= delta
 	if not on:
-		beam_reaches = not _beam_ray(float(spec["focus_range"] if focus else spec["range"])).is_empty()
-		_stop_beam()
-		_cool_t -= delta
-		if _cool_t <= 0.0:
-			heat = maxf(0.0, heat - float(spec["cool"]) * delta)
-		if overheated and heat <= COOL_AT:
-			overheated = false
+		spray_reaches = not _centre_ray(reach).is_empty()
+		_stop_spray()
+		_thaw_t -= delta
+		if _thaw_t <= 0.0:
+			_thaw(delta)
+		elif iced and ice <= THAW_AT:
+			iced = false
 			changed.emit()
-		view.beam(false, Vector3.ZERO, focus)
+		view.spray(false, Vector3.ZERO, focus)
 		return
-	_cool_t = 0.4
-	heat += float(spec["focus_heat"] if focus else spec["heat"]) * delta
-	if heat >= OVERHEAT:
-		heat = OVERHEAT
-		overheated = true
-		Sfx.ui(self, "cutter_hot", -2.0)
-		_stop_beam()
+	_thaw_t = 0.4
+	ice += float(spec["focus_ice"] if focus else spec["ice"]) * delta
+	if ice >= ICED:
+		ice = ICED
+		iced = true
+		Sfx.ui(self, "sprayer_iced", -2.0)
+		LGPlaytest.event("sprayer_iced", {})
+		_stop_spray()
 		changed.emit()
 		return
-	if _beam_sound == null:
-		_beam_start = Sfx.ui(self, "cutter_start", -6.0)
-		_beam_sound = Sfx.ui(self, "cutter_loop", -8.0)
-	var cam := player.camera
-	var from := cam.global_position
-	var dir := -cam.global_transform.basis.z
-	var reach := float(spec["focus_range"] if focus else spec["range"])
-	var h := _beam_ray(reach)
-	beam_reaches = not h.is_empty()
-	var end := from + dir * reach
-	if h:
-		end = h.position
-		var dps := float(spec["focus_damage"] if focus else spec["damage"])
-		var hit := Hit.make(Hit.Kind.BURN, dps * delta, h.position, dir, player)
-		hit.normal = h.normal
+	if _spray_sound == null:
+		_spray_start = Sfx.ui(self, "sprayer_start", -6.0)
+		_spray_sound = Sfx.ui(self, "sprayer_loop", -8.0)
+	var hits := spray_hits(reach, cone)
+	var centre: Dictionary = hits["centre"]
+	spray_reaches = not centre.is_empty()
+	var end: Vector3 = centre["position"] if centre else player.camera.global_position - player.camera.global_transform.basis.z * reach
+	var dps := float(spec["focus_damage"] if focus else spec["damage"])
+	var chill := float(spec["focus_chill"] if focus else spec["chill"]) * delta
+	var dir := -player.camera.global_transform.basis.z
+	for o in hits["things"]:
+		var h: Dictionary = hits["things"][o]
+		var hit := Hit.make(Hit.Kind.FREEZE, dps * delta, h["position"], dir, player)
+		hit.normal = h["normal"]
+		# The focused jet freezes a limb brittle enough to snap off.
 		hit.sever = 1.2 if focus else 0.5
-		var o := Hit.deal(h.collider, hit)
-		if o:
-			if o.has_method("char_by"):
-				o.char_by(delta * 0.5)
-			if o.get("dead") == true and not _beam_hit.has(o):
-				_beam_hit[o] = true
-				hit_marker.emit(true)
-			elif o.get("dead") != true and _mark_t <= 0.0:
-				# The beam is hurting it: a marker every so often says so.
-				_mark_t = 0.2
-				hit_marker.emit(false)
-		else:
-			_burn_growth(h.position + h.normal * 0.3, float(spec["focus_burn"] if focus else spec["burn"]) * delta)
-	view.beam(true, end, focus, beam_reaches)
-	_burn_t -= delta
-	if _burn_t <= 0.0:
-		_burn_t = 0.5
+		Hit.deal(h["collider"], hit)
+		if not is_instance_valid(o):
+			continue
+		if o.has_method("chill_by"):
+			o.chill_by(chill)
+		if o.get("dead") == true and not _spray_hit.has(o):
+			_spray_hit[o] = true
+			hit_marker.emit(true)
+		elif o.get("dead") != true and _mark_t <= 0.0:
+			# The spray is hurting it: a marker every so often says so.
+			_mark_t = 0.2
+			hit_marker.emit(false)
+	var amount := float(spec["focus_freeze"] if focus else spec["freeze"]) * delta
+	for cell in hits["cells"]:
+		_freeze_growth(cell, amount)
+	view.spray(true, end, focus, spray_reaches)
+	_noise_t -= delta
+	if _noise_t <= 0.0:
+		_noise_t = 0.5
 		Noises.make(self, player.global_position, 10.0, player)
 	changed.emit()
 
 
-## What the cutter's beam touches from the eye, within `reach`, or {}.
-func _beam_ray(reach: float) -> Dictionary:
+## What the sprayer's cone touches from the eye: {"centre": the middle ray's
+## hit or {}, "things": {owner: hit} for what can be hurt (each once),
+## "cells": the tiles whose growth it reaches (each once)}.
+func spray_hits(reach: float, cone: float) -> Dictionary:
+	var out := {"centre": {}, "things": {}, "cells": []}
+	if player == null or not is_inside_tree():
+		return out
+	var basis := player.camera.global_transform.basis
+	var fwd := -basis.z
+	for k in SPRAY_RAYS + 1:
+		var dir := fwd
+		if k > 0:
+			var a := TAU * (k - 1) / SPRAY_RAYS
+			dir = (fwd + (basis.x * cos(a) + basis.y * sin(a)) * tan(cone)).normalized()
+		var h := _ray_from_eye(dir, reach)
+		if k == 0:
+			out["centre"] = h
+		if h.is_empty():
+			continue
+		var o := Hit.owner_of(h.collider)
+		if o != null and o.has_method("take_hit"):
+			if not out["things"].has(o):
+				out["things"][o] = h
+		else:
+			var cell := DeckLevel.cell_at(h.position + h.normal * 0.3)
+			if not cell in out["cells"]:
+				out["cells"].append(cell)
+	return out
+
+
+## What the middle of the spray touches from the eye, within `reach`, or {}.
+func _centre_ray(reach: float) -> Dictionary:
 	if player == null or not is_inside_tree():
 		return {}
-	var cam := player.camera
-	var from := cam.global_position
-	var q := PhysicsRayQueryParameters3D.create(from, from - cam.global_transform.basis.z * reach, Kit.SHOT_MASK)
+	return _ray_from_eye(-player.camera.global_transform.basis.z, reach)
+
+
+func _ray_from_eye(dir: Vector3, reach: float) -> Dictionary:
+	var from := player.camera.global_position
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * reach, Kit.SHOT_MASK)
 	q.collide_with_areas = true
 	q.exclude = [player.get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(q)
 
 
-func _burn_growth(at: Vector3, amount: float) -> void:
+func _freeze_growth(cell: Vector2i, amount: float) -> void:
 	if player.level == null or player.level.bloom == null:
 		return
-	var cell := DeckLevel.cell_at(at)
-	var burnt := player.level.bloom.burn(cell, amount)
-	if burnt > 0.0 and DeckScene.current:
-		DeckScene.current.on_burn(cell, burnt)
+	var gone := player.level.bloom.freeze(cell, amount)
+	if gone > 0.0 and DeckScene.current:
+		DeckScene.current.on_cleared(cell, gone)
 
 
-func _stop_beam() -> void:
-	if _beam_sound and is_instance_valid(_beam_sound):
-		# The beam's sounds stop when it does, with a short fizzle.
-		Sfx.ui(self, "cutter_stop", -9.0)
-		_fade_out(_beam_sound)
-		if _beam_start and is_instance_valid(_beam_start):
-			_fade_out(_beam_start)
-	_beam_sound = null
-	_beam_start = null
-	_beam_hit.clear()
+## A shot landed on the station here: frozen growth on that tile shatters.
+func _shatter_growth(at: Vector3, normal: Vector3, damage: float) -> void:
+	if player.level == null or player.level.bloom == null:
+		return
+	var cell := DeckLevel.cell_at(at + normal * 0.3)
+	if not player.level.bloom.is_frozen(cell):
+		return
+	var gone := player.level.bloom.shatter(cell, damage * SHATTER_PER_DAMAGE)
+	if gone > 0.0:
+		Effects.ice_chips(self, at, normal, clampf(gone * 2.0, 0.4, 1.5))
+		Sfx.at(self, "ice_crack", at, -4.0)
+		if DeckScene.current:
+			DeckScene.current.on_cleared(cell, gone)
+
+
+func _stop_spray() -> void:
+	if _spray_sound and is_instance_valid(_spray_sound):
+		# The spray's sounds stop when it does, with the valve shutting.
+		Sfx.ui(self, "sprayer_stop", -9.0)
+		_fade_out(_spray_sound)
+		if _spray_start and is_instance_valid(_spray_start):
+			_fade_out(_spray_start)
+	_spray_sound = null
+	_spray_start = null
+	_spray_hit.clear()
 	if view:
-		view.beam(false, Vector3.ZERO, false)
+		view.spray(false, Vector3.ZERO, false)
 
 
 ## Turns a sound down over a few hundredths of a second (a hard stop clicks)
@@ -645,10 +743,10 @@ func shove_anim() -> void:
 		view.shove_anim()
 
 
-## For the HUD: "12 / 36", "Heat 45%", "OVERHEATED".
+## For the HUD: "12 / 36", "Ice 45%", "ICED UP".
 func ammo_text() -> String:
-	if current == "cutter":
-		return "OVERHEATED" if overheated else "Heat %d%%" % int(heat)
+	if current == "sprayer":
+		return "ICED UP" if iced else "Ice %d%%" % int(ice)
 	var spec := stat(current)
 	if int(spec["carry"]) < 0:
 		return "%d" % int(mag[current])

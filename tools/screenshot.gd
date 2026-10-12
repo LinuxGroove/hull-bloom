@@ -2,9 +2,9 @@ extends Node
 ## Takes screenshots, for checking how the game looks without a screen. Run
 ## with a display (xvfb-run on a server), software Vulkan if there's no GPU,
 ## and --resolution 1280x800:
-##   godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=hydroponics [--view=name] [--hud] [--overgrown] [--grow=ticks] [--burnt]
-## saves a deck's views (the level's own) as PNGs (--burnt: every bit of
-## growth freshly burnt, for the char and its embers), and
+##   godot --path . --resolution 1280x800 tools/screenshot.tscn -- --out=/tmp/shots --deck=hydroponics [--view=name] [--hud] [--overgrown] [--grow=ticks] [--frozen]
+## saves a deck's views (the level's own) as PNGs (--frozen: every bit of
+## growth frozen, for the frost), and
 ##   godot --path . --resolution 1280x800 tools/screenshot.tscn -- --all=docs/screenshots [group=hydroponics]
 ## saves every deck's views and the menus (group "menus") into a folder per
 ## group, with a README listing them. Progress stays in memory, so the
@@ -23,7 +23,7 @@ func _ready() -> void:
 	var hud := false
 	var overgrown := false
 	var grow := 0
-	var burnt := false
+	var frozen := false
 	var all := ""
 	var group := ""
 	for a in OS.get_cmdline_user_args():
@@ -39,8 +39,8 @@ func _ready() -> void:
 			overgrown = true
 		elif a.begins_with("--grow="):
 			grow = int(a.trim_prefix("--grow="))
-		elif a == "--burnt":
-			burnt = true
+		elif a == "--frozen":
+			frozen = true
 		elif a.begins_with("--all="):
 			all = a.trim_prefix("--all=")
 		elif a.begins_with("group="):
@@ -60,7 +60,7 @@ func _ready() -> void:
 		await _all(all, group)
 	else:
 		DirAccess.make_dir_recursive_absolute(out)
-		await _deck_views(deck, out, only, hud, overgrown, grow, burnt)
+		await _deck_views(deck, out, only, hud, overgrown, grow, frozen)
 	get_tree().quit()
 
 
@@ -80,8 +80,8 @@ func _all(dir: String, group: String) -> void:
 	_write_readme(dir)
 
 
-func _deck_views(id: String, out: String, only: String, hud: bool, overgrown: bool, grow: int, burnt := false) -> void:
-	await _open(id, overgrown, grow, burnt)
+func _deck_views(id: String, out: String, only: String, hud: bool, overgrown: bool, grow: int, frozen := false) -> void:
+	await _open(id, overgrown, grow, frozen)
 	_scene.hud.visible = hud
 	var shots: Array = []
 	for v in _scene.level.views:
@@ -131,7 +131,7 @@ func note(group: String, title: String, names: Array) -> void:
 	_index[group] = [title, names]
 
 
-func _open(id: String, overgrown: bool, grow: int, burnt := false) -> void:
+func _open(id: String, overgrown: bool, grow: int, frozen := false) -> void:
 	_scene = DeckScene.new()
 	_scene.deck_id = id
 	_scene.mode = "test"
@@ -147,8 +147,8 @@ func _open(id: String, overgrown: bool, grow: int, burnt := false) -> void:
 		for k in grow:
 			_scene.tick_bloom()
 		_scene.bloom_view.snap()
-	if burnt:
-		_scene.level.bloom.scorch.fill(1.0)
+	if frozen:
+		_scene.level.bloom.frost.fill(1.0)
 		_scene.bloom_view.snap()
 	_scene.freeze()
 	await _frames(SETTLE_FRAMES)

@@ -10,6 +10,10 @@ extends RefCounted
 ## Tiles cut off from every root die back quickly. Lit tiles grow and are
 ## seeded at half speed; vented rooms are airless and stay clean. Overgrown
 ## tiles sprout pods, which [Director] turns into creatures.
+##
+## The sprayer freezes growth: it dies back where the spray touches, and a
+## frozen tile neither grows, spreads nor sprouts until it thaws. Shots
+## shatter frozen growth.
 
 ## How a link between two tiles lets the growth through.
 enum Kind { OPEN, DOOR, VENT, CABLE }
@@ -42,10 +46,15 @@ const LIT_FACTOR := 0.5
 const POD_LEVEL := 3.9
 const POD_CAP := 2
 const POD_CHANCE := 0.08
-## Pods wither when their tile is burnt back below this.
+## Pods wither when their tile is frozen back below this.
 const POD_WITHER := 2.0
 ## A body lying on a tile this grown gets up again as one of the Taken.
 const TAKE_LEVEL := 3.0
+## How much frost a tile loses each tick: a freshly frozen tile thaws in
+## four ticks.
+const THAW := 0.25
+## The most growth one shot can shatter off a frozen tile, in levels.
+const SHATTER_MAX := 1.0
 
 ## Tile coordinates, by index.
 var cells: Array[Vector2i] = []
@@ -72,8 +81,9 @@ var roots := PackedInt32Array()
 var root_alive := PackedByteArray()
 ## Pods per tile index.
 var pods := {}
-## Scorch per tile, 1 when just burnt, fading over a few ticks (for the look).
-var scorch := PackedFloat32Array()
+## Frost per tile, 1 when just sprayed, thawing over a few ticks. Frozen
+## growth is held still and brittle.
+var frost := PackedFloat32Array()
 var rng := RandomNumberGenerator.new()
 ## The difficulty's spread speed.
 var speed := 1.0
@@ -83,8 +93,8 @@ var changed: Array[int] = []
 var sprouted: Array[int] = []
 var withered: Array[int] = []
 var reached_rooms: Array[int] = []
-## Bumped whenever any level changes (ticks and burns), so the look knows
-## when to redraw.
+## Bumped whenever any level changes (ticks, freezing, shattering), so the
+## look knows when to redraw.
 var version := 0
 
 
@@ -100,7 +110,7 @@ func add_tile(cell: Vector2i, room_name := "", p_mult := 1.0) -> int:
 	cells.append(cell)
 	index[cell] = i
 	growth.append(0.0)
-	scorch.append(0.0)
+	frost.append(0.0)
 	var r := room_names.find(room_name)
 	if r < 0:
 		r = room_names.size()
@@ -214,14 +224,36 @@ func vent_room(room_name: String) -> void:
 	version += 1
 
 
-## Burns a tile's growth down by `amount` levels; returns how much went.
-func burn(cell: Vector2i, amount: float) -> float:
+## Freezes a tile: its growth dies back by `amount` levels and what's left
+## is frozen still. Returns how much went.
+func freeze(cell: Vector2i, amount: float) -> float:
 	var i: int = index.get(cell, -1)
-	if i < 0 or growth[i] <= 0.0:
+	if i < 0:
 		return 0.0
+	frost[i] = 1.0
+	if growth[i] <= 0.0:
+		version += 1
+		return 0.0
+	return _cut(i, amount)
+
+
+## A shot on frozen growth breaks some of it off: up to `amount` levels,
+## less as the frost thaws, and nothing from growth that isn't frozen.
+func shatter(cell: Vector2i, amount: float) -> float:
+	var i: int = index.get(cell, -1)
+	if i < 0 or frost[i] <= 0.0 or growth[i] <= 0.0:
+		return 0.0
+	return _cut(i, minf(amount, SHATTER_MAX) * frost[i])
+
+
+func is_frozen(cell: Vector2i) -> bool:
+	var i: int = index.get(cell, -1)
+	return i >= 0 and frost[i] > 0.0 and growth[i] > 0.0
+
+
+func _cut(i: int, amount: float) -> float:
 	var before := growth[i]
 	growth[i] = maxf(0.0, before - amount)
-	scorch[i] = 1.0
 	if growth[i] < POD_WITHER and pods.has(i):
 		pods.erase(i)
 		withered.append(i)
@@ -295,16 +327,18 @@ func step() -> void:
 			next[i] = 0.0
 			continue
 		var rate := mult[i] * speed * (LIT_FACTOR if is_lit(i) else 1.0)
+		var frozen := frost[i] > 0.0
 		if g > 0.0:
-			if is_fed[i] == 1:
-				next[i] = minf(MAX, g + FEED * rate)
-			else:
+			if is_fed[i] == 0:
 				next[i] = maxf(0.0, g - DECAY)
-		# Only fed growth reaches out: cut the root and the front stops.
-		if g >= SPREAD_FROM and is_fed[i] == 1:
+			elif not frozen:
+				next[i] = minf(MAX, g + FEED * rate)
+		# Only fed growth reaches out: cut the root and the front stops. Frozen
+		# growth doesn't reach, and nothing takes on a frozen floor.
+		if g >= SPREAD_FROM and is_fed[i] == 1 and not frozen:
 			for l in links[i]:
 				var j: int = l[0]
-				if growth[j] > 0.0 or next[j] > 0.0 or airless[room[j]] == 1:
+				if growth[j] > 0.0 or next[j] > 0.0 or airless[room[j]] == 1 or frost[j] > 0.0:
 					continue
 				var f := link_factor(l[1])
 				if f <= 0.0:
@@ -321,7 +355,7 @@ func step() -> void:
 			changed.append(i)
 		if before == 0.0 and after > 0.0 and room_had[room[i]] == 0 and not reached_rooms.has(room[i]):
 			reached_rooms.append(room[i])
-		if after >= POD_LEVEL and int(pods.get(i, 0)) < POD_CAP and rng.randf() < POD_CHANCE * speed:
+		if after >= POD_LEVEL and frost[i] <= 0.0 and int(pods.get(i, 0)) < POD_CAP and rng.randf() < POD_CHANCE * speed:
 			pods[i] = int(pods.get(i, 0)) + 1
 			sprouted.append(i)
 		elif after < POD_WITHER and pods.has(i):
@@ -329,7 +363,7 @@ func step() -> void:
 			withered.append(i)
 		if flare[i] > 0:
 			flare[i] -= 1
-		scorch[i] = maxf(0.0, scorch[i] - 0.15)
+		frost[i] = maxf(0.0, frost[i] - THAW)
 	growth = next
 	ticks += 1
 	version += 1

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtfc4d0yds26o"
-path="res://.godot/imported/T_Cutter_Screen.png-d1592966beaf5a92dc28ca7397d01540.ctex"
+uid="uid://donrnwp1urshy"
+path="res://.godot/imported/T_Sprayer_Screen.png-9fadb2970f4a6351f58809b5bd9df30d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/models/cutter/T_Cutter_Screen.png"
-dest_files=["res://.godot/imported/T_Cutter_Screen.png-d1592966beaf5a92dc28ca7397d01540.ctex"]
+source_file="res://assets/models/sprayer/T_Sprayer_Screen.png"
+dest_files=["res://.godot/imported/T_Sprayer_Screen.png-9fadb2970f4a6351f58809b5bd9df30d.ctex"]
 
 [params]
 

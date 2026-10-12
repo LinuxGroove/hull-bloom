@@ -26,7 +26,6 @@ instance uniform float dead = 0.0;
 instance uniform float blood = 0.0;
 instance uniform float bloom = 0.0;
 instance uniform float hurt = 0.0;
-instance uniform float charred = 0.0;
 instance uniform float seed = 0.0;
 
 varying vec3 rest;
@@ -97,7 +96,6 @@ void fragment() {
 	c = mix(c, vec3(0.16, 0.02, 0.03), edge * 0.7);
 	c = mix(c, meat, growth);
 	rough = mix(rough, 0.2, growth);
-	c = mix(c, vec3(0.02, 0.012, 0.01), clamp(charred, 0.0, 1.0) * smoothstep(0.3, 0.7, hb_noise(p * 12.0)));
 	ALBEDO = mix(c, vec3(1.0, 0.85, 0.8), clamp(hurt, 0.0, 1.0) * 0.45);
 	ROUGHNESS = rough;
 	SPECULAR = 0.4;

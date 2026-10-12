@@ -46,7 +46,7 @@ func setup(p_scene: DeckScene, p_pilot: Node) -> void:
 	process_physics_priority = 100
 	data = {
 		"deaths": [], "damage": {}, "hits_taken": {}, "infection_from": {}, "kills": {}, "kill_times": [],
-		"shots": {}, "hits": {}, "cutter_seconds": 0.0, "samples": [], "roots": [], "survivors_found": [],
+		"shots": {}, "hits": {}, "sprayer_seconds": 0.0, "samples": [], "roots": [], "survivors_found": [],
 		"logs_read": [], "doors": {"opened": 0, "closed": 0, "sealed": 0, "unsealed": 0, "events": []},
 		"power": [], "throws": {}, "no_progress": [], "monitors": [], "actions": {}, "unstuck": [],
 		"lost": [], "doors_blocked": [], "no_path": [],
@@ -78,8 +78,8 @@ func _physics_process(delta: float) -> void:
 		return
 	time += delta
 	var ars := player.arsenal
-	if ars.current == "cutter" and ars.firing and not ars.overheated:
-		data["cutter_seconds"] = float(data["cutter_seconds"]) + delta
+	if ars.current == "sprayer" and ars.firing and not ars.iced:
+		data["sprayer_seconds"] = float(data["sprayer_seconds"]) + delta
 	_infection(delta)
 	_tick_t -= delta
 	if _tick_t <= 0.0:
@@ -95,7 +95,7 @@ func _sample() -> void:
 	var ars := player.arsenal
 	var ammo := {}
 	for w in ars.owned:
-		if w != "cutter":
+		if w != "sprayer":
 			ammo[w] = int(ars.mag.get(w, 0)) + (int(ars.reserve.get(w, 0)) if int(ars.stat(w).get("carry", 0)) >= 0 else 0)
 	var b := scene.level.bloom
 	var p := player.global_position
@@ -124,7 +124,7 @@ func _sample() -> void:
 #region Progress toward the goal
 
 ## Once a second: did the Tech get any nearer the deck's goal? Nearer the
-## Heart (walking distance), a root cut, the growth burnt back, the deck held.
+## Heart (walking distance), a root cut, the growth frozen back, the deck held.
 func _progress() -> void:
 	var run := scene.run
 	var moved := false
@@ -135,7 +135,7 @@ func _progress() -> void:
 		_held = true
 		moved = true
 	var goal: String = pilot.goal_name
-	if goal == "burn":
+	if goal == "clear":
 		var total := 0.0
 		for g in scene.level.bloom.growth:
 			if g >= 1.0:
@@ -143,7 +143,7 @@ func _progress() -> void:
 		if total < _growth_best - 0.5:
 			_growth_best = total
 			moved = true
-		_goal_key = "burn"
+		_goal_key = "clear"
 	elif pilot.goal_point != Vector3.INF:
 		var key := "%s:%s" % [goal, DeckLevel.cell_at(pilot.goal_point)]
 		if key != _goal_key:
@@ -372,8 +372,8 @@ func finish() -> Dictionary:
 	data["survivors_saved"] = run.survivors_saved.size()
 	data["salvage"] = run.salvage
 	data["kills_total"] = run.kills
-	data["burnt"] = snappedf(run.burnt, 0.1)
-	data["cutter_seconds"] = _r(float(data["cutter_seconds"]))
+	data["cleared"] = snappedf(run.cleared, 0.1)
+	data["sprayer_seconds"] = _r(float(data["sprayer_seconds"]))
 	return data
 
 

@@ -1327,27 +1327,116 @@ def hum_loop(rng):
 
 
 # ---------------------------------------------------------------------------
-# The tech's own sounds: the cutter, a log's screen, a shot landing
+# The tech's own sounds: the cryo sprayer, ice, the rivet gun, a log's screen,
+# a shot landing
 
-def cutter_start(rng):
-    """The cutter lighting: a quick rising zap over a short tone, kept short so
-    letting go of the trigger is heard at once (0.35 s)."""
-    L = 0.35
-    t = timeline(L)
-    zap = whoosh(rng, L, 700, 4200, 2.5, 1.2)
-    f = curve(t, [0, 0.08, L], [180, 420, 380])
-    ph = phase_of(f)
-    tone = (np.sin(ph) + 0.4 * np.sin(2 * ph) + 0.2 * np.sin(3.01 * ph)) * env_ar(t, 0.02, 0.12)
-    return 0.6 * zap + 0.5 * tone + 0.4 * click(rng, t, 0.0, 0.004, 1500)
-
-
-def cutter_stop(rng):
-    """The cutter going out: the plasma dropping away with a falling hiss (0.3 s)."""
+def sprayer_start(rng):
+    """The sprayer's valve opening: a hard click, a knock in the pipe and the gas
+    bursting out, kept short so letting go of the trigger is heard at once (0.3 s)."""
     L = 0.3
     t = timeline(L)
-    hissing = whoosh(rng, L, 3800, 500, 1.8, 0.4) * np.exp(-t / 0.1)
-    tone = np.sin(phase_of(curve(t, [0, L], [360, 120]))) * np.exp(-t / 0.06)
-    return 0.7 * hissing + 0.4 * tone
+    burst = highpass(rng.standard_normal(len(t)), 2500) * env_ar(t, 0.008, 0.07)
+    knock = modes(t, [210, 520, 1340], [1.0, 0.45, 0.2], [0.04, 0.02, 0.01])
+    return 0.7 * norm(burst) + 0.45 * knock + 0.5 * click(rng, t, 0.0, 0.002, 3000)
+
+
+def sprayer_loop(rng):
+    """Coolant spraying: a steady, bright hiss of gas with a lower rush under it,
+    a flutter in the jet and droplets freezing as they land (2 s loop)."""
+    L = 2.0
+    t = timeline(L)
+    n = len(t)
+    hiss = loop_noise(rng, n, lambda f: bp_mag(f, 5200, 0.9) + 0.35 * hp_mag(f, 9000))
+    rush = loop_noise(rng, n, lambda f: bp_mag(f, 900, 0.7))
+    # Every flutter rate is a whole number of cycles in the loop.
+    flutter = 1.0 + 0.12 * np.sin(TAU * 11 * t) + 0.06 * np.sin(TAU * 17 * t + 1.3)
+    frost = place(np.zeros(n), crackle(rng, L, 26, 26, 3000, 9000, (0.0005, 0.0015)), 0.0, wrap=True)
+    return (0.8 * norm(hiss) + 0.45 * norm(rush)) * flutter + 0.14 * frost
+
+
+def sprayer_stop(rng):
+    """The valve shutting: a clunk and the last of the gas falling away (0.35 s)."""
+    L = 0.35
+    t = timeline(L)
+    hissing = whoosh(rng, L, 6000, 1500, 1.4, 0.4) * np.exp(-t / 0.09)
+    clunk = modes(t, [160, 410, 980], [1.0, 0.5, 0.2], [0.05, 0.025, 0.012])
+    return 0.6 * hissing + 0.55 * clunk + 0.4 * click(rng, t, 0.0, 0.003, 1800)
+
+
+def sprayer_iced(rng):
+    """The nozzle icing up: the jet sputters and chokes, a crackle of ice and a
+    dull warning double beep (0.8 s)."""
+    L = 0.8
+    t = timeline(L)
+    gas = highpass(rng.standard_normal(len(t)), 2200)
+    chokes = sum(bump(t, at, w, 0.6) * a for at, w, a in ((0.0, 0.09, 1.0), (0.12, 0.06, 0.7), (0.21, 0.05, 0.45), (0.29, 0.03, 0.25)))
+    ice = np.zeros(len(t))
+    place(ice, crackle(rng, 0.25, 60, 15, 2500, 8000), 0.05)
+    beeps = np.tanh(2 * np.sin(TAU * 440 * t)) * (bump(t, 0.42, 0.1, 0.4) + bump(t, 0.58, 0.12, 0.4))
+    return 0.7 * norm(gas) * chokes + 0.3 * ice + 0.4 * lowpass(beeps, 2500)
+
+
+def freeze(rng):
+    """A creature freezing solid: frost crackling over it faster and faster, then a
+    glassy creak as it locks (0.6 s)."""
+    L = 0.6
+    t = timeline(L)
+    frost = crackle(rng, 0.45, 40, 400, 2500, 9000, (0.0006, 0.002))
+    out = np.zeros(len(t))
+    place(out, 0.6 * frost, 0.0)
+    creak = modes(t, [1900, 3100, 4700], [1.0, 0.6, 0.3], [0.09, 0.06, 0.04], 0.42)
+    return out + 0.35 * creak + 0.3 * click(rng, t, 0.42, 0.002, 4000)
+
+
+def ice_crack(rng):
+    """Ice cracking off: a sharp split and a short glassy ring (0.25 s)."""
+    t = timeline(0.25)
+    ring = modes(t, [2300, 3600, 5900], [1.0, 0.55, 0.3], [0.04, 0.025, 0.015])
+    splinter = highpass(rng.standard_normal(len(t)), 3500) * env_ar(t, 0.001, 0.012)
+    return 0.6 * ring + 0.5 * norm(splinter) + 0.6 * click(rng, t, 0.0, 0.0015, 4000)
+
+
+def shatter(rng):
+    """Something frozen bursting: a hard crack, a thud and ice raining down,
+    ringing like glass (0.9 s)."""
+    L = 0.9
+    t = timeline(L)
+    out = np.zeros(len(t))
+    out += 0.8 * click(rng, t, 0.0, 0.003, 2500)
+    out += 0.5 * norm(highpass(rng.standard_normal(len(t)), 2000) * env_ar(t, 0.001, 0.05))
+    thump_ = np.sin(phase_of(curve(t, [0, 0.15], [120, 50]))) * env_ar(t, 0.002, 0.08)
+    shards = np.zeros(len(t))
+    tick = timeline(0.12)
+    at = 0.01
+    while at < L - 0.15:
+        f = rng.uniform(2200, 7500)
+        a = rng.uniform(0.3, 1.0) * np.exp(-at / 0.35)
+        place(shards, a * modes(tick, [f, f * 1.48, f * 2.13], [1.0, 0.5, 0.25], [0.035, 0.02, 0.012]), at)
+        at += rng.exponential(1 / 45)
+    return out + 0.6 * thump_ + 0.6 * norm(shards)
+
+
+def rivet_gun(rng):
+    """The rivet gun firing: a blast of air and the piston slamming the rivet home,
+    a heavy metal clack with a ring (0.3 s)."""
+    L = 0.3
+    t = timeline(L)
+    air = bandpass(rng.standard_normal(len(t)), 1400, 0.7) * env_ar(t, 0.002, 0.035)
+    clack = modes(t, [480, 1250, 2650, 4100], [1.0, 0.7, 0.4, 0.2], [0.05, 0.03, 0.02, 0.012], 0.006)
+    body = np.sin(phase_of(curve(t, [0, 0.05], [140, 70]))) * env_ar(t, 0.001, 0.04)
+    return 0.6 * norm(air) + 0.7 * clack + 0.5 * body + 0.6 * click(rng, t, 0.005, 0.002, 2500)
+
+
+def pin(rng):
+    """A rivet pinning something to the wall: a wet thud and the plate it's driven
+    into ringing (0.6 s)."""
+    L = 0.6
+    t = timeline(L)
+    out = np.zeros(len(t))
+    out += splat(rng, t, 0.0, 0.7)
+    out += 0.7 * thump(rng, t, 0.0, 140, 60, 0.08, 0.6)
+    out += 0.45 * modes(t, [620, 1460, 2950], [1.0, 0.5, 0.3], [0.25, 0.15, 0.08], 0.01)
+    return out
 
 
 def read(rng):
@@ -1549,9 +1638,10 @@ def catalogue():
     sounds = {}
     for build in (watcher_scream, vent_crawl, taken_rise, taken_die, stalker_die, spit, skitter_leap, shove,
                   sever, robot_drop, pod_hatch, heart_die, heal, stim, feeder_grab, robot_alert, robot_idle,
-                  cutter_start, cutter_stop, read, hit_marker, kill_marker):
+                  sprayer_start, sprayer_stop, sprayer_iced, freeze, ice_crack, shatter, rivet_gun, pin,
+                  read, hit_marker, kill_marker):
         sounds[build.__name__] = (build, "sfx")
-    for build in (heart_beat_loop, bloom_loop, hum_loop):
+    for build in (heart_beat_loop, bloom_loop, hum_loop, sprayer_loop):
         sounds[build.__name__] = (build, "loop")
     for kind, builders in VOICES.items():
         for what, build in zip(("alert", "idle", "attack", "hurt"), builders):
