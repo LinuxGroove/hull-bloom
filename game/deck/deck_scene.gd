@@ -89,6 +89,7 @@ func _ready() -> void:
 	_build_power()
 	_build_ui()
 	_build_player()
+	LGFocusPause.watch(self, player.open_pause)
 	director = Director.new()
 	director.setup(level)
 	add_child(director)
