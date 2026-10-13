@@ -99,6 +99,38 @@ func open_deck(id: String, mode := "test") -> DeckScene:
 	return s
 
 
+## The window losing focus opens the pause menu (LGFocusPause), unless focus
+## comes straight back, the setting is off or the on-screen keyboard is up.
+func _check_focus_pause(watcher: LGFocusPause, menu_open: Callable, close: Callable, pauses := true) -> void:
+	check(watcher != null, "the game watches for the window losing focus")
+	if watcher == null:
+		return
+	# The watcher counts real milliseconds, so wait in real time.
+	var grace := LGFocusPause.GRACE_MSEC / 1000.0 + 0.15
+	watcher.focus_lost()
+	await get_tree().process_frame
+	watcher.focus_back()
+	await get_tree().create_timer(grace, true, false, true).timeout
+	check(not menu_open.call(), "focus coming straight back doesn't open the pause menu")
+	watcher.focus_lost()
+	await get_tree().create_timer(grace, true, false, true).timeout
+	check(menu_open.call() and get_tree().paused == pauses, "losing focus opens the pause menu")
+	if pauses:
+		check(not watcher.pause_now(), "losing focus again while paused does nothing")
+	close.call()
+	await get_tree().process_frame
+	check(not menu_open.call() and not get_tree().paused, "the game carries on after Resume")
+	LGSettings.set_value("video", "focus_pause", false, false)
+	check(not watcher.pause_now() and not menu_open.call(), "Pause when switching away can be turned off")
+	LGSettings.set_value("video", "focus_pause", true, false)
+	var field := LineEdit.new()
+	add_child(field)
+	OnScreenKeyboard.open(field)
+	check(not watcher.pause_now() and not menu_open.call(), "losing focus leaves the on-screen keyboard alone")
+	field.queue_free()
+	await frames(2)
+
+
 func close_deck(s: DeckScene) -> void:
 	get_tree().paused = false
 	if is_instance_valid(s):
@@ -708,6 +740,8 @@ func _test_deck_scene() -> void:
 	var s := await open_deck("hydroponics")
 	check(DeckScene.current == s, "the deck is current")
 	check(s.player != null and s.player.is_inside_tree(), "the tech is on the deck")
+	await _check_focus_pause(s.get_node_or_null("FocusPause"), s.pause.is_visible, s.pause.close_pause_menu)
+	check(not s.player.is_movement_paused, "the Tech can move again after the pause menu from losing focus")
 	check(s.power.free_cells() == s.deck.cells, "every cell starts free")
 	check(not s.run.held, "the deck isn't held at the start")
 	# The deck map's key opens only the map: Cogito's own bindings once put its

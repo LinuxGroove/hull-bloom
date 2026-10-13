@@ -227,6 +227,15 @@ func _input(event):
 	super(event)
 
 
+## Opens the pause menu as the menu button does, unless something else has
+## the Tech (a console, the map, the workbench, being down).
+func open_pause() -> void:
+	if is_showing_ui or is_movement_paused or is_dead or currently_tweening or CogitoSceneManager.is_currently_loading:
+		return
+	_on_pause_movement()
+	get_node(pause_menu).open_pause_menu()
+
+
 func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
 	log_pads()
 
