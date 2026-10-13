@@ -75,6 +75,7 @@ func open_pause_menu() -> void:
 	_hide_how()
 	visible = true
 	get_tree().paused = true
+	LGAudio.pause_game(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	LGUi.focus_first(_col)
 
@@ -84,6 +85,7 @@ func close_pause_menu() -> void:
 	visible = false
 	if is_inside_tree():
 		get_tree().paused = false
+		LGAudio.pause_game(false)
 	var f := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
 	if f:
 		f.release_focus()
